@@ -1,0 +1,15 @@
+{
+  "license": "ISC",
+  "types": "./types/index.d.ts",
+  "artifactType": "obfuscation",
+  "devDependencies": {},
+  "author": {
+    "name": "huawei"
+  },
+  "name": "@hw-agconnect/api-ohos",
+  "description": "AppGalleryConnectSDK api for OpenHarmony",
+  "main": "index.ts",
+  "type": "module",
+  "version": "1.1.2",
+  "dependencies": {}
+}

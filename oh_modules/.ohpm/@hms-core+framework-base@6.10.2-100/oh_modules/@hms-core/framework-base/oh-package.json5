@@ -1,0 +1,30 @@
+{
+  "version": "6.10.2-100",
+  "name": "@hms-core/framework-base",
+  "description": "hms core base js",
+  "main": "src/index.js",
+  "keywords": [
+    "hmscore",
+    "hms-base-js"
+  ],
+  "author": "hms core",
+  "license": "the Apache 2.0 license",
+  "scripts": {
+    "build": "webpack && node ./copydts.js",
+    "build:dev": "webpack --env.debug && node ./copydts.js",
+    "start": "webpack-dev-server --hot --mode development",
+    "lint": "eslint --fix . && echo 'Lint complete.'",
+    "test": "jest --coverage",
+    "docs": "jsdoc2md src/index.js > docs/API说明.md",
+    "protobuf": "node clone-protobuff.js --force"
+  },
+  "devDependencies": {
+  },
+  "dependencies": {
+  },
+  "jest": {
+    "collectCoverageFrom": [
+      "<rootDir>/src/**/*.js"
+    ]
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "name": "@ohos/advanced-api",
+  "version": "1.1.2",
+  "description": "AdvancedAPI_OHOS.",
+  "main": "index.ts",
+  "author": "",
+  "license": "Apache-2.0",
+  "dependencies": {
+
+  }
+}
