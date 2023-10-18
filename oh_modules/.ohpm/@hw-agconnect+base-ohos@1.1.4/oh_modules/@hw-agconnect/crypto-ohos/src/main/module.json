@@ -1,0 +1,19 @@
+{
+	"app": {
+		"bundleName": "com.huawei.secure.myapplication",
+		"debug": true,
+		"versionCode": 1000000,
+		"versionName": "1.0.0",
+		"minAPIVersion": 9,
+		"targetAPIVersion": 9,
+		"apiReleaseType": "Release"
+	},
+	"module": {
+		"name": "agconnect-crypto",
+		"type": "har",
+		"deviceTypes": [
+			"default",
+			"tablet"
+		]
+	}
+}

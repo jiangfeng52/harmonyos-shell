@@ -1,0 +1,1 @@
+export const ohGenPbkdf2: (password: string, salt: string, iteration_count: number) => string;

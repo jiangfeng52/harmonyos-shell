@@ -1,0 +1,10 @@
+{
+  "license": "ISC",
+  "devDependencies": {},
+  "name": "entry",
+  "description": "HarmonyOS shell for Taro mpharmony project",
+  "version": "1.0.0",
+  "dependencies": {
+    "@ohos/advanced-api": "1.1.2"
+  }
+}

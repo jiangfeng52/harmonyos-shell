@@ -1,0 +1,6 @@
+{
+  "types": "./index.d.ts",
+  "name": "libagccrypto.so",
+  "description": "agconnect native crypto sdk for ohos",
+  "version": ""
+}

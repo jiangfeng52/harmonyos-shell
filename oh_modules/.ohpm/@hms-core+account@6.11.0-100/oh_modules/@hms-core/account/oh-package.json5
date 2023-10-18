@@ -1,0 +1,17 @@
+{
+  "name": "@hms-core/account",
+  "description": "huawei hms core account js sdk",
+  "version": "6.11.0-100",
+  "keywords": [
+    "hmscore",
+    "hms-core-account-sdk"
+  ],
+  "main": "./hms.core.account.js",
+  "types": "",
+  "repository": {},
+  "author": "hms core account",
+  "license": "the Apache 2.0 license",
+  "dependencies": {
+    "@hms-core/framework-base": "6.10.2-100"
+  }
+}
