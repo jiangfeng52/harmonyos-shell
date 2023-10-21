@@ -1,1 +1,0 @@
-export { AgcCrypto } from './src/main/ets/AgcCrypto'
