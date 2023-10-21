@@ -1,1 +1,0 @@
-export { JSBCompat } from './JSBCompat';
