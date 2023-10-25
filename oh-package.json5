@@ -1,15 +1,11 @@
 {
   "license": "ISC",
   "devDependencies": {
-    "@ohos/hypium": "1.0.6"
   },
   "name": "advancedtemplete",
   "description": "example description",
   "repository": {},
   "version": "1.0.0",
   "dependencies": {
-    "@hms-core/framework-base-ohos": "6.11.3-100",
-    "@hms-core/account": "6.11.0-100",
-    "lz-string": "^1.5.0"
   }
 }

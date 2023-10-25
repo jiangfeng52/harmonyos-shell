@@ -3,13 +3,18 @@ import uri from '@ohos.uri'
 import common from '@ohos.app.ability.common'
 import { Adapter } from '../adapter/adapter'
 import { switchInternalToHapSandBox } from '../adapter/util'
-import { NativeObj, MenuButtonOptions, ErrorMsg } from '../adapter/interface'
+import { NativeObj, MenuButtonOptions, ErrorMsg, PermissionInfo } from '../adapter/interface'
 import Prompt from '@system.prompt'
 import { TitleBar } from '../widget/pages/TitleBar'
 import { BusinessError } from '@ohos.base'
 import File from '@ohos.file.fs';
 import { as } from '@ohos/advanced-api'
 import Want from '@ohos.app.ability.Want'
+import {
+  getBundleUsedPermission,
+  getBundleWxScopeList,
+  openPermissionsInSystemSettings
+} from '../util/PermissionMapScopeUtil'
 
 let storage = LocalStorage.getShared() // 获取共享的本地存储对象
 
@@ -21,6 +26,7 @@ struct WebComponent {
   @LocalStorageLink('launchOptions') launchOptions: string = '{}';
   @LocalStorageLink('systemBarHeight') systemBarHeight: number = 40;
   @LocalStorageLink('windowWidth') windowWidth: number = 0;
+  @LocalStorageLink('permissionInfos') permissionInfos: Array<PermissionInfo> = [];
   @State textInput: string = '';
   @State textInputVisible: boolean = false;
   @State webResult: string = ''
@@ -42,7 +48,6 @@ struct WebComponent {
   bundleMap: Map<string, string> = new Map();
   isRegister: boolean = false;
   paddingBottom: number = 8;
-
   nativeObj: NativeObj = {
     setNavigationBarColor: (options) => {
       console.info(`[ADSAPI] setNavigationBarColor`)
@@ -109,14 +114,15 @@ struct WebComponent {
         try {
           const context = getContext(this) as common.UIAbilityContext;
           context.startAbility(wantInfo).then(() => {
-            resolve({errMsg: ''});
+            resolve({ errMsg: '' });
           }).catch(() => {
-            reject({errMsg: 'invalid appid or path scheme'}  as ErrorMsg);
+            reject({ errMsg: 'invalid appid or path scheme' } as ErrorMsg);
           })
         } catch (paramError) {
           console.log('[ADSAPI] navigateToMiniProgram failed:' + JSON.stringify(paramError));
           reject({
-            errMsg: `code: ${(paramError as BusinessError).code}, message ${(paramError as BusinessError).message}`} as ErrorMsg
+            errMsg: `code: ${(paramError as BusinessError).code}, message ${(paramError as BusinessError).message}`
+          } as ErrorMsg
           );
         }
       })
@@ -124,6 +130,42 @@ struct WebComponent {
     setNavigationStyle: (style) => {
       this.navVisible = style !== 'custom';
     },
+    openSetting: (options) => {
+      const apiName: string = 'openSetting';
+      // 接口返回
+      return new Promise(async (resolve, reject) => {
+        try {
+          const bundleScope = await getBundleWxScopeList(this.permissionInfos);
+          const bundleUsedScope = getBundleUsedPermission(bundleScope.allScope, bundleScope.bundleScope);
+          // 打开应用的权限列表
+          openPermissionsInSystemSettings();
+          return resolve({ authSetting: bundleUsedScope.allScope, errMsg: `${apiName}:ok` });
+        } catch (paramError) {
+          return reject(
+            {
+              errMsg: `${apiName}:fail error code: ${(paramError as BusinessError).code} ${(paramError as BusinessError).message}`
+            } as ErrorMsg
+          );
+        }
+      })
+    },
+    getSetting: (options) => {
+      const apiName: string = 'getSetting';
+      // 接口返回
+      return new Promise(async (resolve, reject) => {
+        try {
+          const bundleScope = await getBundleWxScopeList(this.permissionInfos);
+          const bundleUsedScope = getBundleUsedPermission(bundleScope.allScope, bundleScope.bundleScope);
+          return resolve({ authSetting: bundleUsedScope.allScope, errMsg: `${apiName}:ok` });
+        } catch (paramError) {
+          return reject(
+            {
+              errMsg: `${apiName}:fail error code: ${(paramError as BusinessError).code} ${(paramError as BusinessError).message}`
+            } as ErrorMsg
+          );
+        }
+      })
+    }
   };
   adapter: Adapter = new Adapter(this.controller, this.nativeObj);
   adapterProxy: Object = this.adapter.getAdapterProxy(as);
