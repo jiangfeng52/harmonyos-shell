@@ -48,6 +48,68 @@ interface NavigateToMiniProgramOptions {
   extraData: NavigateToMiniProgramOptionsExtraData;
 }
 
+interface UsedScene {
+  abilities: Array<string>;
+  when: string;
+}
+
+export interface PermissionInfo {
+  name: string;
+  moduleName: string;
+  reason: string;
+  reasonId: number;
+  usedScene: UsedScene;
+}
+
+export interface AuthSetting {
+  'scope.userInfo': boolean;
+  'scope.userLocation': boolean;
+  'scope.address': boolean;
+  'scope.invoiceTitle': boolean;
+  'scope.invoice': boolean;
+  'scope.werun': boolean;
+  'scope.record': boolean;
+  'scope.writePhotosAlbum': boolean;
+  'scope.camera': boolean;
+  'scope.bluetoothBackground': boolean;
+}
+
+interface ItemSettings {
+  templateId: string
+}
+
+export interface SubscriptionsSetting {
+  mainSwitch: string;
+  itemSettings: Array<ItemSettings>;
+}
+
+export interface OpenSettingRetOptions {
+  authSetting: AuthSetting;
+  subscriptionsSetting?: SubscriptionsSetting;
+  errMsg: string;
+}
+
+export interface GetSettingRetOptions {
+  authSetting: AuthSetting;
+  subscriptionsSetting?: SubscriptionsSetting;
+  miniprogramAuthSetting?: AuthSetting;
+  errMsg: string;
+}
+
+interface OpenSettingOptions {
+  withSubscriptions?: boolean;
+}
+
+export interface SysBarProps {
+  statusBarColor: string;
+  statusBarContentColor: string;
+}
+
+export interface BundleScopeResult {
+  allScope: AuthSetting;
+  bundleScope: Map<string, boolean>;
+}
+
 export interface NativeObj {
   setNavigationBarColor: (options: NavigationBarOptions) => void;
   showNavigationBarLoading: () => void;
@@ -55,4 +117,6 @@ export interface NativeObj {
   getMenuButtonBoundingClientRect: () => MenuButtonBoundingClientResult;
   navigateToMiniProgram: (options: NavigateToMiniProgramOptions) => Promise<ErrorMsg>;
   setNavigationStyle: (style: string) => void;
+  openSetting: (options: OpenSettingOptions) => Promise<OpenSettingRetOptions>;
+  getSetting: (options: OpenSettingOptions) => Promise<GetSettingRetOptions>;
 }

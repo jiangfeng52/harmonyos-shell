@@ -3,30 +3,34 @@ import hilog from '@ohos.hilog';
 import window from '@ohos.window';
 import display from '@ohos.display'
 import { AdvancedAPI } from '@ohos/advanced-api';
-import { HMSClient } from "@hms-core/framework-base-ohos";
+import { GlobalThis } from '../util/GlobalThis';
+import bundleManager from '@ohos.bundle.bundleManager';
+import { BusinessError } from '@ohos.base';
+import { SysBarProps } from '../adapter/interface';
+import Want from '@ohos.app.ability.Want';
 
 const url: string = "resource://rawfile/index.html";
-const storage = new LocalStorage({ url });
+const storage = new LocalStorage(url);
 
 export default class EntryAbility extends UIAbility {
-  handleWantInfo(want) {
+  handleWantInfo(want: Want) {
     const params = want.parameters;
     const pagePath = params?.path ? `${params.path}${params?.query ? '?' + params.query : ''}` : '';
     storage.setOrCreate('launchOptions', JSON.stringify({
       path: params?.path || '',
       query: params?.query || '',
       appId: params?.['ohos.aafwk.param.callerBundleName'] || '',
-      extraData: params?.extraData || {},
+      extraData: params?.extraData || ({} as Record<string, Object>),
     }));
     if (pagePath) {
       storage.setOrCreate('url', `${url}#${pagePath}`);
     }
   }
 
-  onCreate(want, launchParam) {
+  onCreate(want: Want, launchParam: object) {
     hilog.info(0x0000, 'testTag', '%{public}s', 'Ability onCreate');
     AdvancedAPI.init(this.context);
-    HMSClient.attachAbilityContext(this.context);
+    GlobalThis.getInstance().setContext('context', this.context);
     storage.setOrCreate('url', url);
     this.handleWantInfo(want);
   }
@@ -35,7 +39,7 @@ export default class EntryAbility extends UIAbility {
     hilog.info(0x0000, 'testTag', '%{public}s', 'Ability onDestroy');
   }
 
-  onNewWant(want, launchParam) {
+  onNewWant(want: Want, launchParam: object) {
     this.handleWantInfo(want);
   }
 
@@ -73,7 +77,7 @@ export default class EntryAbility extends UIAbility {
   }
 
   setSystemBarProperties(windowClass: window.Window) {
-    const sysBarProps = {
+    const sysBarProps: SysBarProps = {
       statusBarColor: '#00FFFFFF',
       statusBarContentColor: '#000000'
     };
@@ -86,11 +90,27 @@ export default class EntryAbility extends UIAbility {
     });
   }
 
+  storageBundleInfoPermissions() {
+    let bundleFlags = bundleManager.BundleFlag.GET_BUNDLE_INFO_WITH_REQUESTED_PERMISSION;
+    try {
+      bundleManager.getBundleInfoForSelf(bundleFlags).then((data) => {
+        const permissionInfos = data.reqPermissionDetails;
+        storage.setOrCreate('permissionInfos', permissionInfos);
+        hilog.info(0x0000, 'testTag', 'getBundleInfoForSelf successfully. Data: %{public}s', JSON.stringify(data));
+      }).catch((err: BusinessError) => {
+        hilog.error(0x0000, 'testTag', 'getBundleInfoForSelf failed. Cause: %{public}s', err.message);
+      });
+    } catch (err) {
+      let message = (err as BusinessError).message;
+      hilog.error(0x0000, 'testTag', 'getBundleInfoForSelf failed: %{public}s', message);
+    }
+  }
+
   onWindowStageCreate(windowStage: window.WindowStage) {
     // Main window is created, set main page for this ability
     hilog.info(0x0000, 'testTag', '%{public}s', 'Ability onWindowStageCreate');
 
-    let windowClass = null;
+    let windowClass: window.Window | null = null;
     windowStage.getMainWindow((err, data) => {
       if (err.code) {
         console.error('Failed to obtain the main window. Cause: ' + JSON.stringify(err));
@@ -112,6 +132,7 @@ export default class EntryAbility extends UIAbility {
       }
       hilog.info(0x0000, 'testTag', 'Succeeded in loading the content. Data: %{public}s', JSON.stringify(data) ?? '');
     });
+    this.storageBundleInfoPermissions();
   }
 
   onWindowStageDestroy() {
