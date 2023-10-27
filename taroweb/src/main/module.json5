@@ -1,0 +1,9 @@
+{
+  "module": {
+    "name": "taroweb",
+    "type": "har",
+    "deviceTypes": [
+      "default"
+    ]
+  }
+}

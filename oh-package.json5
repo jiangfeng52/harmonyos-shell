@@ -1,11 +1,9 @@
 {
   "license": "ISC",
-  "devDependencies": {
-  },
+  "devDependencies": {},
   "name": "advancedtemplete",
   "description": "example description",
   "repository": {},
   "version": "1.0.0",
-  "dependencies": {
-  }
+  "dependencies": {}
 }
