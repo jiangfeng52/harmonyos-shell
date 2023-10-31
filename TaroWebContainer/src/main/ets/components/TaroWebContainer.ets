@@ -24,7 +24,7 @@ import { NaviController } from '../controllers/NaviController';
 import { ApiAdapter } from '../inject_adapter/ApiAdapter'
 import { NativeInject  } from '../inject_adapter/NativeInject';
 import { LaunchOptions } from '../interfaces/LaunchOptions';
-import { InjectObject } from '../interfaces/InjectObject';
+import { InjectObject, MenuButtonOptions } from '../interfaces/InjectObject';
 import { setFullScreen, setSystemBarProperties, getWindowWidth, getSystemBarHeight } from '../utils/WindowUtil';
 import { GlobalThis } from '../utils/GlobalThis';
 import { getBundleInfoPermissions } from '../utils/PermissionMapScopeUtil';
@@ -70,6 +70,8 @@ export struct TaroWebContainer {
   // 启动参数
   private launchOptions: string = '';
 
+  capsuleOptions: MenuButtonOptions = { width: 50, height: this.naviController.titleHeight, marginRight: 16 };
+
   build() {
     Stack({ alignContent: Alignment.TopEnd }) {
       TaroWeb({
@@ -85,9 +87,9 @@ export struct TaroWebContainer {
       })
       if(this.showCapsule) {
         Image($r("app.media.capsule"))
-          .margin({ top: (this.isFullScreen ? this.systemBarHeight : 0) + this.naviController.titleHeight - 25, right: 16 })
+          .margin({ top: (this.isFullScreen ? this.systemBarHeight : 0) + this.capsuleOptions.height - 25, right: this.capsuleOptions.marginRight })
           .fillColor(this.naviController.barFrontColor)
-          .width(50)
+          .width(this.capsuleOptions.width)
           .height(25)
           .borderRadius(10)
           .borderColor('#40cccccc')
@@ -115,7 +117,7 @@ export struct TaroWebContainer {
     // 创建高阶API适配器，合并注入的对象
     this.adapter = new ApiAdapter();
     this.adapter.setWebController(this.routerController.webController)
-    const nativeInject = new NativeInject();
+    const nativeInject = new NativeInject(this.capsuleOptions);
     this.adapter.mergeInjectObj(nativeInject.buildInjectObj());
     this.injectObj && this.adapter.mergeInjectObj(this.injectObj);
 
@@ -128,8 +130,8 @@ export struct TaroWebContainer {
     window.getLastWindow(context).then((windowClass) => {
       setSystemBarProperties(windowClass);
       this.isFullScreen && setFullScreen(windowClass);
-      this.systemBarHeight = getSystemBarHeight(windowClass);
-      this.naviController.systemBarHeight = this.isFullScreen ? this.systemBarHeight : 0;
+      this.systemBarHeight = this.isFullScreen ? getSystemBarHeight(windowClass) : 0;
+      this.naviController.systemBarHeight = this.systemBarHeight;
       nativeInject.setSystemBarHeight(this.systemBarHeight);
       nativeInject.setWindowWidth(getWindowWidth(windowClass));
       this.adapter!.setLaunchOptions(this.launchOptions);

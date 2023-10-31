@@ -39,12 +39,15 @@ export class NativeInject {
   private windowWidth: number;
   // 权限信息
   private permissionInfo: bundleManager.ReqPermissionDetail[];
+  // 胶囊的尺寸
+  private capsuleOptions: MenuButtonOptions;
 
-  constructor() {
+  constructor(capsuleOptions: MenuButtonOptions) {
     this.naviController = new NaviController();
     this.systemBarHeight = 0;
     this.windowWidth = 0;
     this.permissionInfo = [];
+    this.capsuleOptions = capsuleOptions
   }
 
   public setNaviController(controller: NaviController) {
@@ -89,14 +92,13 @@ export class NativeInject {
         this.naviController.loading = false;
       },
       getMenuButtonBoundingClientRect: () => {
-        const menuButton: MenuButtonOptions = { width: 0, height: this.naviController.titleHeight, marginRight: 16 };
         return {
-          left: this.windowWidth - menuButton.marginRight - menuButton.width,
-          right: this.windowWidth - menuButton.marginRight,
+          left: this.windowWidth - this.capsuleOptions.marginRight - this.capsuleOptions.width,
+          right: this.windowWidth - this.capsuleOptions.marginRight,
           top: this.systemBarHeight,
-          bottom: this.systemBarHeight + menuButton.height,
-          width: menuButton.width,
-          height: menuButton.height,
+          bottom: this.systemBarHeight + this.capsuleOptions.height,
+          width: this.capsuleOptions.width,
+          height: this.capsuleOptions.height,
         }
       },
       navigateToMiniProgram: (options) => {
