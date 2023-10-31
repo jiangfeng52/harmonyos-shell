@@ -1,0 +1,10 @@
+{
+  "license": "ISC",
+  "devDependencies": {},
+  "name": "entry",
+  "description": "HarmonyOS shell for Taro mpharmony project",
+  "version": "1.0.0",
+  "dependencies": {
+    "package": "file:../TaroWebContainer/build/default/outputs/default/TaroWebContainer.har"
+  }
+}

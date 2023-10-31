@@ -7,4 +7,5 @@ oh_modules
 /.clangd
 /.clang-format
 /.clang-tidy
-/oh-package-lock.json5
+oh-package-lock.json5
+hvigor-wrapper.js

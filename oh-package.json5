@@ -1,8 +1,10 @@
 {
   "license": "ISC",
-  "devDependencies": {},
-  "name": "advancedtemplete",
-  "description": "example description",
+  "devDependencies": {
+    "@ohos/hypium": "1.0.6"
+  },
+  "name": "TaroHarmonyosShell",
+  "description": "A customized TaroWebContainer implementation designed to provide an running environment for the Taro project\u0027s mpharmony platform product",
   "repository": {},
   "version": "1.0.0",
   "dependencies": {}

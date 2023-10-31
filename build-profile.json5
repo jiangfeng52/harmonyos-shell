@@ -1,5 +1,7 @@
 {
   "app": {
+    "signingConfigs": [
+    ],
     "products": [
       {
         "name": "default",
@@ -9,26 +11,12 @@
         "targetSdkVersion": "4.0.0(10)",
         "runtimeOS": "HarmonyOS"
       }
-    ],
-    "signingConfigs": [
-      {
-        "name": "default",
-        "material": {
-          "certpath": "/Users/mac/.ohos/config/openharmony/auto_ohos_default_harmonyos-shell_com.advanced.temp.cer",
-          "storePassword": "0000001B4D70A6135B823272F1AFB842DB97ED0D694EAF94B3A7386C180B9123A8E0FF25FBA2F82DAE1CDE",
-          "keyAlias": "debugKey",
-          "keyPassword": "0000001B21192AFE15D24D9F978088D0D89776B559DE4C15AC35F8C5DCF46CB86E32E78E447251280FA8C3",
-          "profile": "/Users/mac/.ohos/config/openharmony/auto_ohos_default_harmonyos-shell_com.advanced.temp.p7b",
-          "signAlg": "SHA256withECDSA",
-          "storeFile": "/Users/mac/.ohos/config/openharmony/auto_ohos_default_harmonyos-shell_com.advanced.temp.p12"
-        }
-      }
     ]
   },
   "modules": [
     {
       "name": "entry",
-      "srcPath": "./entry",
+      "srcPath": "./Sample",
       "targets": [
         {
           "name": "default",
@@ -39,8 +27,8 @@
       ]
     },
     {
-      "name": "taroweb",
-      "srcPath": "./taroweb"
+      "name": "TaroWebContainer",
+      "srcPath": "./TaroWebContainer"
     }
   ]
 }

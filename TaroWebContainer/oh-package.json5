@@ -1,0 +1,12 @@
+{
+  "license": "Apache-2.0",
+  "devDependencies": {},
+  "author": "",
+  "name": "TaroWebContainer",
+  "description": "Please describe the basic information.",
+  "main": "Index.ets",
+  "version": "1.0.0",
+  "dependencies": {
+    "@ohos/advanced-api": "file:libs/advanced-api-1.1.4.tgz"
+  }
+}
