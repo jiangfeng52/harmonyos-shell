@@ -1,19 +1,19 @@
 import UIAbility from '@ohos.app.ability.UIAbility';
-import hilog from '@ohos.hilog';
 import window from '@ohos.window';
 import Want from '@ohos.app.ability.Want';
+import { wbLogger } from 'web-container';
 
-
+const ABILITY_TAG = 'EntryAbility';
 const storage = new LocalStorage();
 
 export default class EntryAbility extends UIAbility {
   onCreate(want: Want) {
-    hilog.info(0x0000, 'testTag', '%{public}s', 'Ability onCreate');
+    wbLogger.info(ABILITY_TAG, '%{public}s', 'Ability onCreate');
     storage.setOrCreate('want', want);
   }
 
   onDestroy() {
-    hilog.info(0x0000, 'testTag', '%{public}s', 'Ability onDestroy');
+    wbLogger.info(ABILITY_TAG, '%{public}s', 'Ability onDestroy');
   }
 
   onNewWant(want: Want) {
@@ -22,36 +22,36 @@ export default class EntryAbility extends UIAbility {
 
   onWindowStageCreate(windowStage: window.WindowStage) {
     // Main window is created, set main page for this ability
-    hilog.info(0x0000, 'testTag', '%{public}s', 'Ability onWindowStageCreate');
+    wbLogger.info(ABILITY_TAG, 'Ability onWindowStageCreate');
 
-     windowStage.getMainWindow((err, data) => {
+    windowStage.getMainWindow((err, data) => {
       if (err.code) {
-        console.error('Failed to obtain the main window. Cause: ' + JSON.stringify(err));
+        wbLogger.error(ABILITY_TAG, `Failed to obtain the main window. Cause: ${JSON.stringify(err)}`);
         return;
       }
-      console.info('Succeeded in obtaining the main window. Data: ' + JSON.stringify(data));
+      wbLogger.info(ABILITY_TAG, 'Succeeded in obtaining the main window. Data');
     })
     windowStage.loadContent('pages/Index', storage, (err, data) => {
       if (err.code) {
-        hilog.error(0x0000, 'testTag', 'Failed to load the content. Cause: %{public}s', JSON.stringify(err) ?? '');
+        wbLogger.error(ABILITY_TAG, 'testTag', 'Failed to load the content. Cause: %{public}s', JSON.stringify(err) ?? '');
         return;
       }
-      hilog.info(0x0000, 'testTag', 'Succeeded in loading the content. Data: %{public}s', JSON.stringify(data) ?? '');
+      wbLogger.info(ABILITY_TAG, 'Succeeded in loading the content. Data: %{public}s', JSON.stringify(data) ?? '');
     });
   }
 
   onWindowStageDestroy() {
     // Main window is destroyed, release UI related resources
-    hilog.info(0x0000, 'testTag', '%{public}s', 'Ability onWindowStageDestroy');
+    wbLogger.info(ABILITY_TAG, '%{public}s', 'Ability onWindowStageDestroy');
   }
 
   onForeground() {
     // Ability has brought to foreground
-    hilog.info(0x0000, 'testTag', '%{public}s', 'Ability onForeground');
+    wbLogger.info(ABILITY_TAG, '%{public}s', 'Ability onForeground');
   }
 
   onBackground() {
     // Ability has back to background
-    hilog.info(0x0000, 'testTag', '%{public}s', 'Ability onBackground');
+    wbLogger.info(ABILITY_TAG, '%{public}s', 'Ability onBackground');
   }
 }

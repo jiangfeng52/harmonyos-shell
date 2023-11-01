@@ -14,11 +14,12 @@
  */
 import WebView from '@ohos.web.webview'
 import { as } from '@ohos/advanced-api';
+import { wbLogger } from '../utils/Logger';
 
 /**
  * 注入（API）对象适配器
  */
-
+const ADAPTER_TAG = 'ApiAdapter'
 const METHOD_LIST: Array<string> = [
   'base64ToArrayBuffer',
   'arrayBufferToBase64',
@@ -338,16 +339,16 @@ export class ApiAdapter {
       }
     }
     this.blockMap.set(callbackId, new Date().getTime());
-    console.info(`[ADSAPI] callbackId:${callbackId}`)
-    console.info(`[ADSAPI] res: ${resStrTmp}`)
+    wbLogger.debug(ADAPTER_TAG, `callbackId:${callbackId}`)
+    wbLogger.debug(ADAPTER_TAG, `res: ${resStrTmp}`)
     const that = this
     that.sendTaskPromise = that.sendTaskPromise.then(() => {
       return that.controller.runJavaScript(`receiveTask(${callbackId},${resStrTmp})`)
         .then(result => {
-          console.info(`[ADSAPI] The receiveTask() return value is: ${result}`)
+          wbLogger.info(ADAPTER_TAG, `The receiveTask() return value is: ${result}`)
           return result
         }).catch(error => {
-          console.info(`[ADSAPI] run JavaScript error: ` + JSON.stringify(error))
+          wbLogger.error(ADAPTER_TAG, `run JavaScript error: ${JSON.stringify(error)}`)
           return JSON.stringify(error)
         })
     })
@@ -367,7 +368,7 @@ export class ApiAdapter {
     Object.defineProperty(as, 'sendToAs', {
       get: () => {
         return (asObjectId, type, method, ...args) => {
-          console.info(`[ADSAPI] asObjectId ${asObjectId} ${method}`)
+          wbLogger.debug(ADAPTER_TAG, `asObjectId ${asObjectId} ${method}`)
           const asObject = that.asObjectMap.get(asObjectId)
           if (type === 'get_function') {
             if (args) {
@@ -413,7 +414,7 @@ export class ApiAdapter {
             }
           } else if (type === 'get_value') {
             const res = asObject[method]
-            console.log(`[ADSAPI] ${method} : ${res}`)
+            wbLogger.debug(ADAPTER_TAG, `${method} : ${res}`)
             return res
           } else if (type === 'set') {
             return asObject[method] = args[0]
@@ -432,7 +433,6 @@ export class ApiAdapter {
 
     const proxy = new Proxy(as, {
       get(target, property) {
-        console.info('[ADSAPI] methodName:' + property.toString());
         if (property == 'sendToAs' || property == 'initCustomUni') {
           return target[property]
         }

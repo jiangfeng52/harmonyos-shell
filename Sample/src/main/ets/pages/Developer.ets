@@ -1,4 +1,4 @@
-import { BaseDeveloper } from 'TaroWebContainer';
+import { BaseDeveloper } from 'web-container';
 
 PersistentStorage.persistProp('entryDomain', 'http://10.253.108.182:10086/')
 PersistentStorage.persistProp('useBuildIn', true)

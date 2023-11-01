@@ -15,6 +15,9 @@
 
 import window from '@ohos.window';
 import display from '@ohos.display';
+import { wbLogger } from '../utils/Logger';
+
+const WINDOW_UTIL = 'WindowUtil';
 
 /**
  * 应用界面信息设置和获取实用函数
@@ -23,9 +26,9 @@ import display from '@ohos.display';
 export function setFullScreen(windowClass: window.Window) {
   windowClass.setWindowLayoutFullScreen(true, (err) => {
     if (err.code) {
-      console.error('[TaroWeb] Failed to set the window layout to full-screen mode. Cause:' + JSON.stringify(err));
+      wbLogger.error(WINDOW_UTIL, `Failed to set the window layout to full-screen mode. Cause: ${JSON.stringify(err)}`);
     } else {
-      console.info('[TaroWeb]  Succeeded in setting the window layout to full-screen mode.');
+      wbLogger.info(WINDOW_UTIL, 'Succeeded in setting the window layout to full-screen mode.');
     }
   });
 }
@@ -37,10 +40,10 @@ export function setSystemBarProperties(windowClass: window.Window, contentColor?
   };
   windowClass.setWindowSystemBarProperties(sysBarProps, (err) => {
     if (err.code) {
-      console.error('[TaroWeb] Failed to set the system bar properties. Cause: ' + JSON.stringify(err));
+      wbLogger.error(WINDOW_UTIL, `Failed to set the system bar properties. Cause: ${JSON.stringify(err)}}`);
       return;
     }
-    console.info('[TaroWeb] Succeeded in setting the system bar properties.');
+    wbLogger.info(WINDOW_UTIL, 'Succeeded in setting the system bar properties.');
   });
 }
 
@@ -50,7 +53,7 @@ export function getWindowWidth(windowClass: window.Window) {
     const displayInfo = display.getDefaultDisplaySync();
     return Math.round(windowWidth / displayInfo.densityPixels);
   } catch (error) {
-    console.error('[TaroWeb] Failed to get window width:' + JSON.stringify(error));
+    wbLogger.error(WINDOW_UTIL, `Failed to get window width: ${JSON.stringify(error)}`);
     return 40;
   }
 }
@@ -62,7 +65,7 @@ export function getSystemBarHeight(windowClass: window.Window) {
     const avoidAreaHeight = Math.round(systemAvoidArea.topRect.height / displayInfo.densityPixels);
     return avoidAreaHeight;
   } catch (error) {
-    console.error('[TaroWeb] Failed to get systemBar height:' + JSON.stringify(error));
+    wbLogger.error(WINDOW_UTIL, `Failed to get systemBar height: ${JSON.stringify(error)}`);
     return 40;
   }
 }

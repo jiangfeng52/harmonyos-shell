@@ -20,6 +20,9 @@ import common from '@ohos.app.ability.common';
 import Want from '@ohos.app.ability.Want';
 import { GlobalThis } from './GlobalThis';
 import { AuthSetting, PermissionInfo } from '../interfaces/InjectObject';
+import { wbLogger } from '../utils/Logger';
+
+const PERMISSION_UTIL = 'PermissionUtil';
 
 /**
  * 应用权限处理实用函数
@@ -52,7 +55,7 @@ let bundleUsedScopeMap: Map<string, boolean> = new Map<string, boolean>([]);
 
 export async function getBundleWxScopeList(permissions: Array<PermissionInfo>): Promise<BundleScopeResult> {
   if (Array.isArray(permissions) && permissions.length === 0) {
-    console.error('permissions 数组为空');
+    wbLogger.error(PERMISSION_UTIL, 'permissions 数组为空');
     return { allScope: allScopeUseMap, bundleScope: bundleUsedScopeMap };
   }
 
@@ -60,8 +63,8 @@ export async function getBundleWxScopeList(permissions: Array<PermissionInfo>): 
     for (const entry of ohosMappingWxMap.entries()) {
       const key = entry[0];
       const value = entry[1];
-      console.log(`Key: ${key}`);
-      console.log(`Value: ${value}`);
+      wbLogger.debug(PERMISSION_UTIL, `Key: ${key}`);
+      wbLogger.debug(PERMISSION_UTIL, `Value: ${value}`);
       // 判断权限组中是否包含子权限
       if (!value.includes(permissionObj.name)) {
         continue;
@@ -101,7 +104,7 @@ async function checkAccessToken(permission: Permissions): Promise<abilityAccessC
     tokenId = appInfo.accessTokenId;
   } catch (error) {
     let err: BusinessError = error as BusinessError;
-    console.error(`Failed to get bundle info for self. Code is ${err.code}, message is ${err.message}`);
+    wbLogger.error(PERMISSION_UTIL, `Failed to get bundle info for self. Code is ${err.code}, message is ${err.message}`);
   }
 
   // 校验应用是否被授予权限
@@ -109,7 +112,7 @@ async function checkAccessToken(permission: Permissions): Promise<abilityAccessC
     grantStatus = await atManager.checkAccessToken(tokenId, permission);
   } catch (error) {
     let err: BusinessError = error as BusinessError;
-    console.error(`Failed to check access token. Code is ${err.code}, message is ${err.message}`);
+    wbLogger.error(PERMISSION_UTIL, `Failed to check access token. Code is ${err.code}, message is ${err.message}`);
   }
   return grantStatus;
 }
@@ -126,7 +129,7 @@ export function openPermissionsInSystemSettings(): void {
     }
     context.startAbility(wantInfo)
   }).catch((err: BusinessError) => {
-    console.error(`Failed to get bundleInfo when openPermissionsInSystemSettings. Message is ${err.message}`);
+    wbLogger.error(PERMISSION_UTIL, `Failed to get bundleInfo when openPermissionsInSystemSettings. Message is ${err.message}`);
   })
 
 }
@@ -135,7 +138,7 @@ export function openPermissionsInSystemSettings(): void {
 export function getBundleUsedPermission(scopeAll: AuthSetting, bundleAll: Map<string, boolean>): BundleScopeResult {
   Object.keys(scopeAll).forEach((key) => {
     const value = scopeAll[key as keyof AuthSetting];
-    console.log(key, value);
+    wbLogger.debug(PERMISSION_UTIL, `getBundleUsedPermission: ${key}, ${value}`);
     // 如果bundleScope存在权限，表示权限有被使用
     if (bundleAll.has(key)) {
       scopeAll[key] = bundleAll.get(key);
@@ -152,15 +155,15 @@ export function getBundleInfoPermissions(): Promise<bundleManager.ReqPermissionD
     try {
       bundleManager.getBundleInfoForSelf(bundleFlags).then((data) => {
         const permissionInfo = data.reqPermissionDetails;
-        console.log(`[TaroWeb] getBundleInfoForSelf successfully. Data: ${JSON.stringify(data)}`);
+        wbLogger.info(PERMISSION_UTIL, `getBundleInfoForSelf successfully. Data: ${JSON.stringify(data)}`);
         resolve(permissionInfo);
       }).catch((err: BusinessError) => {
-        console.log(`[TaroWeb] getBundleInfoForSelf failed. Cause: ${err.message}}`);
+        wbLogger.error(PERMISSION_UTIL, `getBundleInfoForSelf failed. Cause: ${err.message}}`);
         resolve([]);
       });
     } catch (err) {
       let message = (err as BusinessError).message;
-      console.log(`[TaroWeb] getBundleInfoForSelf failed. Cause: ${message}}`);
+      wbLogger.error(PERMISSION_UTIL, `getBundleInfoForSelf failed. Cause: ${message}}`);
       resolve([]);
     }
   });

@@ -23,8 +23,10 @@ import {
   getBundleWxScopeList,
   openPermissionsInSystemSettings
 } from '../utils/PermissionMapScopeUtil';
-import { NavigationBarData } from '../components/NavigationBar'
+import { NavigationBarData } from '../components/NavigationBar';
+import { wbLogger } from '../utils/Logger';
 
+const NATIVE_TAG = 'NativeInject';
 
 /**
  * Native注入类，实现一些跟壳工程比较紧密关联的Taro API
@@ -65,7 +67,7 @@ export class NativeInject {
   public buildInjectObj(): InnerInjectObj {
     return {
       setNavigationBarColor: (options) => {
-        console.info(`[ADSAPI] setNavigationBarColor`)
+        wbLogger.info(NATIVE_TAG, `setNavigationBarColor: ${JSON.stringify(options || {})}`)
         this.navigationBarData.barColor = options.backgroundColor ?? this.navigationBarData.barColor;
         this.navigationBarData.barFrontColor = options.frontColor ?? this.navigationBarData.barFrontColor;
         if (options.animation) {
@@ -103,7 +105,7 @@ export class NativeInject {
         // - /pages/api/framework/index?paramA=good
         return new Promise((resolve, reject) => {
           resolve({errMsg: ''});
-          console.log('[TaroWeb] navigateToMiniProgram options:', JSON.stringify(options));
+          wbLogger.info(NATIVE_TAG, 'navigateToMiniProgram options:' + JSON.stringify(options));
           const entryAbility = 'EntryAbility';
           let abilityName = entryAbility;
           let path = '';
@@ -125,7 +127,7 @@ export class NativeInject {
               query,
             },
           };
-          console.log('[TaroWeb] navigateToMiniProgram', JSON.stringify(wantInfo));
+          wbLogger.debug(NATIVE_TAG, `navigateToMiniProgram: ${JSON.stringify(wantInfo)}`);
           try {
             const context = getContext(this) as common.UIAbilityContext;
             context.startAbility(wantInfo).then(() => {
@@ -134,7 +136,7 @@ export class NativeInject {
               reject({ errMsg: 'invalid appid or path scheme' }  as ErrorMsg);
             })
           } catch (paramError) {
-            console.log('[TaroWeb] navigateToMiniProgram failed:' + JSON.stringify(paramError));
+            wbLogger.warn(NATIVE_TAG, `navigateToMiniProgram failed: ${JSON.stringify(paramError)}`);
             reject({
               errMsg: `code: ${(paramError as BusinessError).code}, message ${(paramError as BusinessError).message}`
             } as ErrorMsg
@@ -159,7 +161,7 @@ export class NativeInject {
             openPermissionsInSystemSettings();
             return resolve({ authSetting: bundleUsedScope.allScope, errMsg: `${apiName}:ok` });
           } catch (paramError) {
-            console.log('[Taro Web] openSetting' + JSON.stringify(paramError));
+            wbLogger.warn(NATIVE_TAG, `openSetting: ${JSON.stringify(paramError)}`);
             return reject(
               {
                 errMsg: `${apiName}:fail error code: ${(paramError as BusinessError).code} ${(paramError as BusinessError).message}`

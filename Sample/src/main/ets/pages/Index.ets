@@ -1,6 +1,6 @@
-import webView from '@ohos.web.webview'
-import Want from '@ohos.app.ability.Want'
-import { TaroWebContainer, InjectObject, HostPageState, TaroWebController } from 'TaroWebContainer';
+import webView from '@ohos.web.webview';
+import Want from '@ohos.app.ability.Want';
+import { TaroWebContainer, InjectObject, HostPageState, TaroWebController, Logger, LoggerLevel } from 'web-container';
 
 let storage = LocalStorage.getShared() // 获取共享的本地存储对象
 
@@ -33,6 +33,7 @@ struct TaroMpharmonySample {
 
   aboutToAppear() {
     webView.WebviewController.setWebDebuggingAccess(true);
+    Logger.setLogLevel(LoggerLevel.LOG_DEBUG);
   }
 
   onPageShow() {
@@ -41,7 +42,6 @@ struct TaroMpharmonySample {
       this.taroWebController.loadUrl(this.entryUrl());
       this.refresh = false;
     }
-
   }
 
   onPageHide() {

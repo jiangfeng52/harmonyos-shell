@@ -1,5 +1,5 @@
 import resourceManager from '@ohos.resourceManager';
-import { Logger } from './Logger';
+import { wbLogger } from './Logger';
 
 export class RawUtils {
   static rawfileExist(file: string): boolean{
@@ -10,7 +10,7 @@ export class RawUtils {
         return true
       }
     } catch (e) {
-      Logger.log(`rawfileExist ${file} did't internal ${e}`)
+      wbLogger.warn('RawUtils', `rawfileExist ${file} did't internal ${e}`)
     }
     return false
   }
