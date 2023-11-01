@@ -24,7 +24,11 @@ struct TaroMpharmonySample {
   };
 
   onBackPress() {
-    this.taroWebController.backward();
+    if (this.taroWebController.accessBackward()) {
+      this.taroWebController.backward();
+      return true;
+    }
+    return false;
   }
 
   aboutToAppear() {
