@@ -17,13 +17,13 @@ import common from '@ohos.app.ability.common'
 import { BusinessError } from '@ohos.base'
 import Want from '@ohos.app.ability.Want'
 import bundleManager from '@ohos.bundle.bundleManager';
-import { NaviController } from '../controllers/NaviController';
 import { InnerInjectObj, MenuButtonOptions, ErrorMsg } from '../interfaces/InjectObject';
 import {
   getBundleUsedPermission,
   getBundleWxScopeList,
   openPermissionsInSystemSettings
 } from '../utils/PermissionMapScopeUtil';
+import { NavigationBarData } from '../components/NavigationBar'
 
 
 /**
@@ -32,7 +32,7 @@ import {
 
 export class NativeInject {
   // 用于更新控制导航栏
-  private naviController: NaviController;
+  private navigationBarData: NavigationBarData;
   // 系统状态栏高度，包含avoid区域高度
   private systemBarHeight: number;
   // 应用宽度
@@ -42,16 +42,12 @@ export class NativeInject {
   // 胶囊的尺寸
   private capsuleOptions: MenuButtonOptions;
 
-  constructor(capsuleOptions: MenuButtonOptions) {
-    this.naviController = new NaviController();
+  constructor(navigationBarData: NavigationBarData, capsuleOptions: MenuButtonOptions) {
+    this.navigationBarData = navigationBarData;
     this.systemBarHeight = 0;
     this.windowWidth = 0;
     this.permissionInfo = [];
     this.capsuleOptions = capsuleOptions
-  }
-
-  public setNaviController(controller: NaviController) {
-    this.naviController = controller;
   }
 
   public setSystemBarHeight(systemBarHeight: number) {
@@ -70,10 +66,10 @@ export class NativeInject {
     return {
       setNavigationBarColor: (options) => {
         console.info(`[ADSAPI] setNavigationBarColor`)
-        this.naviController.barColor = options.backgroundColor ?? this.naviController.barColor;
-        this.naviController.barFrontColor = options.frontColor ?? this.naviController.barFrontColor;
+        this.navigationBarData.barColor = options.backgroundColor ?? this.navigationBarData.barColor;
+        this.navigationBarData.barFrontColor = options.frontColor ?? this.navigationBarData.barFrontColor;
         if (options.animation) {
-          this.naviController.animationDuration = options.animation.duration ?? 0;
+          this.navigationBarData.animationDuration = options.animation.duration ?? 0;
           const timingFuncMap = new Map([
             ['linear', Curve.Linear],
             ['easeIn', Curve.EaseIn],
@@ -81,15 +77,15 @@ export class NativeInject {
             ['easeInOut', Curve.EaseInOut],
           ])
           if (options.timingFunc && timingFuncMap.has(options.timingFunc)) {
-            this.naviController.animationCurve = Number(timingFuncMap.get(options.timingFunc) ?? Curve.Linear);
+            this.navigationBarData.animationCurve = Number(timingFuncMap.get(options.timingFunc) ?? Curve.Linear);
           }
         }
       },
       showNavigationBarLoading: () => {
-        this.naviController.loading = true;
+        this.navigationBarData.loading = true;
       },
       hideNavigationBarLoading: () => {
-        this.naviController.loading = false;
+        this.navigationBarData.loading = false;
       },
       getMenuButtonBoundingClientRect: () => {
         return {
@@ -147,10 +143,10 @@ export class NativeInject {
         })
       },
       setNavigationStyle: (style, textStyle, backgroundColor) => {
-        this.naviController.visible = style !== 'custom';
-        this.naviController.barFrontColor = textStyle === 'white' ? '#ffffff' : '#000000';
-        this.naviController.barColor = backgroundColor;
-        this.naviController.animationDuration = 0;
+        this.navigationBarData.visible = style !== 'custom';
+        this.navigationBarData.barFrontColor = textStyle === 'white' ? '#ffffff' : '#000000';
+        this.navigationBarData.barColor = backgroundColor;
+        this.navigationBarData.animationDuration = 0;
       },
       openSetting: (options) => {
         const apiName: string = 'openSetting';

@@ -20,7 +20,6 @@ import bundleManager from '@ohos.bundle.bundleManager';
 import { AdvancedAPI } from '@ohos/advanced-api';
 import { NavigationBar } from './navigationbar';
 import { TaroWeb } from './taroweb';
-import { NaviController } from '../controllers/NaviController';
 import { ApiAdapter } from '../inject_adapter/ApiAdapter'
 import { NativeInject  } from '../inject_adapter/NativeInject';
 import { LaunchOptions } from '../interfaces/LaunchOptions';
@@ -29,8 +28,12 @@ import { setFullScreen, setSystemBarProperties, getWindowWidth, getSystemBarHeig
 import { GlobalThis } from '../utils/GlobalThis';
 import { getBundleInfoPermissions } from '../utils/PermissionMapScopeUtil';
 import { HostPageState } from '../interfaces/HostPageState';
-import { RouterController } from '../controllers/RouterController';
 import { RouterUtils } from '../utils/RouterUtils';
+import { TaroWebController } from './TaroWeb';
+import { NavigationBarData } from './NavigationBar';
+import router from '@ohos.router';
+
+// import { TaroWebController } from './TaroWeb';
 
 /**
  * TaroWebContainer组件，包含定制的Web组件和自定义导航栏
@@ -52,14 +55,16 @@ export struct TaroWebContainer {
   // 监听UIAbility的Want
   @Prop @Watch('onWantUpdated') want: Want;
   // 导航栏状态控制器
-  @State @Watch('onNavigationStateUpdated') naviController: NaviController = new NaviController();
+  @State navigationBarData: NavigationBarData = new NavigationBarData();
   // 记录web当前的url
   @State currentUrl: string = '';
   // 系统状态状态栏高度
   @State systemBarHeight: number = 0;
 
   // 路由控制器
-  @Provide routerController: RouterController = new RouterController();
+  // @Provide routerController: RouterController = new RouterController();
+  @Link taroWebController: TaroWebController;
+
   // 用户自定义的注入对象
   injectObj: InjectObject | undefined;
   // 是否全屏显示应用
@@ -70,7 +75,31 @@ export struct TaroWebContainer {
   // 启动参数
   private launchOptions: string = '';
 
-  capsuleOptions: MenuButtonOptions = { width: 50, height: this.naviController.titleHeight, marginRight: 16 };
+  capsuleOptions: MenuButtonOptions = { width: 50, height: this.navigationBarData.titleHeight, marginRight: 16 };
+
+  onTitleReceive = (title: string)=>{
+    this.navigationBarData.title = title
+    // this.naviController.title = title;
+    // this.naviController.canBackward =
+    this.navigationBarData.canBackward = this.taroWebController.accessBackward() // this.routerController.webController.accessBackward();
+  }
+  onRefreshAccessedHistory = ()=>{
+    this.navigationBarData.loading = false;
+    // this.naviController.loading = false;
+  }
+
+  onNavigationBarBackPressed = ()=>{
+    if (Number(router.getLength()) > 1) {
+      router.back();
+      return;
+    }
+
+    if(this.taroWebController.accessBackward()) {
+      console.log("[TaroWeb] backWord:webViewController")
+      this.taroWebController.backward();
+    }
+  }
+
 
   build() {
     Stack({ alignContent: Alignment.TopEnd }) {
@@ -78,23 +107,26 @@ export struct TaroWebContainer {
         src: this.currentUrl,
         currentUrl: this.currentUrl,
         apiAdapter: this.adapter,
-        naviController: this.naviController,
         useBuildIn: this.useBuildIn,
         entryDomain: this.entryDomain,
+        taroWebController: this.taroWebController,
+        onTitleReceive: this.onTitleReceive,
+        onRefreshAccessedHistory: this.onRefreshAccessedHistory
       })
       NavigationBar({
-        naviController: this.naviController,
+        navigationBarData: this.navigationBarData,
+        onBackPressed: this.onNavigationBarBackPressed
       })
       if(this.showCapsule) {
         Image($r("app.media.capsule"))
           .margin({ top: (this.isFullScreen ? this.systemBarHeight : 0) + this.capsuleOptions.height - 25, right: this.capsuleOptions.marginRight })
-          .fillColor(this.naviController.barFrontColor)
+          .fillColor(this.navigationBarData.barFrontColor)
           .width(this.capsuleOptions.width)
           .height(25)
           .borderRadius(10)
           .borderColor('#40cccccc')
           .borderWidth(1)
-          .backgroundColor(this.naviController.barFrontColor === '#ffffff' ? '#30000000' : '#9affffff')
+          .backgroundColor(this.navigationBarData.barFrontColor === '#ffffff' ? '#30000000' : '#9affffff')
           .objectFit(ImageFit.Contain)
           .onClick(() => {
             RouterUtils.pushUrlWithLog(this.capsulePage)
@@ -116,13 +148,13 @@ export struct TaroWebContainer {
 
     // 创建高阶API适配器，合并注入的对象
     this.adapter = new ApiAdapter();
-    this.adapter.setWebController(this.routerController.webController)
-    const nativeInject = new NativeInject(this.capsuleOptions);
+    this.adapter.setWebController(this.taroWebController.webController)
+    const nativeInject = new NativeInject(this.navigationBarData, this.capsuleOptions);
     this.adapter.mergeInjectObj(nativeInject.buildInjectObj());
     this.injectObj && this.adapter.mergeInjectObj(this.injectObj);
 
     // 注入对象的内部依赖更新
-    nativeInject.setNaviController(this.naviController);
+    // nativeInject.setNaviController(this.navigationBarData);
     getBundleInfoPermissions().then((permissions: bundleManager.ReqPermissionDetail[]) => {
       nativeInject.setPermissionInfo(permissions);
     })
@@ -131,50 +163,51 @@ export struct TaroWebContainer {
       setSystemBarProperties(windowClass);
       this.isFullScreen && setFullScreen(windowClass);
       this.systemBarHeight = this.isFullScreen ? getSystemBarHeight(windowClass) : 0;
-      this.naviController.systemBarHeight = this.systemBarHeight;
+      this.navigationBarData.systemBarHeight = this.systemBarHeight;
       nativeInject.setSystemBarHeight(this.systemBarHeight);
       nativeInject.setWindowWidth(getWindowWidth(windowClass));
       this.adapter!.setLaunchOptions(this.launchOptions);
-      this.adapter!.setNavigationBarHeight(this.systemBarHeight + this.naviController.titleHeight + this.naviController.paddingBottom);
+      this.adapter!.setNavigationBarHeight(this.systemBarHeight + this.navigationBarData.titleHeight + this.navigationBarData.paddingBottom);
     })
   }
 
   onPageStateUpdated(): void {
-    console.info(`[TaroWeb] Page event: ${this.pageState}`);
-    switch (this.pageState) {
-      case HostPageState.PageOnShow:
-        // 页面显示时web容器加载上次隐藏时记录的url
-        console.log('[TaroWeb] onPageShow');
-        try {
-          if (this.routerController.webController.getUrl() !== this.currentUrl) {
-            this.routerController.webController.loadUrl(this.currentUrl);
-          }
-        } catch (e) {
-          console.info("[TaroWeb] load url fail:" + JSON.stringify(e));
-        }
-      break;
-      case HostPageState.PageOnHide:
-        // 页面隐藏时记录webController的当前url
-        console.log('[TaroWeb] onPageHide getUrl:'+ this.routerController.webController.getUrl());
-        this.currentUrl = this.routerController.webController.getUrl();
-      break;
-      default:
-      break;
-    }
+    // console.info(`[TaroWeb] Page event: ${this.pageState}`);
+    // switch (this.pageState) {
+    //   case HostPageState.PageOnShow:
+    //     // 页面显示时web容器加载上次隐藏时记录的url
+    //     console.log(`[TaroWeb] onPageShow currentUrl=${this.currentUrl} webController=${this.routerController.webController.getUrl()}`);
+    //     try {
+    //       if (this.routerController.webController.getUrl() !== this.currentUrl) {
+    //         this.routerController.webController.loadUrl(this.currentUrl);
+    //       }
+    //     } catch (e) {
+    //       console.info("[TaroWeb] load url fail:" + JSON.stringify(e));
+    //     }
+    //   break;
+    //   case HostPageState.PageOnHide:
+    //     // 页面隐藏时记录webController的当前url
+    //     console.log('[TaroWeb] onPageHide getUrl:'+ this.routerController.webController.getUrl());
+    //     this.currentUrl = this.routerController.webController.getUrl();
+    //   break;
+    //   default:
+    //   break;
+    // }
   }
 
-  onNavigationStateUpdated() {
-    const context = getContext(this) as common.UIAbilityContext;
-    window.getLastWindow(context).then((windowClass) => {
-      setSystemBarProperties(windowClass, this.naviController.barFrontColor);
-    });
-  }
+  // onNavigationStateUpdated() {
+  //   const context = getContext(this) as common.UIAbilityContext;
+  //   window.getLastWindow(context).then((windowClass) => {
+  //     setSystemBarProperties(windowClass, this.naviController.barFrontColor);
+  //   });
+  // }
 
   onWantUpdated() {
     // UIAbility的onCreate传递want信息时，组件尚未创建，不会触发该函数
     // 该监听触发不先于页面的onPageShow事件，want中可能带有改变url的信息，所以这里主动调用loadUrl
     this.handleWantInfo(this.want);
-    this.routerController.webController.loadUrl(this.currentUrl);
+    this.taroWebController.loadUrl(this.currentUrl)
+    // this.routerController.webController.loadUrl(this.currentUrl);
   }
 
   handleWantInfo(want: Want) {

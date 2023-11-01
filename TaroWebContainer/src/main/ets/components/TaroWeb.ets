@@ -17,9 +17,42 @@ import File from '@ohos.file.fs';
 import { BusinessError } from '@ohos.base';
 import { ApiAdapter } from '../inject_adapter/ApiAdapter';
 import { switchInternalToHapSandBox } from '../utils/InternalPath';
-import { NaviController } from '../controllers/NaviController';
-import { RouterController } from '../controllers/RouterController';
 import { RawUtils } from '../utils/RawUtils'
+import webview from '@ohos.web.webview';
+
+@Observed
+export class TaroWebController {
+  public webController: webview.WebviewController;
+  public hasBindedTaroWeb: boolean;
+
+  constructor() {
+    this.webController = new webview.WebviewController();
+    this.hasBindedTaroWeb = false;
+  }
+
+  loadUrl(url: string | Resource, headers?: Array<webview.WebHeader>){
+    if (!this.hasBindedTaroWeb) {
+      return;
+    }
+    this.webController.loadUrl(url)
+    this.webController.accessBackward();
+  }
+
+  accessBackward(): boolean{
+    if (!this.hasBindedTaroWeb) {
+      return false;
+    }
+    return this.webController.accessBackward();
+  }
+
+  backward(){
+    if (!this.hasBindedTaroWeb) {
+      return ;
+    }
+    this.webController.backward();
+  }
+
+}
 
 /**
  * TaroWeb，定制化Web组件
@@ -27,17 +60,25 @@ import { RawUtils } from '../utils/RawUtils'
 @Component
 export struct TaroWeb {
   @Prop currentUrl: string;
-  @ObjectLink naviController: NaviController;
+  onTitleReceive?: (title: string) => void;
+  onRefreshAccessedHistory?: ()=>void;
   src: string = '';
 
   @Prop entryDomain: string;
   @Prop useBuildIn: boolean;
-
-  @Consume routerController: RouterController;
+  @ObjectLink taroWebController: TaroWebController;
   apiAdapter: ApiAdapter = new ApiAdapter();
 
+  aboutToAppear() {
+    this.taroWebController.hasBindedTaroWeb = true
+  }
+
+  aboutToDisappear() {
+    this.taroWebController.hasBindedTaroWeb = false
+  }
+
   build() {
-    Web({ src: this.src, controller: this.routerController.webController })
+    Web({ src: this.src, controller: this.taroWebController.webController })
       .fileAccess(true)
       .domStorageAccess(true)
       .mixedMode(MixedMode.All)
@@ -48,7 +89,7 @@ export struct TaroWeb {
         object: this.apiAdapter.getAdapterProxy(),
         name: 'as',
         methodList: this.apiAdapter.getMethodList() || [],
-        controller: this.routerController.webController,
+        controller: this.taroWebController.webController,
       })
       .onConsole((event) => {
         console.log('[TaroWeb] ' + event?.message.getMessage())
@@ -58,7 +99,7 @@ export struct TaroWeb {
       .horizontalScrollBarAccess(false)
       .onPageBegin(() => {
         try {
-           this.routerController.webController.runJavaScript(
+           this.taroWebController.webController.runJavaScript(
             this.apiAdapter.getRunJavaScript(),
             (error, result) => {
               if (error) {
@@ -108,13 +149,15 @@ export struct TaroWeb {
         return true
       })
       .onTitleReceive((event) => {
-        if (event && this.currentUrl !== event.title) {
-          this.naviController.title = event.title;
-        }
-        this.naviController.canBackward = this.routerController.webController.accessBackward();
+        this.onTitleReceive && this.onTitleReceive(event?.title ?? '')
+        // if (event && this.currentUrl !== event.title) {
+        //   this.naviController.title = event.title;
+        // }
+        // this.naviController.canBackward = this.routerController.webController.accessBackward();
       })
       .onRefreshAccessedHistory(() => {
-        this.naviController.loading = false;
+        this.onRefreshAccessedHistory && this.onRefreshAccessedHistory();
+        // this.naviController.loading = false;
       })
     }
 }

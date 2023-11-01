@@ -1,7 +1,5 @@
 import router from '@ohos.router'
-import { NavigationBar } from '../components/NavigationBar'
-import { NaviController } from '../controllers/NaviController';
-import { RouterController } from '../controllers/RouterController';
+import { NavigationBar, NavigationBarData } from '../components/NavigationBar'
 
 @Component
 export struct BaseDeveloper {
@@ -11,21 +9,22 @@ export struct BaseDeveloper {
   @Link useBuildIn:boolean;
   @State useBuildInState: boolean = this.useBuildIn
   @Link refresh:boolean;
-  @State naviController: NaviController = new NaviController();
+  // @State naviController: NaviController = new NaviController();
+  @State navigationBarData: NavigationBarData = new NavigationBarData();
 
-  @Provide routerController: RouterController = new RouterController();
+  // @Provide routerController: RouterController = new RouterController();
 
   aboutToAppear() {
-    this.naviController.visible = true;
-    this.naviController.title = this.title;
-    this.naviController.canBackward = true;
-    this.naviController.loading = false;
+    this.navigationBarData.visible = true;
+    this.navigationBarData.title = this.title;
+    this.navigationBarData.canBackward = true;
+    this.navigationBarData.loading = false;
   }
 
   build() {
     Column() {
       NavigationBar({
-        naviController: this.naviController,
+        navigationBarData: this.navigationBarData
       })
       Scroll(){
         Column({space: 10}){

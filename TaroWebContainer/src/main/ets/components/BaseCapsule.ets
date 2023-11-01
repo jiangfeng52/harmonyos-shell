@@ -1,27 +1,26 @@
 import { RouterUtils } from '../utils/RouterUtils';
-import { NavigationBar } from '../components/NavigationBar';
-import { NaviController } from '../controllers/NaviController';
-import { RouterController } from '../controllers/RouterController';
+import { NavigationBar, NavigationBarData } from '../components/NavigationBar';
 
 @Component
 export struct BaseCapsule {
   title: string = '账户设置'
 
-  @Provide routerController: RouterController = new RouterController();
-  @State naviController: NaviController = new NaviController();
+  // @Provide routerController: RouterController = new RouterController();
+  // @State naviController: NaviController = new NaviController();
+  @State navigationBarData: NavigationBarData = new NavigationBarData();
   @Prop targetPage: string = 'pages/Developer';
 
   aboutToAppear() {
-    this.naviController.visible = true;
-    this.naviController.title = this.title;
-    this.naviController.canBackward = true;
-    this.naviController.loading = false;
+    this.navigationBarData.visible = true;
+    this.navigationBarData.title = this.title;
+    this.navigationBarData.canBackward = true;
+    this.navigationBarData.loading = false;
   }
 
   build() {
     Column() {
       NavigationBar({
-        naviController: this.naviController,
+        navigationBarData: this.navigationBarData,
       })
       Column(){
         List(){

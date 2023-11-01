@@ -1,6 +1,6 @@
 import webView from '@ohos.web.webview'
 import Want from '@ohos.app.ability.Want'
-import { TaroWebContainer, InjectObject, HostPageState, RouterController } from 'TaroWebContainer';
+import { TaroWebContainer, InjectObject, HostPageState, TaroWebController } from 'TaroWebContainer';
 
 let storage = LocalStorage.getShared() // 获取共享的本地存储对象
 
@@ -14,9 +14,9 @@ struct TaroMpharmonySample {
   @State pageState: HostPageState = HostPageState.PageInit;
   @StorageLink('entryDomain') entryDomain: string = '';
   @StorageLink('useBuildIn') useBuildIn: boolean = true;
-  @LocalStorageLink('refresh') @Watch('refreshWeb') refresh: boolean = false;
+  @LocalStorageLink('refresh') refresh: boolean = false;
 
-  routerController: RouterController = new RouterController();
+  @State taroWebController: TaroWebController = new TaroWebController()
 
   // 用户可以自定义对象注入到Web环境中，如使用native.sayHello格式进行调用
   nativeObj: InjectObject = {
@@ -24,7 +24,7 @@ struct TaroMpharmonySample {
   };
 
   onBackPress() {
-    return this.routerController.backWord();
+    this.taroWebController.backward();
   }
 
   aboutToAppear() {
@@ -33,17 +33,15 @@ struct TaroMpharmonySample {
 
   onPageShow() {
     this.pageState = HostPageState.PageOnShow;
+    if (this.refresh) {
+      this.taroWebController.loadUrl(this.entryUrl());
+      this.refresh = false;
+    }
+
   }
 
   onPageHide() {
     this.pageState = HostPageState.PageOnHide;
-  }
-
-  refreshWeb() {
-    if (this.refresh) {
-      this.routerController.webController.loadUrl(this.entryUrl());
-      this.refresh = false;
-    }
   }
 
   entryUrl(): string{
@@ -58,7 +56,7 @@ struct TaroMpharmonySample {
         useBuildIn: this.useBuildIn, // 是否使用内置的rawfile资源
         entryDomain: this.entryDomain, // 远程资源域名
         want: this.want, // want信息
-        routerController: this.routerController, // 页面路由控制
+        taroWebController: this.taroWebController,
         isFullScreen: true, // 是否全屏显示
         injectObj: this.nativeObj, // 注入对象
       })

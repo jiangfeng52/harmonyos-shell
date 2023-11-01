@@ -1,6 +1,18 @@
 {
   "app": {
     "signingConfigs": [
+      {
+        "name": "default",
+        "material": {
+          "certpath": "/Users/mac/.ohos/config/openharmony/auto_ohos_default_harmonyos-shell_com.advanced.temp.cer",
+          "storePassword": "0000001BA634A89DF89B092C33DA2BDC14C9983FDA0B487861B664EB5EBCDAA83EC6074D35BF113E657579",
+          "keyAlias": "debugKey",
+          "keyPassword": "0000001B682655BA5D0A3180798B1F3E254B141B4CB91A2F0796001D164FED318777803C34632AA0EECCA7",
+          "profile": "/Users/mac/.ohos/config/openharmony/auto_ohos_default_harmonyos-shell_com.advanced.temp.p7b",
+          "signAlg": "SHA256withECDSA",
+          "storeFile": "/Users/mac/.ohos/config/openharmony/auto_ohos_default_harmonyos-shell_com.advanced.temp.p12"
+        }
+      }
     ],
     "products": [
       {
