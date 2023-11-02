@@ -1,4 +1,4 @@
-import { BaseCapsule } from 'TaroWebContainer'
+import { BaseCapsule } from 'web-container'
 
 @Entry
 @Component

@@ -14,7 +14,6 @@ harmonyos-shell包含一个定制化的TaroWebContainer实现，旨在为Taro工
     - main
       - ets
          - components： 自定义组件
-         - controllers： 包含导航栏状态控制和路由控制 
          - inject_adapter： 高阶API注入对象适配
          - interfaces： 接口
          - utils： 实用工具类和函数
@@ -22,7 +21,7 @@ harmonyos-shell包含一个定制化的TaroWebContainer实现，旨在为Taro工
 ### 使用示例
 ```js
 // Sample/src/main/ets/pages/Index.ets
-import { TaroWebContainer, InjectObject, HostPageState, RouterController } from 'TaroWebContainer';
+import { TaroWebContainer, InjectObject, HostPageState, TaroWebController } from 'web-container';
 ...
 @Entry(storage)
 @Component
@@ -36,18 +35,27 @@ struct TaroMpharmonySample {
         useBuildIn: this.useBuildIn, // 是否使用内置的rawfile资源
         entryDomain: this.entryDomain, // 远程资源域名
         want: this.want, // want信息
-        routerController: this.routerController, // 页面路由控制
+        taroWebController: this.taroWebController,
         isFullScreen: true, // 是否全屏显示
         injectObj: this.nativeObj, // 注入对象
       })
         .width('100%')
         .height('100%')
     }
-  }
+}
 }
 ```
     
 ### 版本修订记录
-20230830:
- - 添加advanced_api_har.har包及依赖配置，原advancedapi.min.js直接引用方式修改为引用har包。
- - 修改web组件执行js脚本的时机，将onPageEnd修改为onPageBegin，解决生命周期方法报错问题。
+
+2023/11/02
+ - 新增功能
+   - 增加日志类，优化日志打印
+   - web容器模块发布名称改成web-container, 通过 `import { TaroWebContainer } from 'web-container'` 的格式进行导入
+
+2023/10/31
+ - 重构目录，封装Web容器模块
+   - 增加TaroWebContainer组件
+   - 增加TaroWeb组件
+   - 增加NavigationBar导航栏
+   - 增加BaseCapsule组件以及BaseDeveloper组件

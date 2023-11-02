@@ -32,6 +32,10 @@ import { RouterUtils } from '../utils/RouterUtils';
 import { TaroWebController } from './TaroWeb';
 import { NavigationBarData } from './NavigationBar';
 import router from '@ohos.router';
+import { wbLogger } from '../utils/Logger';
+
+const CONTAINER_TAG = 'TaroWebContainer';
+
 
 // import { TaroWebController } from './TaroWeb';
 
@@ -95,7 +99,7 @@ export struct TaroWebContainer {
     }
 
     if(this.taroWebController.accessBackward()) {
-      console.log("[TaroWeb] backWord:webViewController")
+      wbLogger.debug(CONTAINER_TAG, 'backWord:webViewController')
       this.taroWebController.backward();
     }
   }
@@ -212,7 +216,7 @@ export struct TaroWebContainer {
 
   handleWantInfo(want: Want) {
     // want 中附带有新的目标url的信息
-    console.log('[TaroWeb] want: ' + JSON.stringify(want));
+    wbLogger.info(CONTAINER_TAG, `want: ${JSON.stringify(want)}`);
     const params = want.parameters;
     const pagePath = params?.path ? `${params.path}${params?.query ? '?' + params.query : ''}` : '';
     this.launchOptions = JSON.stringify({
@@ -223,7 +227,7 @@ export struct TaroWebContainer {
     } as LaunchOptions);
 
     if (pagePath) {
-      console.log(`[TaroWeb] pagePath: ${pagePath}`);
+      wbLogger.info(CONTAINER_TAG, `pagePath: ${pagePath}`);
       this.currentUrl = `${this.indexUrl}#${pagePath}`;
     }
   }

@@ -2,9 +2,9 @@
   "license": "ISC",
   "devDependencies": {},
   "name": "entry",
-  "description": "HarmonyOS shell for Taro mpharmony project",
+  "description": "演示如何使用TaroWebContainer组件",
   "version": "1.0.0",
   "dependencies": {
-    "package": "file:../TaroWebContainer"
+    "web-container": "file:../TaroWebContainer"
   }
 }

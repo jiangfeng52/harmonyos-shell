@@ -17,8 +17,11 @@ import File from '@ohos.file.fs';
 import { BusinessError } from '@ohos.base';
 import { ApiAdapter } from '../inject_adapter/ApiAdapter';
 import { switchInternalToHapSandBox } from '../utils/InternalPath';
-import { RawUtils } from '../utils/RawUtils'
+import { RawUtils } from '../utils/RawUtils';
 import webview from '@ohos.web.webview';
+import { wbLogger } from '../utils/Logger';
+
+const TARO_WEB_TAG = 'TaroWeb';
 
 @Observed
 export class TaroWebController {
@@ -92,7 +95,7 @@ export struct TaroWeb {
         controller: this.taroWebController.webController,
       })
       .onConsole((event) => {
-        console.log('[TaroWeb] ' + event?.message.getMessage())
+        wbLogger.debug(TARO_WEB_TAG, `${event?.message.getMessage()}`)
         return false
       })
       .zoomAccess(false)
@@ -103,15 +106,15 @@ export struct TaroWeb {
             this.apiAdapter.getRunJavaScript(),
             (error, result) => {
               if (error) {
-                console.error(`[TaroWeb] Run JavaScript error: ` + JSON.stringify(error))
+                wbLogger.error(TARO_WEB_TAG, `Run JavaScript error: ${JSON.stringify(error)}`)
                 return;
               }
               if (result) {
-                console.info(`[TaroWeb] The asFinish() return value is: ${result}`)
+                wbLogger.info(TARO_WEB_TAG, `The asFinish() return value is: ${result}`)
               }
             });
         } catch (error) {
-          console.error(`[TaroWeb] runJavaScript error: ${(error as BusinessError).message}`);
+          wbLogger.error(TARO_WEB_TAG, `runJavaScript error: ${(error as BusinessError).message}`);
         }
       })
       .onInterceptRequest((event) => { // 当web组件加载url之前触发该回调，用于拦截url并返回响应数据。
@@ -125,11 +128,11 @@ export struct TaroWeb {
             responseWeb.setResponseData(fd);
             responseWeb.setResponseCode(200);
             responseWeb.setReasonMessage('OK');
-            responseWeb.setResponseIsReady(true)
-            console.info(`[ADSAPI] responseWeb`)
+            responseWeb.setResponseIsReady(true);
+            wbLogger.info(TARO_WEB_TAG, 'responseWeb for internal resources')
           }
           else {
-            console.info(`[ADSAPI] This file is not exist`)
+            wbLogger.info(TARO_WEB_TAG, 'file resource is not exist')
           }
           return responseWeb
         }
@@ -144,7 +147,7 @@ export struct TaroWeb {
         return null
       })
       .onSslErrorEventReceive((event) => { // 通知用户加载资源时发生SSL错误
-        console.info(`[TaroWeb] onSslErrorEventReceive:${event.error}`)
+        wbLogger.info(TARO_WEB_TAG, `onSslErrorEventReceive:${event.error}`)
         event.handler.handleConfirm() // 通知Web组件继续使用SSL证书
         return true
       })

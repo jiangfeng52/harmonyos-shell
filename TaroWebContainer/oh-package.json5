@@ -1,9 +1,16 @@
 {
   "license": "Apache-2.0",
   "devDependencies": {},
+  "keywords": [
+    "Taro",
+    "Web",
+    "web-container",
+    "h5",
+    "mpharmony"
+  ],
   "author": "",
-  "name": "TaroWebContainer",
-  "description": "Please describe the basic information.",
+  "name": "web-container",
+  "description": "web-container提供定制化Web容器来运行Taro生成的mpharmony类型的h5应用",
   "main": "Index.ets",
   "version": "1.0.0",
   "dependencies": {
