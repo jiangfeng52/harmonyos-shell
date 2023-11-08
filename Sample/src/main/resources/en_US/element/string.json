@@ -27,6 +27,29 @@
     {
       "name": "page_title",
       "value": "HomePage"
+    },
+    {
+      "name": "camera_reason",
+      "value": "Applying for Camera Permissions"
+    },
+    {
+      "name": "calendar_reason",
+      "value": "Apply for Calendar Read Permissions"
+    },
+    {
+      "name": "imagevideo_reason",
+      "value": "Apply for the permission to read images and videos"
+    },
+    {
+      "name": "microphone_reason",
+      "value": "Applying for Microphone Permissions"
+    },    {
+      "name": "contacts_reason",
+      "value": "Applying for the Permission to Add Address Book"
+    },
+    {
+      "name": "media_reason",
+      "value": "Applying for File Read and Write Permissions"
     }
   ]
 }

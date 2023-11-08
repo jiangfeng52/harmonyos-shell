@@ -11,14 +11,28 @@
     "dependencies": [
     ],
     requestPermissions: [
-	  {
-        "name": "ohos.permission.CAMERA"
+      {
+        "name": "ohos.permission.CAMERA",
+        "reason": "$string:camera_reason",
+        "usedScene": {
+          "abilities": [
+            "EntryAbility"
+          ],
+          "when": "inuse"
+        }
       },
       {
         "name": "ohos.permission.NOTIFICATION_CONTROLLER"
       },
       {
-        "name": "ohos.permission.READ_CALENDAR"
+        "name": "ohos.permission.READ_CALENDAR",
+        "reason": "$string:calendar_reason",
+        "usedScene": {
+          "abilities": [
+            "EntryAbility"
+          ],
+          "when": "inuse"
+        }
       },
       {
         "name": "ohos.permission.INTERNET"
@@ -39,7 +53,14 @@
         "name": "ohos.permission.SET_WIFI_CONFIG"
       },
       {
-        "name": "ohos.permission.WRITE_CONTACTS"
+        "name": "ohos.permission.WRITE_CONTACTS",
+        "reason": "$string:contacts_reason",
+        "usedScene": {
+          "abilities": [
+            "EntryAbility"
+          ],
+          "when": "inuse"
+        }
       },
       {
         "name": "ohos.permission.VIBRATE"
@@ -48,13 +69,34 @@
         "name": "ohos.permission.START_ABILITIES_FROM_BACKGROUND"
       },
       {
-        "name": "ohos.permission.READ_MEDIA"
+        "name": "ohos.permission.READ_MEDIA",
+        "reason": "$string:media_reason",
+        "usedScene": {
+          "abilities": [
+            "EntryAbility"
+          ],
+          "when": "inuse"
+        }
       },
       {
-        "name": "ohos.permission.WRITE_MEDIA"
+        "name": "ohos.permission.WRITE_MEDIA",
+        "reason": "$string:media_reason",
+        "usedScene": {
+          "abilities": [
+            "EntryAbility"
+          ],
+          "when": "inuse"
+        }
       },
       {
-        "name": "ohos.permission.READ_IMAGEVIDEO"
+        "name": "ohos.permission.READ_IMAGEVIDEO",
+        "reason": "$string:imagevideo_reason",
+        "usedScene": {
+          "abilities": [
+            "EntryAbility"
+          ],
+          "when": "inuse"
+        }
       },
       {
         "name": "ohos.permission.LOCATION",
@@ -108,7 +150,14 @@
         "name": "ohos.permission.CONNECT_IME_ABILITY"
       },
       {
-        "name": "ohos.permission.MICROPHONE"
+        "name": "ohos.permission.MICROPHONE",
+        "reason": "$string:microphone_reason",
+        "usedScene": {
+          "abilities": [
+            "EntryAbility"
+          ],
+          "when": "inuse"
+        }
       },
       {
         "name": "ohos.permission.KEEP_BACKGROUND_RUNNING"
