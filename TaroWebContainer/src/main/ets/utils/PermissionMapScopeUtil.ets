@@ -34,24 +34,101 @@ export interface BundleScopeResult {
 }
 
 const ohosMappingWxMap: Map<string, string[]> = new Map<string, string[]>([
-  ['scope.userLocation', ['ohos.permission.LOCATION', 'ohos.permission.LOCATION_IN_BACKGROUND']],
-  ['scope.writePhotosAlbum', ['ohos.permission.WRITE_IMAGEVIDEO', 'ohos.permission.READ_IMAGEVIDEO']],
+  ['scope.bluetooth', ['ohos.permission.ACCESS_BLUETOOTH']],
+  ['ohos.permission.ANSWER_CALL', ['ohos.permission.ANSWER_CALL']],
+  ['ohos.permission.MANAGE_VOICEMAIL', ['ohos.permission.MANAGE_VOICEMAIL']],
+  ['ohos.permission.READ_CALENDAR', ['ohos.permission.READ_CALENDAR']],
+  ['scope.addPhoneCalendar', ['ohos.permission.WRITE_CALENDAR']],
+  ['ohos.permission.READ_WHOLE_CALENDAR', ['ohos.permission.READ_WHOLE_CALENDAR']],
+  ['ohos.permission.WRITE_WHOLE_CALENDAR', ['ohos.permission.WRITE_WHOLE_CALENDAR']],
+  ['ohos.permission.READ_CALL_LOG', ['ohos.permission.READ_CALL_LOG']],
+  ['ohos.permission.WRITE_CALL_LOG', ['ohos.permission.WRITE_CALL_LOG']],
+  ['ohos.permission.READ_CONTACTS', ['ohos.permission.READ_CONTACTS']],
+  ['scope.addPhoneContact', ['ohos.permission.WRITE_CONTACTS']],
+  ['ohos.permission.READ_CELL_MESSAGES', ['ohos.permission.READ_CELL_MESSAGES']],
+  ['ohos.permission.READ_MESSAGES', ['ohos.permission.READ_MESSAGES']],
+  ['ohos.permission.RECEIVE_MMS', ['ohos.permission.RECEIVE_MMS']],
+  ['ohos.permission.RECEIVE_SMS', ['ohos.permission.RECEIVE_SMS']],
+  ['ohos.permission.RECEIVE_WAP_MESSAGES', ['ohos.permission.RECEIVE_WAP_MESSAGES']],
+  ['ohos.permission.SEND_MESSAGES', ['ohos.permission.SEND_MESSAGES']],
+  ['scope.record', ['ohos.permission.MICROPHONE']],
+  ['ohos.permission.DISTRIBUTED_DATASYNC', ['ohos.permission.DISTRIBUTED_DATASYNC']],
+  ['scope.userLocationBackground', ['ohos.permission.LOCATION_IN_BACKGROUND']],
+  ['scope.userLocation', ['ohos.permission.LOCATION']],
+  ['scope.userFuzzyLocation', ['ohos.permission.APPROXIMATELY_LOCATION']],
+  ['scope.camera', ['ohos.permission.CAMERA']],
+  ['scope.werun', ['ohos.permission.ACTIVITY_MOTION']],
+  ['ohos.permission.READ_HEALTH_DATA', ['ohos.permission.READ_HEALTH_DATA']],
+  ['ohos.permission.READ_IMAGEVIDEO', ['ohos.permission.READ_IMAGEVIDEO']],
+  ['ohos.permission.WRITE_IMAGEVIDEO', ['ohos.permission.WRITE_IMAGEVIDEO']],
+  ['ohos.permission.MEDIA_LOCATION', ['ohos.permission.MEDIA_LOCATION']],
+  ['ohos.permission.READ_AUDIO', ['ohos.permission.READ_AUDIO']],
+  ['ohos.permission.WRITE_AUDIO', ['ohos.permission.WRITE_AUDIO']],
+  ['ohos.permission.READ_DOCUMENT', ['ohos.permission.READ_DOCUMENT']],
+  ['ohos.permission.WRITE_DOCUMENT', ['ohos.permission.WRITE_DOCUMENT']],
+  ['scope.writePhotosAlbum', ['ohos.permission.READ_MEDIA', 'ohos.permission.WRITE_MEDIA']],
+  ['ohos.permission.APP_TRACKING_CONSENT', ['ohos.permission.APP_TRACKING_CONSENT']],
+  ['ohos.permission.GET_INSTALLED_BUNDLE_LIST', ['ohos.permission.GET_INSTALLED_BUNDLE_LIST']],
 ]);
 
 const allScopeUseMap: AuthSetting = {
   'scope.userInfo': false,
-  'scope.userLocation': false,
   'scope.address': false,
   'scope.invoiceTitle': false,
   'scope.invoice': false,
+  'scope.userLocation': false,
   'scope.werun': false,
   'scope.record': false,
   'scope.writePhotosAlbum': false,
   'scope.camera': false,
   'scope.bluetoothBackground': false,
+  'scope.addPhoneCalendar': false,
+  'scope.addPhoneContact': false,
+  'scope.userLocationBackground': false,
+  'scope.userFuzzyLocation': false,
+  'ohos.permission.ANSWER_CALL': false,
+  'ohos.permission.MANAGE_VOICEMAIL': false,
+  'ohos.permission.READ_CALENDAR': false,
+  'ohos.permission.READ_WHOLE_CALENDAR': false,
+  'ohos.permission.WRITE_WHOLE_CALENDAR': false,
+  'ohos.permission.READ_CALL_LOG': false,
+  'ohos.permission.WRITE_CALL_LOG': false,
+  'ohos.permission.READ_CONTACTS': false,
+  'ohos.permission.READ_CELL_MESSAGES': false,
+  'ohos.permission.READ_MESSAGES': false,
+  'ohos.permission.RECEIVE_MMS': false,
+  'ohos.permission.RECEIVE_SMS': false,
+  'ohos.permission.RECEIVE_WAP_MESSAGES': false,
+  'ohos.permission.SEND_MESSAGES': false,
+  'ohos.permission.DISTRIBUTED_DATASYNC': false,
+  'ohos.permission.READ_HEALTH_DATA': false,
+  'ohos.permission.READ_IMAGEVIDEO': false,
+  'ohos.permission.WRITE_IMAGEVIDEO': false,
+  'ohos.permission.MEDIA_LOCATION': false,
+  'ohos.permission.READ_AUDIO': false,
+  'ohos.permission.WRITE_AUDIO': false,
+  'ohos.permission.READ_DOCUMENT': false,
+  'ohos.permission.WRITE_DOCUMENT': false,
+  'ohos.permission.APP_TRACKING_CONSENT': false,
+  'ohos.permission.GET_INSTALLED_BUNDLE_LIST': false,
 };
 
 let bundleUsedScopeMap: Map<string, boolean> = new Map<string, boolean>([]);
+
+export function getBundleUserPermissions(permissions: Array<PermissionInfo>): Array<PermissionInfo> {
+  if (Array.isArray(permissions) && permissions.length === 0) {
+    console.error('permissions 数组为空');
+    return [];
+  }
+  let retPermissions: Array<PermissionInfo> = [];
+  let index = 0;
+  permissions.map((permissionObj) => {
+    if (permissionObj.reason) {
+      retPermissions[index++] = permissionObj;
+    }
+  })
+  return retPermissions;
+}
 
 export async function getBundleWxScopeList(permissions: Array<PermissionInfo>): Promise<BundleScopeResult> {
   if (Array.isArray(permissions) && permissions.length === 0) {
@@ -118,20 +195,18 @@ async function checkAccessToken(permission: Permissions): Promise<abilityAccessC
 }
 
 
-export function openPermissionsInSystemSettings(): void {
+export async function openPermissionsInSystemSettings(): Promise<void> {
+  let bundleInfo: bundleManager.BundleInfo = await bundleManager.getBundleInfoForSelf(bundleManager.BundleFlag.GET_BUNDLE_INFO_WITH_APPLICATION);
   let context = GlobalThis.getInstance().getContext('context') as common.UIAbilityContext;
-  bundleManager.getBundleInfoForSelf(bundleManager.BundleFlag.GET_BUNDLE_INFO_DEFAULT).then((data) => {
-    const wantInfo: Want = {
-      action: 'action.settings.app.info',
-      parameters: {
-        settingsParamBundleName: data.name // 打开指定应用的详情页面
-      }
+  let wantInfo: Want = {
+    bundleName: 'com.huawei.hmos.settings',
+    abilityName: 'com.huawei.hmos.settings.MainAbility',
+    uri: 'application_info_entry',
+    parameters: {
+      pushParams: bundleInfo.name // 打开指定应用的详情页面
     }
-    context.startAbility(wantInfo)
-  }).catch((err: BusinessError) => {
-    wbLogger.error(PERMISSION_UTIL, `Failed to get bundleInfo when openPermissionsInSystemSettings. Message is ${err.message}`);
-  })
-
+  }
+  context.startAbility(wantInfo)
 }
 
 

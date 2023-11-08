@@ -84,15 +84,44 @@ export interface PermissionInfo {
 
 export interface AuthSetting {
   'scope.userInfo': boolean;
-  'scope.userLocation': boolean;
   'scope.address': boolean;
   'scope.invoiceTitle': boolean;
   'scope.invoice': boolean;
+  'scope.userLocation': boolean;
   'scope.werun': boolean;
   'scope.record': boolean;
   'scope.writePhotosAlbum': boolean;
   'scope.camera': boolean;
   'scope.bluetoothBackground': boolean;
+  'scope.addPhoneCalendar': boolean;
+  'scope.addPhoneContact': boolean;
+  'scope.userLocationBackground': boolean;
+  'scope.userFuzzyLocation': boolean;
+  'ohos.permission.ANSWER_CALL': boolean;
+  'ohos.permission.MANAGE_VOICEMAIL': boolean;
+  'ohos.permission.READ_CALENDAR': boolean;
+  'ohos.permission.READ_WHOLE_CALENDAR': boolean;
+  'ohos.permission.WRITE_WHOLE_CALENDAR': boolean;
+  'ohos.permission.READ_CALL_LOG': boolean;
+  'ohos.permission.WRITE_CALL_LOG': boolean;
+  'ohos.permission.READ_CONTACTS': boolean;
+  'ohos.permission.READ_CELL_MESSAGES': boolean;
+  'ohos.permission.READ_MESSAGES': boolean;
+  'ohos.permission.RECEIVE_MMS': boolean;
+  'ohos.permission.RECEIVE_SMS': boolean;
+  'ohos.permission.RECEIVE_WAP_MESSAGES': boolean;
+  'ohos.permission.SEND_MESSAGES': boolean;
+  'ohos.permission.DISTRIBUTED_DATASYNC': boolean;
+  'ohos.permission.READ_HEALTH_DATA': boolean;
+  'ohos.permission.READ_IMAGEVIDEO': boolean;
+  'ohos.permission.WRITE_IMAGEVIDEO': boolean;
+  'ohos.permission.MEDIA_LOCATION': boolean;
+  'ohos.permission.READ_AUDIO': boolean;
+  'ohos.permission.WRITE_AUDIO': boolean;
+  'ohos.permission.READ_DOCUMENT': boolean;
+  'ohos.permission.WRITE_DOCUMENT': boolean;
+  'ohos.permission.APP_TRACKING_CONSENT': boolean;
+  'ohos.permission.GET_INSTALLED_BUNDLE_LIST': boolean;
 }
 
 interface ItemSettings {

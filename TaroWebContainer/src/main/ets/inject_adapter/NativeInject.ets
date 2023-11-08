@@ -17,9 +17,10 @@ import common from '@ohos.app.ability.common'
 import { BusinessError } from '@ohos.base'
 import Want from '@ohos.app.ability.Want'
 import bundleManager from '@ohos.bundle.bundleManager';
-import { InnerInjectObj, MenuButtonOptions, ErrorMsg } from '../interfaces/InjectObject';
+import { InnerInjectObj, MenuButtonOptions, ErrorMsg, PermissionInfo } from '../interfaces/InjectObject'
 import {
   getBundleUsedPermission,
+  getBundleUserPermissions,
   getBundleWxScopeList,
   openPermissionsInSystemSettings
 } from '../utils/PermissionMapScopeUtil';
@@ -155,7 +156,8 @@ export class NativeInject {
          // 接口返回
         return new Promise(async (resolve, reject) => {
           try {
-            const bundleScope = await getBundleWxScopeList(this.permissionInfo);
+            const curPermissions: Array<PermissionInfo> = getBundleUserPermissions(this.permissionInfo);
+            const bundleScope = await getBundleWxScopeList(curPermissions);
             const bundleUsedScope = getBundleUsedPermission(bundleScope.allScope, bundleScope.bundleScope);
             // 打开应用的权限列表
             openPermissionsInSystemSettings();
@@ -175,7 +177,8 @@ export class NativeInject {
         // 接口返回
         return new Promise(async (resolve, reject) => {
           try {
-            const bundleScope = await getBundleWxScopeList(this.permissionInfo);
+            const curPermissions: Array<PermissionInfo> = getBundleUserPermissions(this.permissionInfo);
+            const bundleScope = await getBundleWxScopeList(curPermissions);
             const bundleUsedScope = getBundleUsedPermission(bundleScope.allScope, bundleScope.bundleScope);
             return resolve({ authSetting: bundleUsedScope.allScope, errMsg: `${apiName}:ok` });
           } catch (paramError) {

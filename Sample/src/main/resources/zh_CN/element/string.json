@@ -27,6 +27,30 @@
     {
       "name": "page_title",
       "value": "首页"
+    },
+    {
+      "name": "camera_reason",
+      "value": "申请相机权限"
+    },
+    {
+      "name": "calendar_reason",
+      "value": "申请读取日历权限"
+    },
+    {
+      "name": "imagevideo_reason",
+      "value": "申请读取图片和视频权限"
+    },
+    {
+      "name": "microphone_reason",
+      "value": "申请麦克风权限"
+    },
+    {
+      "name": "contacts_reason",
+      "value": "申请添加通讯录权限"
+    },
+    {
+      "name": "media_reason",
+      "value": "申请文件读写权限"
     }
   ]
 }
