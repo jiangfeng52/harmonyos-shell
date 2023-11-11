@@ -199,13 +199,6 @@ export struct TaroWebContainer {
     // }
   }
 
-  // onNavigationStateUpdated() {
-  //   const context = getContext(this) as common.UIAbilityContext;
-  //   window.getLastWindow(context).then((windowClass) => {
-  //     setSystemBarProperties(windowClass, this.naviController.barFrontColor);
-  //   });
-  // }
-
   onWantUpdated() {
     // UIAbility的onCreate传递want信息时，组件尚未创建，不会触发该函数
     // 该监听触发不先于页面的onPageShow事件，want中可能带有改变url的信息，所以这里主动调用loadUrl

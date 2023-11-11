@@ -13,6 +13,7 @@
  * limitations under the License.
  */
 import uri from '@ohos.uri'
+import window from '@ohos.window';
 import common from '@ohos.app.ability.common'
 import { BusinessError } from '@ohos.base'
 import Want from '@ohos.app.ability.Want'
@@ -25,6 +26,7 @@ import {
   openPermissionsInSystemSettings
 } from '../utils/PermissionMapScopeUtil';
 import { NavigationBarData } from '../components/NavigationBar';
+import { setSystemBarProperties } from '../utils/WindowUtil';
 import { wbLogger } from '../utils/Logger';
 
 const NATIVE_TAG = 'NativeInject';
@@ -51,6 +53,13 @@ export class NativeInject {
     this.windowWidth = 0;
     this.permissionInfo = [];
     this.capsuleOptions = capsuleOptions
+  }
+
+  private setStatusBarFrontColor(barFrontColor: string) {
+    const context = getContext(this) as common.UIAbilityContext;
+    window.getLastWindow(context).then((windowClass) => {
+      setSystemBarProperties(windowClass, barFrontColor);
+    });
   }
 
   public setSystemBarHeight(systemBarHeight: number) {
@@ -83,6 +92,7 @@ export class NativeInject {
             this.navigationBarData.animationCurve = Number(timingFuncMap.get(options.timingFunc) ?? Curve.Linear);
           }
         }
+        this.setStatusBarFrontColor(this.navigationBarData.barFrontColor);
       },
       showNavigationBarLoading: () => {
         this.navigationBarData.loading = true;
@@ -150,6 +160,7 @@ export class NativeInject {
         this.navigationBarData.barFrontColor = textStyle === 'white' ? '#ffffff' : '#000000';
         this.navigationBarData.barColor = backgroundColor;
         this.navigationBarData.animationDuration = 0;
+        this.setStatusBarFrontColor(this.navigationBarData.barFrontColor);
       },
       openSetting: (options) => {
         const apiName: string = 'openSetting';
