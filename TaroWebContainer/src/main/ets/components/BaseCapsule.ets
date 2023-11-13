@@ -1,5 +1,5 @@
 import { RouterUtils } from '../utils/RouterUtils';
-import { NavigationBar, NavigationBarData } from '../components/NavigationBar';
+import { NavigationBarData } from '../components/NavigationBar';
 
 @Component
 export struct BaseCapsule {
@@ -19,9 +19,9 @@ export struct BaseCapsule {
 
   build() {
     Column() {
-      NavigationBar({
-        navigationBarData: this.navigationBarData,
-      })
+      // NavigationBar({
+      //   navigationBarData: this.navigationBarData,
+      // })
       Column(){
         List(){
           ListItem(){

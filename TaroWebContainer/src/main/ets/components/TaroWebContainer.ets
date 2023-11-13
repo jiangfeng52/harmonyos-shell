@@ -18,7 +18,6 @@ import window from '@ohos.window';
 import common from '@ohos.app.ability.common';
 import bundleManager from '@ohos.bundle.bundleManager';
 import { AdvancedAPI } from '@ohos/advanced-api';
-import { NavigationBar } from './navigationbar';
 import { TaroWeb } from './taroweb';
 import { ApiAdapter } from '../inject_adapter/ApiAdapter'
 import { NativeInject  } from '../inject_adapter/NativeInject';
@@ -35,7 +34,7 @@ import router from '@ohos.router';
 import { wbLogger } from '../utils/Logger';
 
 const CONTAINER_TAG = 'TaroWebContainer';
-
+const DEFAULT_TITLE_LEFT = 40;
 
 // import { TaroWebController } from './TaroWeb';
 
@@ -59,11 +58,15 @@ export struct TaroWebContainer {
   // 监听UIAbility的Want
   @Prop @Watch('onWantUpdated') want: Want;
   // 导航栏状态控制器
-  @State navigationBarData: NavigationBarData = new NavigationBarData();
+  @State @Watch('onNavigationStateUpdated') navigationBarData: NavigationBarData = new NavigationBarData();
   // 记录web当前的url
   @State currentUrl: string = '';
   // 系统状态状态栏高度
   @State systemBarHeight: number = 0;
+  // 导航栏高度
+  @State navigationBarHeight: number = 0;
+  // 导航栏可见性
+  @State navigationBarVisible: boolean =  true;
 
   // 路由控制器
   // @Provide routerController: RouterController = new RouterController();
@@ -104,39 +107,95 @@ export struct TaroWebContainer {
     }
   }
 
+  @Builder
+  customNavigationBar() {
+    Column() {
+      Row() {
+        if (this.navigationBarData.canBackward) {
+          Image($r('app.media.back'))
+            .width(25)
+            .height(25)
+            .margin({ left: 26 })
+            .objectFit(ImageFit.Contain)
+            .onClick(() => {
+              this.taroWebController.backward();
+              this.navigationBarData.loading= false;
+            })
+            .id('backBtn')
+        }
+        Text(this.navigationBarData.title)
+          .fontSize(20)
+          .margin({ left: this.navigationBarData.canBackward ? 0 : DEFAULT_TITLE_LEFT })
+          .align(Alignment.Start)
+        if (this.navigationBarData.loading) {
+          LoadingProgress()
+            .width(25)
+            .height(25)
+            .margin({ left: 5 })
+            .foregroundColor(this.navigationBarData.barFrontColor)
+        }
+        Blank()
+      }
+      .width('100%')
+      .height('100%')
+      .alignItems(VerticalAlign.Bottom)
+      .padding({ bottom: this.navigationBarData.paddingBottom })
+    }
+    .width('100%')
+    .height('100%')
+    .foregroundColor(this.navigationBarData.barFrontColor)
+    .backgroundColor(this.navigationBarData.barColor)
+    .animation({
+      duration: this.navigationBarData.animationDuration,
+      curve: this.navigationBarData.animationCurve,
+      delay: 0,
+      iterations: 1,
+      playMode: PlayMode.Normal
+    })
+    .justifyContent(FlexAlign.End)
+  }
 
   build() {
-    Stack({ alignContent: Alignment.TopEnd }) {
-      TaroWeb({
-        src: this.currentUrl,
-        currentUrl: this.currentUrl,
-        apiAdapter: this.adapter,
-        useBuildIn: this.useBuildIn,
-        entryDomain: this.entryDomain,
-        taroWebController: this.taroWebController,
-        onTitleReceive: this.onTitleReceive,
-        onRefreshAccessedHistory: this.onRefreshAccessedHistory
-      })
-      NavigationBar({
-        navigationBarData: this.navigationBarData,
-        onBackPressed: this.onNavigationBarBackPressed
-      })
-      if(this.showCapsule) {
-        Image($r("app.media.capsule"))
-          .margin({ top: (this.isFullScreen ? this.systemBarHeight : 0) + this.capsuleOptions.height - 25, right: this.capsuleOptions.marginRight })
-          .fillColor(this.navigationBarData.barFrontColor)
-          .width(this.capsuleOptions.width)
-          .height(25)
-          .borderRadius(10)
-          .borderColor('#40cccccc')
-          .borderWidth(1)
-          .backgroundColor(this.navigationBarData.barFrontColor === '#ffffff' ? '#30000000' : '#9affffff')
-          .objectFit(ImageFit.Contain)
-          .onClick(() => {
-            RouterUtils.pushUrlWithLog(this.capsulePage)
-          })
-      }
-    }.layoutWeight(1)
+    Navigation() {
+      Stack({ alignContent: Alignment.TopEnd }) {
+        TaroWeb({
+          src: this.currentUrl,
+          currentUrl: this.currentUrl,
+          apiAdapter: this.adapter,
+          useBuildIn: this.useBuildIn,
+          entryDomain: this.entryDomain,
+          taroWebController: this.taroWebController,
+          onTitleReceive: this.onTitleReceive,
+          onRefreshAccessedHistory: this.onRefreshAccessedHistory
+        })
+
+        if (this.showCapsule) {
+          Image($r("app.media.capsule"))
+            .margin({
+              top: (this.isFullScreen ? this.systemBarHeight : 0) + this.capsuleOptions.height - 25,
+              right: this.capsuleOptions.marginRight
+            })
+            .fillColor(this.navigationBarData.barFrontColor)
+            .width(this.capsuleOptions.width)
+            .height(25)
+            .borderRadius(10)
+            .borderColor('#40cccccc')
+            .borderWidth(1)
+            .backgroundColor(this.navigationBarData.barFrontColor === '#ffffff' ? '#30000000' : '#9affffff')
+            .objectFit(ImageFit.Contain)
+            .onClick(() => {
+              RouterUtils.pushUrlWithLog(this.capsulePage)
+            })
+        }
+      }.layoutWeight(1)
+    }
+    .title({ builder: this.customNavigationBar(), height: this.navigationBarHeight})
+    .titleMode(NavigationTitleMode.Mini)
+    .mode(NavigationMode.Stack)
+    .hideTitleBar(!this.navigationBarVisible)
+    .width('100%')
+    .height('100%')
+    .backgroundColor('white')
   }
 
   aboutToAppear() {
@@ -172,7 +231,12 @@ export struct TaroWebContainer {
       nativeInject.setWindowWidth(getWindowWidth(windowClass));
       this.adapter!.setLaunchOptions(this.launchOptions);
       this.adapter!.setNavigationBarHeight(this.systemBarHeight + this.navigationBarData.titleHeight + this.navigationBarData.paddingBottom);
+      this.navigationBarHeight = this.systemBarHeight + this.navigationBarData.titleHeight + this.navigationBarData.paddingBottom;
     })
+  }
+
+  onNavigationStateUpdated() {
+    this.navigationBarVisible = this.navigationBarData.visible;
   }
 
   onPageStateUpdated(): void {

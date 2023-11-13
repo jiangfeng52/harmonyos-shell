@@ -1,5 +1,5 @@
 import router from '@ohos.router'
-import { NavigationBar, NavigationBarData } from '../components/NavigationBar'
+import { NavigationBarData } from '../components/NavigationBar'
 
 @Component
 export struct BaseDeveloper {
@@ -23,9 +23,9 @@ export struct BaseDeveloper {
 
   build() {
     Column() {
-      NavigationBar({
-        navigationBarData: this.navigationBarData
-      })
+      // NavigationBar({
+      //   navigationBarData: this.navigationBarData
+      // })
       Scroll(){
         Column({space: 10}){
           Row({space: 10}){

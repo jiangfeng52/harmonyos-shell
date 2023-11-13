@@ -156,7 +156,13 @@ export class NativeInject {
         })
       },
       setNavigationStyle: (style, textStyle, backgroundColor) => {
-        this.navigationBarData.visible = style !== 'custom';
+        if(style == 'custom'){
+          setTimeout(() => {
+            this.navigationBarData.visible = style !== 'custom';
+          }, 500);
+        }else {
+          this.navigationBarData.visible = style !== 'custom';
+        }
         this.navigationBarData.barFrontColor = textStyle === 'white' ? '#ffffff' : '#000000';
         this.navigationBarData.barColor = backgroundColor;
         this.navigationBarData.animationDuration = 0;
