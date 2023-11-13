@@ -126,7 +126,7 @@ export class NativeInject {
             const uriInfo = new uri.URI(targetUri);
             abilityName = uriInfo.scheme;
             path = uriInfo.path;
-            query = uriInfo.query;
+            query = (!uriInfo.query || uriInfo.query === 'null') ? '' : uriInfo.query;
           }
           const wantInfo: Want = {
             deviceId: '',

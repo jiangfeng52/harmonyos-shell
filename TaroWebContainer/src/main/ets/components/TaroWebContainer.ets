@@ -36,7 +36,6 @@ import { wbLogger } from '../utils/Logger';
 
 const CONTAINER_TAG = 'TaroWebContainer';
 
-
 // import { TaroWebController } from './TaroWeb';
 
 /**
@@ -57,11 +56,9 @@ export struct TaroWebContainer {
   // 同步宿主页面的状态
   @Prop @Watch('onPageStateUpdated') pageState: HostPageState;
   // 监听UIAbility的Want
-  @Prop @Watch('onWantUpdated') want: Want;
+  @Prop want: Want = {};
   // 导航栏状态控制器
   @State navigationBarData: NavigationBarData = new NavigationBarData();
-  // 记录web当前的url
-  @State currentUrl: string = '';
   // 系统状态状态栏高度
   @State systemBarHeight: number = 0;
 
@@ -78,6 +75,7 @@ export struct TaroWebContainer {
   private adapter: ApiAdapter | undefined;
   // 启动参数
   private launchOptions: string = '';
+  private appearDone: boolean = false;
 
   capsuleOptions: MenuButtonOptions = { width: 50, height: this.navigationBarData.titleHeight, marginRight: 16 };
 
@@ -108,11 +106,8 @@ export struct TaroWebContainer {
   build() {
     Stack({ alignContent: Alignment.TopEnd }) {
       TaroWeb({
-        src: this.currentUrl,
-        currentUrl: this.currentUrl,
+        src: this.indexUrl,
         apiAdapter: this.adapter,
-        useBuildIn: this.useBuildIn,
-        entryDomain: this.entryDomain,
         taroWebController: this.taroWebController,
         onTitleReceive: this.onTitleReceive,
         onRefreshAccessedHistory: this.onRefreshAccessedHistory
@@ -141,10 +136,8 @@ export struct TaroWebContainer {
 
   aboutToAppear() {
     // 加载组件时，url更新
-    this.currentUrl = this.indexUrl;
-    // 处理UIAbility的onCreate保存的want信息
-    this.handleWantInfo(this.want);
-
+    this.indexUrl = this.taroWebController.getIndexUrl(this.entryDomain, this.useBuildIn);
+    this.handleWantInfo();
     const context = getContext(this) as common.UIAbilityContext;
     // 使用UIAbility的context初始化对象
     AdvancedAPI.init(context);
@@ -173,55 +166,54 @@ export struct TaroWebContainer {
       this.adapter!.setLaunchOptions(this.launchOptions);
       this.adapter!.setNavigationBarHeight(this.systemBarHeight + this.navigationBarData.titleHeight + this.navigationBarData.paddingBottom);
     })
+    this.appearDone = true;
   }
 
   onPageStateUpdated(): void {
-    // console.info(`[TaroWeb] Page event: ${this.pageState}`);
-    // switch (this.pageState) {
-    //   case HostPageState.PageOnShow:
-    //     // 页面显示时web容器加载上次隐藏时记录的url
-    //     console.log(`[TaroWeb] onPageShow currentUrl=${this.currentUrl} webController=${this.routerController.webController.getUrl()}`);
-    //     try {
-    //       if (this.routerController.webController.getUrl() !== this.currentUrl) {
-    //         this.routerController.webController.loadUrl(this.currentUrl);
-    //       }
-    //     } catch (e) {
-    //       console.info("[TaroWeb] load url fail:" + JSON.stringify(e));
-    //     }
-    //   break;
-    //   case HostPageState.PageOnHide:
-    //     // 页面隐藏时记录webController的当前url
-    //     console.log('[TaroWeb] onPageHide getUrl:'+ this.routerController.webController.getUrl());
-    //     this.currentUrl = this.routerController.webController.getUrl();
-    //   break;
-    //   default:
-    //   break;
-    // }
+    if (this.pageState === HostPageState.PageOnShow) {
+      this.handleWantInfo();
+    }
   }
 
-  onWantUpdated() {
-    // UIAbility的onCreate传递want信息时，组件尚未创建，不会触发该函数
-    // 该监听触发不先于页面的onPageShow事件，want中可能带有改变url的信息，所以这里主动调用loadUrl
-    this.handleWantInfo(this.want);
-    this.taroWebController.loadUrl(this.currentUrl)
-    // this.routerController.webController.loadUrl(this.currentUrl);
+  handleWantInfo() {
+    this.structLaunchOptions();
+    this.redirectNewUrl();
+    this.want = {};
   }
 
-  handleWantInfo(want: Want) {
-    // want 中附带有新的目标url的信息
-    wbLogger.info(CONTAINER_TAG, `want: ${JSON.stringify(want)}`);
-    const params = want.parameters;
-    const pagePath = params?.path ? `${params.path}${params?.query ? '?' + params.query : ''}` : '';
+  structLaunchOptions() {
+    if (!this.want || Object.keys(this.want).length === 0 || this.appearDone) {
+      return;
+    }
+    wbLogger.info(CONTAINER_TAG, `want: ${JSON.stringify(this.want)}`);
+    const params = this.want.parameters;
+    const appId = params?.['ohos.aafwk.param.callerBundleName'] || '';
     this.launchOptions = JSON.stringify({
       path: params?.path || '',
-      query: params?.query || '',
-      appId: params?.['ohos.aafwk.param.callerBundleName'] || '',
+      query: (!params?.query || params.query === 'null') ? '' : params.query,
+      appId,
       extraData: params?.extraData || {},
     } as LaunchOptions);
+  }
 
-    if (pagePath) {
-      wbLogger.info(CONTAINER_TAG, `pagePath: ${pagePath}`);
-      this.currentUrl = `${this.indexUrl}#${pagePath}`;
+  redirectNewUrl() {
+    if (!this.want || Object.keys(this.want).length === 0) {
+      return;
+    }
+    // want 中附带有新的目标url的信息
+    const params = this.want.parameters;
+    const pagePath = params?.path ? `${params.path}${params?.query ? '?' + params.query : ''}` : '';
+    const appId = params?.['ohos.aafwk.param.callerBundleName'] || '';
+    if (appId && pagePath) {
+      this.indexUrl = `${this.taroWebController.getIndexUrl(this.entryDomain, this.useBuildIn)}#${pagePath}`;
+      if (this.appearDone) {
+        try {
+          wbLogger.info(CONTAINER_TAG, `loadUrl: ${this.indexUrl}`);
+          this.taroWebController.webController.loadUrl(this.indexUrl);
+        } catch(e) {
+          wbLogger.error(CONTAINER_TAG, `failed loadUrl: ${this.indexUrl}`);
+        }
+      }
     }
   }
 }
