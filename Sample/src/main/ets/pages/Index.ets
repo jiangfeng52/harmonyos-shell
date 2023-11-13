@@ -48,8 +48,8 @@ struct TaroMpharmonySample {
     this.pageState = HostPageState.PageOnHide;
   }
 
-  entryUrl(): string{
-    return `${this.entryDomain}index.html`
+  entryUrl(): string {
+    return this.taroWebController.getIndexUrl(this.entryDomain, this.useBuildIn);
   }
 
   build() {

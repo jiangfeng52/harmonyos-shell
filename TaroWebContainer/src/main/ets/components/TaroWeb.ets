@@ -17,11 +17,11 @@ import File from '@ohos.file.fs';
 import { BusinessError } from '@ohos.base';
 import { ApiAdapter } from '../inject_adapter/ApiAdapter';
 import { switchInternalToHapSandBox } from '../utils/InternalPath';
-import { RawUtils } from '../utils/RawUtils';
 import webview from '@ohos.web.webview';
 import { wbLogger } from '../utils/Logger';
 
 const TARO_WEB_TAG = 'TaroWeb';
+const RAW_RESOURCE = 'resource://rawfile/index.html';
 
 @Observed
 export class TaroWebController {
@@ -55,6 +55,9 @@ export class TaroWebController {
     this.webController.backward();
   }
 
+  getIndexUrl(domain: string, useBuildIn: boolean) {
+    return useBuildIn ? RAW_RESOURCE : (domain ? domain : RAW_RESOURCE);
+  }
 }
 
 /**
@@ -62,13 +65,10 @@ export class TaroWebController {
  */
 @Component
 export struct TaroWeb {
-  @Prop currentUrl: string;
   onTitleReceive?: (title: string) => void;
   onRefreshAccessedHistory?: ()=>void;
   src: string = '';
 
-  @Prop entryDomain: string;
-  @Prop useBuildIn: boolean;
   @ObjectLink taroWebController: TaroWebController;
   apiAdapter: ApiAdapter = new ApiAdapter();
 
@@ -136,14 +136,6 @@ export struct TaroWeb {
           }
           return responseWeb
         }
-        else if( this.useBuildIn && url && url.startsWith(this.entryDomain)) {
-          const path: string|undefined = url?.replace(this.entryDomain,'');
-          if (!path || !RawUtils.rawfileExist(path)) {
-            return null;
-          }
-
-          return RawUtils.getRawfileOnResponseWeb(path)
-        }
         return null
       })
       .onSslErrorEventReceive((event) => { // 通知用户加载资源时发生SSL错误
@@ -153,14 +145,9 @@ export struct TaroWeb {
       })
       .onTitleReceive((event) => {
         this.onTitleReceive && this.onTitleReceive(event?.title ?? '')
-        // if (event && this.currentUrl !== event.title) {
-        //   this.naviController.title = event.title;
-        // }
-        // this.naviController.canBackward = this.routerController.webController.accessBackward();
       })
       .onRefreshAccessedHistory(() => {
         this.onRefreshAccessedHistory && this.onRefreshAccessedHistory();
-        // this.naviController.loading = false;
       })
     }
 }

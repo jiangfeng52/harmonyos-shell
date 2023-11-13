@@ -50,14 +50,16 @@ struct TaroMpharmonySample {
 | 问题描述 | 优先级 | 处理情况 | 问题相关链接                     |
 | ------- | ------ | -------- |----------------------------|
 | 导航栏与Web组件层叠布局情况下，页面插入的空白div导致页面内元素的position:fixed定位时效 | `高` | 未解决 | [导航栏设计](./design/导航栏设计.md) |
-| 应用切入后台在切入前台，web页面没停留在切入后台前的页面，而是回到了首页 | 中 | 未解决 ||
 | 当页面加载异常的时候，导航栏标题显示的是异常url，应该显示navigationBarTitleText配置值 | 低 |  未解决 ||
-| 通过chrome://inspect进行调试的页面出现GET http://10.253.108.182:10086/favicon.ico net::ERR_ADDRESS_UNREACHABLE 的错误 | 低 | 未解决 ||
-|  通过chrome://inspect进行调试的页面，使用内置资源，但调试界面地址栏显示的还是IP，误导开发者 | 低 | 未解决 ||
 
 
 
 ### 版本修订记录
+2023/11/13
+- 修复应用从后台切入前台时web页面没停留在切入后台前的页面的问题
+- 解决问题：通过chrome://inspect进行调试的页面出现GET http://10.253.108.182:10086/favicon.ico net::ERR_ADDRESS_UNREACHABLE
+- 解决问题：通过chrome://inspect进行调试的页面，使用内置资源，但调试界面地址栏显示的还是IP，误导开发者
+
 2023/11/11
  - 修复Taro.setNavigationBarColor 时，状态栏的前景色没跟着变化
 
