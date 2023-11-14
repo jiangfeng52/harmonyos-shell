@@ -9,6 +9,9 @@ export class MiniRepository {
   private miniRawFileDataSource: MiniRawFileDataSource
 
   constructor() {
+    this.miniNetworkDataSource = new MiniNetworkDataSource()
+    this.miniLocalFileDataSource = new MiniLocalFileDataSource()
+    this.miniRawFileDataSource = new MiniRawFileDataSource()
   }
 
   async downloadMini(miniDownloadUrl: string): Promise<NetworkTask<string>>{

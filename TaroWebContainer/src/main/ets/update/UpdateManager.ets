@@ -1,6 +1,6 @@
 import ArrayList from '@ohos.util.ArrayList'
 import List from '@ohos.util.List';
-import { NetworkTaskStaus } from '../../data/source/bean/NetworkTask';
+import { NetworkTaskStaus } from '../data/source/bean/NetworkTask';
 
 export class ResOptions {
   public hasUpdate: boolean
@@ -17,8 +17,8 @@ export abstract class UpdateManager {
   protected onUpdateReadyListeners: ArrayList<()=>void> = new ArrayList<()=>void>();
   protected onUpdateFailedListeners: ArrayList<()=>void> = new ArrayList<()=>void>();
 
-  protected checkForUpdateResult?: ResOptions = null
-  protected updateResult?: NetworkTaskStaus = null
+  protected checkForUpdateResult: ResOptions | null = null
+  protected updateResult: NetworkTaskStaus | null = null
 
   reset(){
     this.checkForUpdateResult = null
