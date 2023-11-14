@@ -5,7 +5,9 @@ import { BaseCapsule } from 'web-container'
 export struct Capsule {
   build() {
     Column() {
-      BaseCapsule()
+      BaseCapsule({
+        targetPage: 'pages/Developer',
+      })
         .width('100%')
         .height('100%')
     }

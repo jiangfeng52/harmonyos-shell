@@ -36,19 +36,17 @@ import { wbLogger } from '../utils/Logger';
 
 const CONTAINER_TAG = 'TaroWebContainer';
 
-// import { TaroWebController } from './TaroWeb';
-
 /**
  * TaroWebContainer组件，包含定制的Web组件和自定义导航栏
  */
 @Component
 export struct TaroWebContainer {
-  // 第一次加载资源时初始化资源url
-  @Prop indexUrl: string = 'about:blank';
-  // 使用内置资源文件（rawfile目录）
-  @Prop useBuildIn: boolean;
-  // 初始的远程资源域名
-  @Prop entryDomain: string;
+  // 初始化资源url
+  @Prop webUrl: string;
+  // 资源url的前缀
+  @Prop webUrlPrefix: string;
+  // 使用缓存
+  @Prop useCache: boolean = true;
   // 显示胶囊
   @Prop showCapsule: boolean = true;
   // 胶囊按钮点击后跳转的页面
@@ -56,14 +54,13 @@ export struct TaroWebContainer {
   // 同步宿主页面的状态
   @Prop @Watch('onPageStateUpdated') pageState: HostPageState;
   // 监听UIAbility的Want
-  @Prop want: Want = {};
+  @Prop @Watch('onWantUpdated') want: Want = {};
   // 导航栏状态控制器
   @State navigationBarData: NavigationBarData = new NavigationBarData();
   // 系统状态状态栏高度
   @State systemBarHeight: number = 0;
 
   // 路由控制器
-  // @Provide routerController: RouterController = new RouterController();
   @Link taroWebController: TaroWebController;
 
   // 用户自定义的注入对象
@@ -73,21 +70,22 @@ export struct TaroWebContainer {
 
   // 高阶API适配器
   private adapter: ApiAdapter | undefined;
+
   // 启动参数
   private launchOptions: string = '';
-  private appearDone: boolean = false;
+  // aboutToAppear阶段是否已经完成
+  private appearDone: boolean = false
+  // 备份初始indexUrl
+  private originIndexUrl: string = '';
 
   capsuleOptions: MenuButtonOptions = { width: 50, height: this.navigationBarData.titleHeight, marginRight: 16 };
 
   onTitleReceive = (title: string)=>{
     this.navigationBarData.title = title
-    // this.naviController.title = title;
-    // this.naviController.canBackward =
-    this.navigationBarData.canBackward = this.taroWebController.accessBackward() // this.routerController.webController.accessBackward();
+    this.navigationBarData.canBackward = this.taroWebController.accessBackward();
   }
   onRefreshAccessedHistory = ()=>{
     this.navigationBarData.loading = false;
-    // this.naviController.loading = false;
   }
 
   onNavigationBarBackPressed = ()=>{
@@ -102,11 +100,12 @@ export struct TaroWebContainer {
     }
   }
 
-
   build() {
     Stack({ alignContent: Alignment.TopEnd }) {
       TaroWeb({
-        src: this.indexUrl,
+        webUrl: this.webUrl,
+        webUrlPrefix: this.webUrlPrefix,
+        useCache: this.useCache,
         apiAdapter: this.adapter,
         taroWebController: this.taroWebController,
         onTitleReceive: this.onTitleReceive,
@@ -136,7 +135,7 @@ export struct TaroWebContainer {
 
   aboutToAppear() {
     // 加载组件时，url更新
-    this.indexUrl = this.taroWebController.getIndexUrl(this.entryDomain, this.useBuildIn);
+    this.originIndexUrl = this.webUrl;
     this.handleWantInfo();
     const context = getContext(this) as common.UIAbilityContext;
     // 使用UIAbility的context初始化对象
@@ -170,22 +169,23 @@ export struct TaroWebContainer {
   }
 
   onPageStateUpdated(): void {
-    if (this.pageState === HostPageState.PageOnShow) {
-      this.handleWantInfo();
-    }
+  }
+
+  onWantUpdated() {
+    wbLogger.debug(CONTAINER_TAG, `onWantUpdated want`);
+    this.handleWantInfo();
   }
 
   handleWantInfo() {
+    wbLogger.info(CONTAINER_TAG, `want: ${JSON.stringify(this.want)}`);
     this.structLaunchOptions();
     this.redirectNewUrl();
-    this.want = {};
   }
 
   structLaunchOptions() {
     if (!this.want || Object.keys(this.want).length === 0 || this.appearDone) {
       return;
     }
-    wbLogger.info(CONTAINER_TAG, `want: ${JSON.stringify(this.want)}`);
     const params = this.want.parameters;
     const appId = params?.['ohos.aafwk.param.callerBundleName'] || '';
     this.launchOptions = JSON.stringify({
@@ -205,13 +205,13 @@ export struct TaroWebContainer {
     const pagePath = params?.path ? `${params.path}${params?.query ? '?' + params.query : ''}` : '';
     const appId = params?.['ohos.aafwk.param.callerBundleName'] || '';
     if (appId && pagePath) {
-      this.indexUrl = `${this.taroWebController.getIndexUrl(this.entryDomain, this.useBuildIn)}#${pagePath}`;
+      this.webUrl = `${this.originIndexUrl}#${pagePath}`;
+      wbLogger.info(CONTAINER_TAG, `webUrl: ${this.webUrl}`);
       if (this.appearDone) {
         try {
-          wbLogger.info(CONTAINER_TAG, `loadUrl: ${this.indexUrl}`);
-          this.taroWebController.webController.loadUrl(this.indexUrl);
+          this.taroWebController.loadUrl(this.webUrl);
         } catch(e) {
-          wbLogger.error(CONTAINER_TAG, `failed loadUrl: ${this.indexUrl}`);
+          wbLogger.error(CONTAINER_TAG, `failed loadUrl: ${this.webUrl}`);
         }
       }
     }
