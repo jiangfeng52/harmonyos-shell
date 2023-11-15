@@ -55,6 +55,9 @@ struct TaroMpharmonySample {
 
 
 ### 版本修订记录
+2023/11/14
+- 补充热更新的整体结构
+
 2023/11/13
 - 修复应用从后台切入前台时web页面没停留在切入后台前的页面的问题
 - 解决问题：通过chrome://inspect进行调试的页面出现GET http://10.253.108.182:10086/favicon.ico net::ERR_ADDRESS_UNREACHABLE
@@ -68,8 +71,13 @@ struct TaroMpharmonySample {
    - 增加日志类，优化日志打印
    - web容器模块发布名称改成web-container, 通过 `import { TaroWebContainer } from 'web-container'` 的格式进行导入
 
+2023/11/01
+- TaroWebContainer与NavigationBar解耦
+- 滑动屏幕返回优先Web容器返回
+
 2023/10/31
- - 重构目录，封装Web容器模块
+- 修复胶囊在非全屏下的问题 
+- 重构目录，封装Web容器模块
    - 增加TaroWebContainer组件
    - 增加TaroWeb组件
    - 增加NavigationBar导航栏
