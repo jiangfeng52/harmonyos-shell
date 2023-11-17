@@ -363,6 +363,7 @@ export class ApiAdapter {
   }
 
   getAdapterProxy() {
+    wbLogger.debug(ADAPTER_TAG, 'getAdapterProxy')
     const that = this
     Object.assign(as, that.nativeObj)
     Object.defineProperty(as, 'sendToAs', {

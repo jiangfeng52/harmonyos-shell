@@ -17,46 +17,65 @@ import File from '@ohos.file.fs';
 import { BusinessError } from '@ohos.base';
 import { ApiAdapter } from '../inject_adapter/ApiAdapter';
 import { switchInternalToHapSandBox } from '../utils/InternalPath';
+import { RawUtils } from '../utils/RawUtils';
 import webview from '@ohos.web.webview';
 import { wbLogger } from '../utils/Logger';
 
 const TARO_WEB_TAG = 'TaroWeb';
-const RAW_RESOURCE = 'resource://rawfile/index.html';
+
+export type InterceptRequestHandler = (request: WebResourceRequest) => WebResourceResponse | null;
 
 @Observed
 export class TaroWebController {
   public webController: webview.WebviewController;
   public hasBindedTaroWeb: boolean;
+  public callbacks: InterceptRequestHandler[];
 
   constructor() {
     this.webController = new webview.WebviewController();
     this.hasBindedTaroWeb = false;
+    this.callbacks = [];
   }
 
-  loadUrl(url: string | Resource, headers?: Array<webview.WebHeader>){
+  loadUrl(url: string | Resource, headers?: Array<webview.WebHeader>) {
     if (!this.hasBindedTaroWeb) {
       return;
     }
-    this.webController.loadUrl(url)
-    this.webController.accessBackward();
+    try {
+      this.webController.loadUrl(url);
+      this.webController.accessBackward();
+    } catch(err) {
+      const error: BusinessError = err as BusinessError;
+      wbLogger.error(TARO_WEB_TAG, `fail loadUrl, error code: ${error.code}`);
+    }
   }
 
-  accessBackward(): boolean{
+  accessBackward(): boolean {
     if (!this.hasBindedTaroWeb) {
       return false;
     }
     return this.webController.accessBackward();
   }
 
-  backward(){
+  backward() {
     if (!this.hasBindedTaroWeb) {
-      return ;
+      return;
     }
     this.webController.backward();
   }
 
-  getIndexUrl(domain: string, useBuildIn: boolean) {
-    return useBuildIn ? RAW_RESOURCE : (domain ? domain : RAW_RESOURCE);
+  addRequestHandler(callback: InterceptRequestHandler) {
+    this.callbacks.push(callback);
+  }
+
+  interceptRequest(request: WebResourceRequest): WebResourceResponse | null {
+    for (const callback of this.callbacks) {
+      const response = callback(request);
+      if (response) {
+        return response;
+      }
+    }
+    return null;
   }
 }
 
@@ -66,22 +85,61 @@ export class TaroWebController {
 @Component
 export struct TaroWeb {
   onTitleReceive?: (title: string) => void;
-  onRefreshAccessedHistory?: ()=>void;
-  src: string = '';
-
+  onRefreshAccessedHistory?: () => void;
+  @Prop webUrl: string;
+  @Prop webUrlPrefix: string;
+  @Prop useCache: boolean;
   @ObjectLink taroWebController: TaroWebController;
   apiAdapter: ApiAdapter = new ApiAdapter();
+  scriptProxy: ESObject;
 
   aboutToAppear() {
+    this.scriptProxy = this.apiAdapter.getAdapterProxy();
     this.taroWebController.hasBindedTaroWeb = true
+    this.taroWebController.addRequestHandler(this.handleInternalResource);
+    this.taroWebController.addRequestHandler(this.useLocalCacheResource);
   }
 
   aboutToDisappear() {
     this.taroWebController.hasBindedTaroWeb = false
   }
 
+  handleInternalResource: InterceptRequestHandler = (request) => {
+    const url = request.getRequestUrl();
+    if (url && url.startsWith('internal:')) {
+      const responseWeb = new WebResourceResponse();
+      const path: string = switchInternalToHapSandBox(url);
+      if (File.accessSync(path)) {
+        const file: File.File = File.openSync(path, File.OpenMode.READ_ONLY);
+        const fd: number = file.fd;
+        responseWeb.setResponseData(fd);
+        responseWeb.setResponseCode(200);
+        responseWeb.setReasonMessage('OK');
+        responseWeb.setResponseIsReady(true);
+        wbLogger.info(TARO_WEB_TAG, 'responseWeb for internal resources');
+      }
+      else {
+        wbLogger.info(TARO_WEB_TAG, 'file resource is not exist');
+      }
+      return responseWeb;
+    }
+    return null;
+  }
+
+  useLocalCacheResource: InterceptRequestHandler = (request) => {
+    const url = request.getRequestUrl();
+    if (this.useCache && this.webUrlPrefix) {
+      const path: string | undefined = url?.replace(this.webUrlPrefix, '');
+      if (!path || !RawUtils.rawfileExist(path)) {
+        return null;
+      }
+      return RawUtils.getRawfileOnResponseWeb(path)
+    }
+    return null;
+  }
+
   build() {
-    Web({ src: this.src, controller: this.taroWebController.webController })
+    Web({ src: this.webUrl, controller: this.taroWebController.webController })
       .fileAccess(true)
       .domStorageAccess(true)
       .mixedMode(MixedMode.All)
@@ -89,7 +147,7 @@ export struct TaroWeb {
       .geolocationAccess(true)
       .javaScriptAccess(true)
       .javaScriptProxy({
-        object: this.apiAdapter.getAdapterProxy(),
+        object: this.scriptProxy,
         name: 'as',
         methodList: this.apiAdapter.getMethodList() || [],
         controller: this.taroWebController.webController,
@@ -102,7 +160,7 @@ export struct TaroWeb {
       .horizontalScrollBarAccess(false)
       .onPageBegin(() => {
         try {
-           this.taroWebController.webController.runJavaScript(
+          this.taroWebController.webController.runJavaScript(
             this.apiAdapter.getRunJavaScript(),
             (error, result) => {
               if (error) {
@@ -118,25 +176,11 @@ export struct TaroWeb {
         }
       })
       .onInterceptRequest((event) => { // 当web组件加载url之前触发该回调，用于拦截url并返回响应数据。
-        const url = event?.request.getRequestUrl()
-        if (url && url.startsWith('internal:')) {
-          const responseWeb = new WebResourceResponse();
-          const path: string = switchInternalToHapSandBox(url);
-          if (File.accessSync(path)) {
-            const file: File.File = File.openSync(path, File.OpenMode.READ_ONLY);
-            const fd: number = file.fd;
-            responseWeb.setResponseData(fd);
-            responseWeb.setResponseCode(200);
-            responseWeb.setReasonMessage('OK');
-            responseWeb.setResponseIsReady(true);
-            wbLogger.info(TARO_WEB_TAG, 'responseWeb for internal resources')
-          }
-          else {
-            wbLogger.info(TARO_WEB_TAG, 'file resource is not exist')
-          }
-          return responseWeb
+        const request = event?.request;
+        if (!request) {
+          return null;
         }
-        return null
+        return this.taroWebController.interceptRequest(request);
       })
       .onSslErrorEventReceive((event) => { // 通知用户加载资源时发生SSL错误
         wbLogger.info(TARO_WEB_TAG, `onSslErrorEventReceive:${event.error}`)
@@ -149,5 +193,5 @@ export struct TaroWeb {
       .onRefreshAccessedHistory(() => {
         this.onRefreshAccessedHistory && this.onRefreshAccessedHistory();
       })
-    }
+  }
 }

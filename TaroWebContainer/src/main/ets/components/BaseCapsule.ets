@@ -5,10 +5,8 @@ import { NavigationBar, NavigationBarData } from '../components/NavigationBar';
 export struct BaseCapsule {
   title: string = '账户设置'
 
-  // @Provide routerController: RouterController = new RouterController();
-  // @State naviController: NaviController = new NaviController();
   @State navigationBarData: NavigationBarData = new NavigationBarData();
-  @Prop targetPage: string = 'pages/Developer';
+  @Prop targetPage: string;
 
   aboutToAppear() {
     this.navigationBarData.visible = true;
