@@ -11,7 +11,7 @@ export default class EntryAbility extends UIAbility {
   onCreate(want: Want) {
     wbLogger.info(ABILITY_TAG, '%{public}s', 'Ability onCreate');
     storage.setOrCreate('want', want);
-    LocalUpdateManagerInstance.updateMiniOnLaunch()
+    LocalUpdateManagerInstance.updateMiniOnLaunch(this.context)
   }
 
   onDestroy() {

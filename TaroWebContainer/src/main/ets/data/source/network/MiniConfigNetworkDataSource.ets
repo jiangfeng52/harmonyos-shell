@@ -26,8 +26,10 @@ export class MiniConfigNetworkDataSource {
     } catch (err) {
       wbLogger.debug('network', '%{public}s request is err, err is %{public}s', url, JSON.stringify(err) ?? '')
       networkTask.taskStatus = NetworkTaskStaus.FAILED;
+    } finally {
+      httpRequest.destroy();
     }
-    httpRequest.destroy();
+
     return networkTask
   }
 
