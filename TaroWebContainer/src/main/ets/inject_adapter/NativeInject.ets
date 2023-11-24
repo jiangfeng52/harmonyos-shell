@@ -18,6 +18,7 @@ import common from '@ohos.app.ability.common'
 import { BusinessError } from '@ohos.base'
 import Want from '@ohos.app.ability.Want'
 import bundleManager from '@ohos.bundle.bundleManager';
+import fs from '@ohos.file.fs';
 import { InnerInjectObj, MenuButtonOptions, ErrorMsg, PermissionInfo } from '../interfaces/InjectObject'
 import {
   getBundleUsedPermission,
@@ -28,6 +29,7 @@ import {
 import { NavigationBarData } from '../components/NavigationBar';
 import { setSystemBarProperties } from '../utils/WindowUtil';
 import { wbLogger } from '../utils/Logger';
+import { switchHapSandBoxToInternal } from '../utils/InternalPath'
 
 const NATIVE_TAG = 'NativeInject';
 
@@ -76,6 +78,14 @@ export class NativeInject {
 
   public buildInjectObj(): InnerInjectObj {
     return {
+      copyFileToSandboxCache: (src: string) => {
+        const context = getContext() as common.UIAbilityContext;
+        const fileName = src.substring(src.lastIndexOf('/') + 1);
+        const sandboxPath = `${context.cacheDir}/${Date.now()}_${fileName}`;
+        const fd = fs.openSync(src, fs.OpenMode.READ_ONLY).fd;
+        fs.copyFileSync(fd, sandboxPath);
+        return { internalCachePath: switchHapSandBoxToInternal(sandboxPath)}
+      },
       setNavigationBarColor: (options) => {
         wbLogger.info(NATIVE_TAG, `setNavigationBarColor: ${JSON.stringify(options || {})}`)
         this.navigationBarData.barColor = options.backgroundColor ?? this.navigationBarData.barColor;

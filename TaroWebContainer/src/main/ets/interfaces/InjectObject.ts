@@ -146,6 +146,10 @@ export interface GetSettingRetOptions {
   errMsg: string;
 }
 
+export interface copyFileToSandboxCacheRetOptions {
+  internalCachePath: string
+}
+
 interface OpenSettingOptions {
   withSubscriptions?: boolean;
 }
@@ -159,6 +163,7 @@ export interface InnerInjectObj {
   setNavigationStyle: (style: string, textStyle: string, backgroundColor: string) => void;
   openSetting: (options: OpenSettingOptions) => Promise<OpenSettingRetOptions>;
   getSetting: (options: OpenSettingOptions) => Promise<GetSettingRetOptions>;
+  copyFileToSandboxCache: (src: string) => copyFileToSandboxCacheRetOptions;
 }
 
 export interface InjectObject {
