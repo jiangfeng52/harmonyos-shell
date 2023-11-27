@@ -39,3 +39,31 @@ export function switchInternalToHapSandBox(path :string) {
     }
     return path
 }
+
+/**
+ * 沙盒路径转internal路径
+ */
+export function switchHapSandBoxToInternal(path :string) {
+    if(path.startsWith(globalThis.abilityContext.bundleCodeDir)){
+        return path.replace(globalThis.abilityContext.bundleCodeDir, 'internal://bundle')
+    }
+    if(path.startsWith(globalThis.abilityContext.cacheDir)){
+        return path.replace(globalThis.abilityContext.cacheDir, 'internal://cache')
+    }
+    if(path.startsWith(globalThis.abilityContext.filesDir)){
+        return path.replace(globalThis.abilityContext.filesDir, 'internal://files')
+    }
+    if(path.startsWith(globalThis.abilityContext.preferencesDir)){
+        return path.replace(globalThis.abilityContext.preferencesDir, 'internal://preferences')
+    }
+    if(path.startsWith(globalThis.abilityContext.tempDir)){
+        return path.replace(globalThis.abilityContext.tempDir, 'internal://temp')
+    }
+    if(path.startsWith(globalThis.abilityContext.databaseDir)){
+        return path.replace(globalThis.abilityContext.databaseDir, 'internal://database')
+    }
+    if(path.startsWith(globalThis.abilityContext.distributedFilesDir)){
+        return path.replace(globalThis.abilityContext.distributedFilesDir, 'internal://distributedFiles')
+    }
+    return path
+}
