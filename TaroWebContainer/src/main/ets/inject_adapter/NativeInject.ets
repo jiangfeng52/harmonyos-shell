@@ -30,6 +30,7 @@ import { NavigationBarData } from '../components/NavigationBar';
 import { setSystemBarProperties } from '../utils/WindowUtil';
 import { wbLogger } from '../utils/Logger';
 import { switchHapSandBoxToInternal } from '../utils/InternalPath'
+import { LocalUpdateManagerInstance } from '../update/LocalUpdateManager';
 
 const NATIVE_TAG = 'NativeInject';
 
@@ -210,6 +211,9 @@ export class NativeInject {
             );
           }
         })
+      },
+      getUpdateManager: () => {
+        return LocalUpdateManagerInstance;
       },
     };
   }

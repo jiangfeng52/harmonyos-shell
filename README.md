@@ -55,6 +55,10 @@ struct TaroMpharmonySample {
 
 
 ### 版本修订记录
+2023/11/27
+- 修复API返回值对象属性缺失的问题
+- 增加native API: getUpdateManager
+
 2023/11/14
 - 补充热更新的整体结构
 
