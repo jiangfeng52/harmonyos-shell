@@ -164,6 +164,7 @@ export interface InnerInjectObj {
   openSetting: (options: OpenSettingOptions) => Promise<OpenSettingRetOptions>;
   getSetting: (options: OpenSettingOptions) => Promise<GetSettingRetOptions>;
   copyFileToSandboxCache: (src: string) => copyFileToSandboxCacheRetOptions;
+  getUpdateManager: () => ESObject;
 }
 
 export interface InjectObject {
