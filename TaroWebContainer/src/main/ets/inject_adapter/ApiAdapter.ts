@@ -362,6 +362,17 @@ export class ApiAdapter {
 })*/
   }
 
+  getDefinedPropertyNames(obj) {
+    const names = []
+    names.push(...Object.getOwnPropertyNames(obj))
+    let proto = Object.getPrototypeOf(obj)
+    while (proto.constructor !== Object) {
+      names.push(...Object.getOwnPropertyNames(proto))
+      proto = Object.getPrototypeOf(proto)
+    }
+    return [...new Set(names)]
+  }
+
   getAdapterProxy() {
     wbLogger.debug(ADAPTER_TAG, 'getAdapterProxy')
     const that = this
@@ -476,8 +487,7 @@ export class ApiAdapter {
           const asObject = target[property].apply(null, args)
           if (typeof (asObject) === 'object') {
             that.asObjectMap.set(that.asObjectId, asObject)
-            const proto = Object.getPrototypeOf(asObject)
-            const list = Object.getOwnPropertyNames(proto).concat(Object.getOwnPropertyNames(asObject))
+            const list = that.getDefinedPropertyNames(asObject)
             const resultJson = { asObjectId: that.asObjectId++ }
             list.forEach(value => {
               if (value !== 'constructor') {
