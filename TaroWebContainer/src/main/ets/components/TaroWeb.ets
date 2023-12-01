@@ -20,6 +20,8 @@ import { switchInternalToHapSandBox } from '../utils/InternalPath';
 import { RawUtils } from '../utils/RawUtils';
 import webview from '@ohos.web.webview';
 import { wbLogger } from '../utils/Logger';
+import { FileUtils } from '../utils/FileUtils';
+import { LocalUpdateManagerInstance } from '../update/LocalUpdateManager';
 
 const TARO_WEB_TAG = 'TaroWeb';
 
@@ -92,12 +94,19 @@ export struct TaroWeb {
   @ObjectLink taroWebController: TaroWebController;
   apiAdapter: ApiAdapter = new ApiAdapter();
   scriptProxy: ESObject;
+  localLastPath: string = ''
 
   aboutToAppear() {
     this.scriptProxy = this.apiAdapter.getAdapterProxy();
     this.taroWebController.hasBindedTaroWeb = true
     this.taroWebController.addRequestHandler(this.handleInternalResource);
     this.taroWebController.addRequestHandler(this.useLocalCacheResource);
+    LocalUpdateManagerInstance.onUpdateReady((updatedPath: string)=>{
+      this.localLastPath = updatedPath
+      this.taroWebController.loadUrl(this.webUrl)
+      wbLogger.debug('TaroWeb', 'onUpdateReady updatedPath=%{public}s', updatedPath)
+
+    })
   }
 
   aboutToDisappear() {
@@ -130,6 +139,17 @@ export struct TaroWeb {
     const url = request.getRequestUrl();
     if (this.useCache && this.webUrlPrefix) {
       const path: string | undefined = url?.replace(this.webUrlPrefix, '');
+
+      if (this.localLastPath != '') {
+        wbLogger.debug('TaroWeb', 'useLocalCacheResource path=%{public}s', path)
+        // 走本地缓存
+        if(!path || !FileUtils.fileExist(this.localLastPath, path)) {
+          return null;
+        }
+        return FileUtils.getFileOnResponseWeb(this.localLastPath, path)
+      }
+
+      // 走App内置的Raw缓存
       if (!path || !RawUtils.rawfileExist(path)) {
         return null;
       }
