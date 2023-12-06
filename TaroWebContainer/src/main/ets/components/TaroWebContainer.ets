@@ -204,8 +204,7 @@ export struct TaroWebContainer {
     // want 中附带有新的目标url的信息
     const params = this.want.parameters;
     const pagePath = params?.path ? `${params.path}${params?.query ? '?' + params.query : ''}` : '';
-    const appId = params?.['ohos.aafwk.param.callerBundleName'] || '';
-    if (appId && pagePath) {
+    if (pagePath) {
       this.webUrl = `${this.originIndexUrl}#${pagePath}`;
       wbLogger.info(CONTAINER_TAG, `webUrl: ${this.webUrl}`);
       if (this.appearDone) {
