@@ -124,12 +124,13 @@ export interface AuthSetting {
   'ohos.permission.GET_INSTALLED_BUNDLE_LIST': boolean;
 }
 
-interface ItemSettings {
-  templateId: string
+export  interface ItemSettings {
+  tmplid: string,
+  enabled:boolean
 }
 
 export interface SubscriptionsSetting {
-  mainSwitch: string;
+  mainSwitch: boolean;
   itemSettings: Array<ItemSettings>;
 }
 
@@ -154,6 +155,15 @@ interface OpenSettingOptions {
   withSubscriptions?: boolean;
 }
 
+export interface RequestSubscribeMessageOptions {
+  tmplIds: Array<string>;
+}
+
+export interface SubscribeMessageOptions {
+  errCode:number;
+  errMsg: string;
+}
+
 export interface InnerInjectObj {
   setNavigationBarColor: (options: NavigationBarOptions) => void;
   showNavigationBarLoading: () => void;
@@ -165,6 +175,7 @@ export interface InnerInjectObj {
   getSetting: (options: OpenSettingOptions) => Promise<GetSettingRetOptions>;
   copyFileToSandboxCache: (src: string) => copyFileToSandboxCacheRetOptions;
   getUpdateManager: () => ESObject;
+  requestSubscribeMessage: (options:RequestSubscribeMessageOptions) => Promise<SubscribeMessageOptions>;
 }
 
 export interface InjectObject {
