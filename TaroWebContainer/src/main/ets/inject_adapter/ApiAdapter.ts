@@ -184,6 +184,7 @@ export class ApiAdapter {
     this.asObjectMap = new Map();
     this.asCallbackMap = new Map();
     this.navigationBarHeight = 0;
+    this.systemBarHeight = 0;
     this.sendTaskPromise = new Promise((resolve, reject) => {
       resolve('')
     })
@@ -198,6 +199,7 @@ export class ApiAdapter {
   blockMap: Map<number, number> = new Map()
   launchOptions: string
   navigationBarHeight: number
+  systemBarHeight: number
 
   setWebController(webController: WebView.WebviewController) {
     this.controller = webController;
@@ -219,6 +221,10 @@ export class ApiAdapter {
     this.navigationBarHeight = height
   }
 
+  setSystemBarHeight(height: number) {
+    this.systemBarHeight = height
+  }
+
   getRunJavaScript(): string {
     let result: string = `
         window.addEventListener('unhandledrejection', (event) => {
@@ -228,6 +234,7 @@ export class ApiAdapter {
             var asCallbackMap = new Map();
             var asAPIMap = new Map();
             var navigationHeight = ${this.navigationBarHeight};
+            var systemBarHeight = ${this.systemBarHeight};
             var customLaunchOptions = '${this.launchOptions}';
             var asCallbackId = 0;
             var receiveTask = (callbackId,resObject) =>{

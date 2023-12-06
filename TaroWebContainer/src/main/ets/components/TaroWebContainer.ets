@@ -164,6 +164,7 @@ export struct TaroWebContainer {
       nativeInject.setWindowWidth(getWindowWidth(windowClass));
       this.adapter!.setLaunchOptions(this.launchOptions);
       this.adapter!.setNavigationBarHeight(this.systemBarHeight + this.navigationBarData.titleHeight + this.navigationBarData.paddingBottom);
+      this.adapter!.setSystemBarHeight(this.systemBarHeight);
     })
     this.appearDone = true;
   }
