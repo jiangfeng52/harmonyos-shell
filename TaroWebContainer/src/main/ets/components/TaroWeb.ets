@@ -101,12 +101,11 @@ export struct TaroWeb {
     this.taroWebController.hasBindedTaroWeb = true
     this.taroWebController.addRequestHandler(this.handleInternalResource);
     this.taroWebController.addRequestHandler(this.useLocalCacheResource);
-    LocalUpdateManagerInstance.onUpdateReady((updatedPath: string)=>{
-      this.localLastPath = updatedPath
-      this.taroWebController.loadUrl(this.webUrl)
-      wbLogger.debug('TaroWeb', 'onUpdateReady updatedPath=%{public}s', updatedPath)
-
-    })
+    // LocalUpdateManagerInstance.onUpdateReady((updatedPath: string)=>{
+    //   this.localLastPath = updatedPath
+    //   this.taroWebController.loadUrl(this.webUrl)
+    //   wbLogger.debug('TaroWeb', 'onUpdateReady updatedPath=%{public}s', updatedPath)
+    // })
   }
 
   aboutToDisappear() {

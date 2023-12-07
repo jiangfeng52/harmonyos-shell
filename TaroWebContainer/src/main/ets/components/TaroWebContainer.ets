@@ -149,6 +149,14 @@ export struct TaroWebContainer {
     this.adapter.mergeInjectObj(nativeInject.buildInjectObj());
     this.injectObj && this.adapter.mergeInjectObj(this.injectObj);
 
+    // TODO-ly 临时写法
+    this.adapter.mergeInjectObj({
+      nativeCall: (call: string, argsJson: string, objectId: number) => {
+        console.log(`nativeCall ${call}(${argsJson}) objectId=${objectId}`)
+
+      },
+    })
+
     // 注入对象的内部依赖更新
     // nativeInject.setNaviController(this.navigationBarData);
     getBundleInfoPermissions().then((permissions: bundleManager.ReqPermissionDetail[]) => {
