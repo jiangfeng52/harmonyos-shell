@@ -1,8 +1,10 @@
 import router from '@ohos.router';
-import { NavigationBar, NavigationBarData } from 'web-container';
-import { NotificationRequest,SendMessageOptions ,NotificationContent,NotificationPictureContent ,NotificationBasicContent,
-  NotificationLongTextContent,NotificationMultiLineContent,CancelMessageOptions,sendMessage,cancelMessage
-} from '../../../../../TaroWebContainer/src/main/ets/utils/SubscribeMessageUtil';
+import { NavigationBar, NavigationBarData } from '@ohos/web-container';
+import { NotificationRequest, SendMessageOptions, NotificationContent, NotificationPictureContent, NotificationBasicContent,
+  NotificationLongTextContent, NotificationMultiLineContent, CancelMessageOptions, sendMessage, cancelMessage
+} from '@ohos/web-container';
+
+
 PersistentStorage.persistProp('enableDevDomain', false);
 PersistentStorage.persistProp('devDomain', '');
 

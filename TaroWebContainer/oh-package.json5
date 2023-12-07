@@ -8,12 +8,10 @@
     "h5",
     "mpharmony"
   ],
-  "author": "",
-  "name": "web-container",
-  "description": "web-container提供定制化Web容器来运行Taro生成的mpharmony类型的h5应用",
+  "author": "huawei",
+  "name": "@ohos/web-container",
+  "description": "web-container提供定制化Web容器来运行Taro生成的mpharmony类型的Web应用",
   "main": "Index.ets",
   "version": "1.0.0",
-  "dependencies": {
-    "@ohos/advanced-api": "file:libs/advanced-api-1.1.10.tgz"
-  }
+  "dependencies": {}
 }

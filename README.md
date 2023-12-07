@@ -21,7 +21,7 @@ harmonyos-shell包含一个定制化的TaroWebContainer实现，旨在为Taro工
 ### 使用示例
 ```js
 // Sample/src/main/ets/pages/Index.ets
-import { TaroWebContainer, InjectObject, HostPageState, TaroWebController } from 'web-container';
+import { TaroWebContainer, InjectObject, HostPageState, TaroWebController } from '@ohos/web-container';
 ...
 @Entry(storage)
 @Component
@@ -31,9 +31,9 @@ struct TaroMpharmonySample {
     Column() {
       TaroWebContainer({
         pageState: this.pageState, // 页面状态同步到组件
-        indexUrl: this.entryUrl(), // 初始Url
-        useBuildIn: this.useBuildIn, // 是否使用内置的rawfile资源
-        entryDomain: this.entryDomain, // 远程资源域名
+        webUrl: this.webUrl(), // 初始Url
+        webUrlPrefix: this.webUrlPrefix(),
+        useCache: this.useCache(),
         want: this.want, // want信息
         taroWebController: this.taroWebController,
         isFullScreen: true, // 是否全屏显示
@@ -42,7 +42,7 @@ struct TaroMpharmonySample {
         .width('100%')
         .height('100%')
     }
-}
+  }
 }
 ```
 
