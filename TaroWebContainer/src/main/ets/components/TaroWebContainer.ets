@@ -17,7 +17,7 @@ import Want from '@ohos.app.ability.Want';
 import window from '@ohos.window';
 import common from '@ohos.app.ability.common';
 import bundleManager from '@ohos.bundle.bundleManager';
-import { AdvancedAPI } from '@ohos/advanced-api';
+import  AdvancedAPI from '../utils/advancedapi.min';
 import { NavigationBar } from './navigationbar';
 import { TaroWeb } from './taroweb';
 import { ApiAdapter } from '../inject_adapter/ApiAdapter'

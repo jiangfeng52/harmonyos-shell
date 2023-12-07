@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 import WebView from '@ohos.web.webview'
-import { as } from '@ohos/advanced-api';
+import  { as } from '../utils/advancedapi.min';
 import { wbLogger } from '../utils/Logger';
 
 /**
