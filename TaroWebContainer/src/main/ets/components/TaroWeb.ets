@@ -22,6 +22,8 @@ import webview from '@ohos.web.webview';
 import { wbLogger } from '../utils/Logger';
 import { FileUtils } from '../utils/FileUtils';
 import { LocalUpdateManagerInstance } from '../update/LocalUpdateManager';
+import { NativeApiStubInstance } from '../inject_adapter/NativeApiStub';
+import { NativeApiImplInstance } from '../inject_adapter/NativeApi'
 
 const TARO_WEB_TAG = 'TaroWeb';
 
@@ -101,6 +103,25 @@ export struct TaroWeb {
     this.taroWebController.hasBindedTaroWeb = true
     this.taroWebController.addRequestHandler(this.handleInternalResource);
     this.taroWebController.addRequestHandler(this.useLocalCacheResource);
+
+    // TODO-ly 改为装饰器实现
+    NativeApiStubInstance.registerNativeApi('openSystemBluetoothSetting', {target: NativeApiImplInstance, fun: NativeApiImplInstance.openSystemBluetoothSetting})
+    NativeApiStubInstance.setRunJavascriptFun((jsCode: string)=>{
+      wbLogger.error('runJavascript', `jsCode=${jsCode}}`)
+      try {
+          this.taroWebController.webController.runJavaScript(jsCode, (error, result) => {
+              if (error) {
+                wbLogger.error(TARO_WEB_TAG, `Run JavaScript error: ${JSON.stringify(error)}`)
+                return;
+              }
+              if (result) {
+                wbLogger.info(TARO_WEB_TAG, `The asFinish() return value is: ${result}`)
+              }
+            });
+        } catch (error) {
+          wbLogger.error(TARO_WEB_TAG, `runJavaScript error: ${(error as BusinessError).message}`);
+        }
+    })
     // LocalUpdateManagerInstance.onUpdateReady((updatedPath: string)=>{
     //   this.localLastPath = updatedPath
     //   this.taroWebController.loadUrl(this.webUrl)
@@ -157,6 +178,14 @@ export struct TaroWeb {
     return null;
   }
 
+  // // TODO-ly 临时写法
+  //     this.adapter.mergeInjectObj({
+  //       nativeCall: (call: string, argsJson: string, objectId: number) => {
+  //         wbLogger.debug('nativeObj', `nativeCall ${call}(${argsJson}) objectId=${objectId}`)
+  //         // NativeApiStubInstance.onTransact(call, argsJson, objectId)
+  //       },
+  //     })
+
   build() {
     Web({ src: this.webUrl, controller: this.taroWebController.webController })
       .fileAccess(true)
@@ -166,9 +195,14 @@ export struct TaroWeb {
       .geolocationAccess(true)
       .javaScriptAccess(true)
       .javaScriptProxy({
-        object: this.scriptProxy,
+        object: {
+          nativeCall: (call: string, argsJson: string, objectId: number) => {
+            wbLogger.debug('nativeObj', `nativeCall ${call}(${argsJson}) objectId=${objectId}`)
+            NativeApiStubInstance.onTransact(call, argsJson, objectId)
+          },
+        },
         name: 'as',
-        methodList: this.apiAdapter.getMethodList() || [],
+        methodList: ['nativeCall'],
         controller: this.taroWebController.webController,
       })
       .onConsole((event) => {
@@ -178,21 +212,21 @@ export struct TaroWeb {
       .zoomAccess(false)
       .horizontalScrollBarAccess(false)
       .onPageBegin(() => {
-        try {
-          this.taroWebController.webController.runJavaScript(
-            this.apiAdapter.getRunJavaScript(),
-            (error, result) => {
-              if (error) {
-                wbLogger.error(TARO_WEB_TAG, `Run JavaScript error: ${JSON.stringify(error)}`)
-                return;
-              }
-              if (result) {
-                wbLogger.info(TARO_WEB_TAG, `The asFinish() return value is: ${result}`)
-              }
-            });
-        } catch (error) {
-          wbLogger.error(TARO_WEB_TAG, `runJavaScript error: ${(error as BusinessError).message}`);
-        }
+        // try {
+        //   this.taroWebController.webController.runJavaScript(
+        //     this.apiAdapter.getRunJavaScript(),
+        //     (error, result) => {
+        //       if (error) {
+        //         wbLogger.error(TARO_WEB_TAG, `Run JavaScript error: ${JSON.stringify(error)}`)
+        //         return;
+        //       }
+        //       if (result) {
+        //         wbLogger.info(TARO_WEB_TAG, `The asFinish() return value is: ${result}`)
+        //       }
+        //     });
+        // } catch (error) {
+        //   wbLogger.error(TARO_WEB_TAG, `runJavaScript error: ${(error as BusinessError).message}`);
+        // }
       })
       .onInterceptRequest((event) => { // 当web组件加载url之前触发该回调，用于拦截url并返回响应数据。
         const request = event?.request;

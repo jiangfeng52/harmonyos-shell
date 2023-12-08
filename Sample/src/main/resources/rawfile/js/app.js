@@ -1,4 +1,6 @@
 
+// TODO-ly 此类都需要重写，因为此类是es5的js
+
 // js
 window.apiStubPool = {
     NextId: 0,// 初始ID值
@@ -6,7 +8,7 @@ window.apiStubPool = {
     // listenerMap: {},
     registerCallback(callbackObject) {
         var objectId = this.NextId++
-        this.callbackObjectMap.set(objectId, callbackObject)
+        this.callbackObjectMap[objectId] = callbackObject
         return objectId
     },
     // registerListener(listeners) {
@@ -51,7 +53,7 @@ const NativeApi = {
      */
     openSystemBluetoothSetting(options) {}
 }
-window.nativeApiProxy = new Proxy(NativeApi, {
+window.NativeApi = new Proxy(NativeApi, {
     get(target, prop, receiver) {
         if(typeof target[prop] === 'function') {
             return function (...args) {
@@ -62,7 +64,10 @@ window.nativeApiProxy = new Proxy(NativeApi, {
                     stubId: args.length >= 1 ? window.apiStubPool.registerCallback(args[0]) : -1
                 }
                 // @ts-ignore
-                as.nativeCall(methodCall.call, methodCall.argsJson, methodCall.stubs.id)
+                if (window.as && window.as.nativeCall) {
+                    // @ts-ignore
+                    window.as.nativeCall(methodCall.call, methodCall.argsJson, methodCall.stubId)
+                }
             }
         }
 
@@ -70,3 +75,18 @@ window.nativeApiProxy = new Proxy(NativeApi, {
         return target[prop];
     }
 })
+
+// TODO-ly 测试
+setTimeout(()=>{
+    window.NativeApi.openSystemBluetoothSetting({
+        success: function (){
+            console.log('openSystemBluetoothSetting success')
+        },
+        fail: function (){
+            console.log('openSystemBluetoothSetting fail')
+        },
+        complete: function (){
+            console.log('openSystemBluetoothSetting complete')
+        }
+    })
+}, 1000)

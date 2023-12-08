@@ -33,6 +33,7 @@ import { TaroWebController } from './TaroWeb';
 import { NavigationBarData } from './NavigationBar';
 import router from '@ohos.router';
 import { wbLogger } from '../utils/Logger';
+import { NativeApiStubInstance } from '../inject_adapter/NativeApiStub';
 
 const CONTAINER_TAG = 'TaroWebContainer';
 
@@ -148,14 +149,6 @@ export struct TaroWebContainer {
     const nativeInject = new NativeInject(this.navigationBarData, this.capsuleOptions);
     this.adapter.mergeInjectObj(nativeInject.buildInjectObj());
     this.injectObj && this.adapter.mergeInjectObj(this.injectObj);
-
-    // TODO-ly 临时写法
-    this.adapter.mergeInjectObj({
-      nativeCall: (call: string, argsJson: string, objectId: number) => {
-        console.log(`nativeCall ${call}(${argsJson}) objectId=${objectId}`)
-
-      },
-    })
 
     // 注入对象的内部依赖更新
     // nativeInject.setNaviController(this.navigationBarData);
