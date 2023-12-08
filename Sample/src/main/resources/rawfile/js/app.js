@@ -5,7 +5,7 @@
 window.apiStubPool = {
     NextId: 0,// 初始ID值
     callbackObjectMap: {},
-    // listenerMap: {},
+    // listenerMap: {}, 弱引用自动取消
     registerCallback(callbackObject) {
         var objectId = this.NextId++
         this.callbackObjectMap[objectId] = callbackObject
