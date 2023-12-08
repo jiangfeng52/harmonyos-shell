@@ -18,12 +18,12 @@ window.apiStubPool = {
     // },
     // 转换方法调用
     onTransact(objectId, callName, argsJson){
-        const obj = this.callbackObjectMap.get(objectId);
+        const obj = this.callbackObjectMap[objectId];
         if(!obj) {
             return ;
         }
         // 只回调一次，可能会有问题，需测试
-        this.callbackObjectMap.delete(objectId)
+        delete this.callbackObjectMap[objectId]
 
         const args = JSON.parse(argsJson)
         obj[callName].call(obj, args)

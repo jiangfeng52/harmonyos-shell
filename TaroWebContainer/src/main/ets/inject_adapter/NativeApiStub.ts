@@ -1,3 +1,4 @@
+import { wbLogger } from '../utils/Logger'
 
 type MethodStub = {target: any, fun: Function}
 
@@ -36,7 +37,10 @@ class NativeApiStub {
         }
         return function (...args) {
           let argsJson = args.length >= 1 ? JSON.stringify(args[0]) : ''
-          let jsCode = `window.jsCall(${target.callbackId}, ${prop.toString()}, ${argsJson})`
+          // let argsJson = args.length >= 1 ? JSON.stringify({'data':'124'}) : ''
+          let jsCode = `window.jsCall(${target.callbackId}, '${prop.toString()}', '${argsJson}')`
+          // wbLogger.debug('NativeApiStub', jsCode2)
+          // let jsCode = `console.log(window.jsCall)`
           NativeApiStubInstance.runJavascriptFun && NativeApiStubInstance.runJavascriptFun(jsCode)
         }
       }
