@@ -273,10 +273,11 @@ export class ApiAdapter {
                             }
                         }
                         if (tempId !== null) {
-                            callbackObj[index] = arg.name ? tempId + '_'+arg.name : tempId;
+                            callbackObj[index] = tempId + '_' + (arg.name ? arg.name : 'func');
                         } else {
                             asCallbackMap.set(asCallbackId,arg);
-                            callbackObj[index] = arg.name ? (asCallbackId++)+'_'+arg.name : asCallbackId++;
+                            callbackObj[index] = asCallbackId + '_' + (arg.name ? arg.name : 'func');
+                            asCallbackId++;
                         }
 
                     }
