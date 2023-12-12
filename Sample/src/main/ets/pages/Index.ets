@@ -4,7 +4,7 @@ import Url from '@ohos.url';
 import { TaroWebContainer, InjectObject, HostPageState, TaroWebController, Logger, LoggerLevel, wbLogger } from '@ohos/web-container';
 
 const SAMPLE_INDEX_TAG = 'SampleIndex';
-const defaultEntryDomain = 'resource://rawfile/';
+const defaultEntryDomain = 'http://192.168.2.245/';
 let storage = LocalStorage.getShared() // 获取共享的本地存储对象
 
 PersistentStorage.persistProp('enableDevDomain', false)
@@ -58,7 +58,7 @@ struct TaroMpharmonySample {
   webUrlPrefix() {
     try {
       const url = Url.URL.parseURL(this.webUrl());
-      return `${url.protocol}//${url.host}`;
+      return `${url.protocol}//${url.host}/`;
     } catch (err) {
       wbLogger.error(SAMPLE_INDEX_TAG, `Invalid webUrl: ${this.webUrl()}`);
       return '';
