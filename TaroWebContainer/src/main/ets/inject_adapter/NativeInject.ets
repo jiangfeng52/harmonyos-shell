@@ -326,7 +326,6 @@ export class NativeInject {
               errCode:(paramError as BusinessError).code,
               errMsg:`${apiName}:fail error ${(paramError as BusinessError).message}`
             }
-
             return resolve(enableCode);
           }
         })
