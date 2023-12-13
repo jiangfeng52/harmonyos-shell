@@ -6,40 +6,40 @@ import type { BusinessError } from '@ohos.base';
 import type { RequestSubscribeMessageOptions } from '../interfaces/InjectObject';
 import type Want from '@ohos.app.ability.Want';
 
-export interface enableCode {
+interface enableCode {
   errCode:number;
   errMsg: string;
 }
 
-export interface addSlotCode {
+interface addSlotCode {
   errCode:number;
   errMsg: string;
 }
 
-export interface pushCode {
+interface pushCode {
   errMsg: string;
 }
 
-export interface cancelCode {
+interface cancelCode {
   errMsg: string;
 }
 
-export interface pixelMapCode {
+interface pixelMapCode {
   image: image.PixelMap;
 }
 
-export interface massageItem {
+interface massageItem {
   tmplid:string;
   enabled:boolean;
 }
 
-export interface wantAgentInfo {
+interface wantAgentInfo {
   wants:Array<Want>;
   operationType:wantAgent.OperationType;
   requestCode:number;
 }
 
-export interface  massageLists {
+interface  massageLists {
   massageList:Array<massageItem>;
 }
 
@@ -242,7 +242,7 @@ export async  function enableNotification(): Promise<enableCode> {
   }
 }
 
-export async  function isHaveNotificationChannel(options?:string) :Promise<boolean> {
+async  function isHaveNotificationChannel(options?:string) :Promise<boolean> {
   let dataCopy:Array<notificationManager.NotificationSlot>;
   await notificationManager.getSlots().then((data: Array<notificationManager.NotificationSlot>) => {
      dataCopy = data
@@ -278,7 +278,7 @@ export async  function isHaveNotificationChannel(options?:string) :Promise<boole
   return false;
 }
 
-export async function publishNotification(options:SendMessageOptions) :Promise<pushCode> {
+async function publishNotification(options:SendMessageOptions) :Promise<pushCode> {
   let pushCode:pushCode = {
     errMsg:''
   }
@@ -644,7 +644,7 @@ export async function publishNotification(options:SendMessageOptions) :Promise<p
   }
 }
 
-export async function cancelNotification(options:CancelMessageOptions) :Promise<cancelCode> {
+async function cancelNotification(options:CancelMessageOptions) :Promise<cancelCode> {
   let cancelCode:cancelCode = {
     errMsg:''
   }
@@ -661,7 +661,7 @@ export async function cancelNotification(options:CancelMessageOptions) :Promise<
   }
 }
 
-export async function urlConvertPixelMap(options:string) :Promise<pixelMapCode>  {
+async function urlConvertPixelMap(options:string) :Promise<pixelMapCode>  {
   // 网络图片请求方法
   return new Promise<pixelMapCode>((resolve, reject) => {
     let pixelMapCode:pixelMapCode = {image: null}
