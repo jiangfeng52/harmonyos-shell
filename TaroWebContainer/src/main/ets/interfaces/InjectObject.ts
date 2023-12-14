@@ -194,7 +194,6 @@ export interface InnerInjectObj {
   getSetting: (options: OpenSettingOptions) => Promise<GetSettingRetOptions>;
   copyFileToSandboxCache: (src: string) => copyFileToSandboxCacheRetOptions;
   getUpdateManager: () => ESObject;
-  requestSubscribeMessage: (options: RequestSubscribeMessageOptions) => Promise<SubscribeMessageOptions>;
   saveDataUrlToFile: (options: SaveDataUrlOptions) => void;
   setCapsuleState: (visible: boolean) => void;
   getCapsuleState: () => CapsuleState;

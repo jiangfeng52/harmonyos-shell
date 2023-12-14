@@ -219,49 +219,6 @@ export class NativeInject {
             const bundleUsedScope = getBundleUsedPermission(bundleScope.allScope, bundleScope.bundleScope);
             // 打开应用的权限列表
             openPermissionsInSystemSettings();
-            if (options.withSubscriptions) {
-              let NotificationBasicContent: NotificationBasicContent = {
-                title: '设置',
-                text: '获取中',
-                additionalText: "",
-              }
-              let NotificationContent: NotificationContent = {
-                contentType: 'NOTIFICATION_CONTENT_BASIC_TEXT',
-                normal: NotificationBasicContent
-              }
-              let notificationRequests: NotificationRequest = {
-                id: 1222287986,
-                slotType: 'OTHER_TYPES',
-                content: NotificationContent,
-                path: ''
-              }
-              let sendMessageOption: SendMessageOptions = {
-                notificationRequest: notificationRequests
-              }
-              let subscriptionsSetting: SubscriptionsSetting = {
-                mainSwitch: false,
-                itemSettings: []
-              }
-              await sendMessage(sendMessageOption).then(async (res) => {
-                let cancelMessageOptions: CancelMessageOptions = {
-                  id: 1222287986
-                }
-                await cancelMessage(cancelMessageOptions).then((res) => {
-                  subscriptionsSetting.mainSwitch = true
-                }).catch((err: Error) => {
-                  subscriptionsSetting.mainSwitch = false
-                })
-              }).catch((err: Error) => {
-                console.log('requestSubscribeMessage', JSON.stringify(err))
-              })
-              const subscribeCode = await getMassageList()
-              subscriptionsSetting.itemSettings = subscribeCode.massageList
-              return resolve({
-                authSetting: bundleUsedScope.allScope,
-                subscriptionsSetting: subscriptionsSetting,
-                errMsg: `${apiName}:ok`
-              });
-            }
             return resolve({ authSetting: bundleUsedScope.allScope, errMsg: `${apiName}:ok` });
           } catch (paramError) {
             wbLogger.warn(NATIVE_TAG, `openSetting: ${JSON.stringify(paramError)}`);
@@ -281,49 +238,6 @@ export class NativeInject {
             const curPermissions: Array<PermissionInfo> = getBundleUserPermissions(this.permissionInfo);
             const bundleScope = await getBundleWxScopeList(curPermissions);
             const bundleUsedScope = getBundleUsedPermission(bundleScope.allScope, bundleScope.bundleScope);
-            if (options.withSubscriptions) {
-              let NotificationBasicContent: NotificationBasicContent = {
-                title: '设置',
-                text: '获取中',
-                additionalText: "",
-              }
-              let NotificationContent: NotificationContent = {
-                contentType: 'NOTIFICATION_CONTENT_BASIC_TEXT',
-                normal: NotificationBasicContent
-              }
-              let notificationRequests: NotificationRequest = {
-                id: 1222287986,
-                slotType: 'OTHER_TYPES',
-                content: NotificationContent,
-                path: ''
-              }
-              let sendMessageOption: SendMessageOptions = {
-                notificationRequest: notificationRequests
-              }
-              let subscriptionsSetting: SubscriptionsSetting = {
-                mainSwitch: false,
-                itemSettings: []
-              }
-              await sendMessage(sendMessageOption).then(async (res) => {
-                let cancelMessageOptions: CancelMessageOptions = {
-                  id: 1222287986
-                }
-                await cancelMessage(cancelMessageOptions).then((res) => {
-                  subscriptionsSetting.mainSwitch = true
-                }).catch((err: Error) => {
-                  subscriptionsSetting.mainSwitch = false
-                })
-              }).catch((err: Error) => {
-                console.log('requestSubscribeMessage', JSON.stringify(err))
-              })
-              const subscribeCode = await getMassageList()
-              subscriptionsSetting.itemSettings = subscribeCode.massageList
-              return resolve({
-                authSetting: bundleUsedScope.allScope,
-                subscriptionsSetting: subscriptionsSetting,
-                errMsg: `${apiName}:ok`
-              });
-            }
             return resolve({ authSetting: bundleUsedScope.allScope, errMsg: `${apiName}:ok` });
           } catch (paramError) {
             return reject(
@@ -336,31 +250,6 @@ export class NativeInject {
       },
       getUpdateManager: () => {
         return LocalUpdateManagerInstance;
-      },
-      requestSubscribeMessage: async (options: RequestSubscribeMessageOptions) => {
-        const apiName: string = 'requestSubscribeMessage';
-        return new Promise(async (resolve) => {
-          try {
-            const enableCode = await enableNotification();
-            if (enableCode.errMsg === 'success') {
-              const addSlotCode = await addNotificationManagerSlot(options)
-              console.log('requestSubscribeMessage', JSON.stringify(addSlotCode))
-              if (addSlotCode.errMsg == 'success') {
-                return resolve(addSlotCode);
-              } else {
-                return resolve(addSlotCode);
-              }
-            } else {
-              return resolve(enableCode);
-            }
-          } catch (paramError) {
-            let enableCode: SubscribeMessageOptions = {
-              errCode: (paramError as BusinessError).code,
-              errMsg: `${apiName}:fail error ${(paramError as BusinessError).message}`
-            }
-            return resolve(enableCode);
-          }
-        })
       },
       saveDataUrlToFile: (options: SaveDataUrlOptions) => {
         try {
