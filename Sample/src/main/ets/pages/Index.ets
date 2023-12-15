@@ -4,7 +4,7 @@ import Url from '@ohos.url';
 import { TaroWebContainer, InjectObject, HostPageState, TaroWebController, Logger, LoggerLevel, wbLogger } from '@ohos/web-container';
 
 const SAMPLE_INDEX_TAG = 'SampleIndex';
-const defaultEntryDomain = 'http://192.168.2.245/';
+const defaultEntryDomain = 'resource://rawfile/';
 let storage = LocalStorage.getShared() // 获取共享的本地存储对象
 
 PersistentStorage.persistProp('enableDevDomain', false)

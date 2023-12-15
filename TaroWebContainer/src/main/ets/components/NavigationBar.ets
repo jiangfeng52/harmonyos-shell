@@ -64,6 +64,9 @@ export struct NavigationBar {
             .fontSize(20)
             .margin({ left: this.navigationBarData.canBackward ? 0 : DEFAULT_TITLE_LEFT })
             .align(Alignment.Start)
+            .maxLines(1)
+            .textOverflow({ overflow: TextOverflow.Ellipsis })
+            .width('60%')
           if (this.navigationBarData.loading) {
             LoadingProgress()
               .width(25)
