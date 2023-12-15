@@ -97,6 +97,7 @@ export interface AuthSetting {
   'scope.addPhoneContact': boolean;
   'scope.userLocationBackground': boolean;
   'scope.userFuzzyLocation': boolean;
+  'scope.bluetooth': boolean;
   'ohos.permission.ANSWER_CALL': boolean;
   'ohos.permission.MANAGE_VOICEMAIL': boolean;
   'ohos.permission.READ_CALENDAR': boolean;
@@ -124,9 +125,9 @@ export interface AuthSetting {
   'ohos.permission.GET_INSTALLED_BUNDLE_LIST': boolean;
 }
 
-export  interface ItemSettings {
+export interface ItemSettings {
   tmplid: string,
-  enabled:boolean
+  enabled: boolean
 }
 
 export interface SubscriptionsSetting {
@@ -160,7 +161,7 @@ export interface RequestSubscribeMessageOptions {
 }
 
 export interface SubscribeMessageOptions {
-  errCode:number;
+  errCode: number;
   errMsg: string;
 }
 
@@ -175,7 +176,7 @@ export interface InnerInjectObj {
   getSetting: (options: OpenSettingOptions) => Promise<GetSettingRetOptions>;
   copyFileToSandboxCache: (src: string) => copyFileToSandboxCacheRetOptions;
   getUpdateManager: () => ESObject;
-  requestSubscribeMessage: (options:RequestSubscribeMessageOptions) => Promise<SubscribeMessageOptions>;
+  requestSubscribeMessage: (options: RequestSubscribeMessageOptions) => Promise<SubscribeMessageOptions>;
 }
 
 export interface InjectObject {

@@ -86,6 +86,7 @@ const allScopeUseMap: AuthSetting = {
   'scope.addPhoneContact': false,
   'scope.userLocationBackground': false,
   'scope.userFuzzyLocation': false,
+  'scope.bluetooth': false,
   'ohos.permission.ANSWER_CALL': false,
   'ohos.permission.MANAGE_VOICEMAIL': false,
   'ohos.permission.READ_CALENDAR': false,
