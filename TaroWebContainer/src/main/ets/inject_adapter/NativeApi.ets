@@ -8,6 +8,23 @@ interface WindowInfo {
 }
 
 
+/**
+ * 定义出对象类型：
+ * {
+ *   size: {
+ *     windowWidth: number,
+ *     windowHeight: number
+ *   }
+ * }
+ */
+interface WindowSize {
+  windowWidth?: number,
+  windowHeight?: number
+}
+
+interface WindowResizeResult {
+  size?: WindowSize
+}
 
 interface OpenSystemBluetoothSetting {
   success?: (res: string)=>void,
@@ -31,9 +48,17 @@ interface NativeApi {
    * @param options
    */
   openSystemBluetoothSetting(options: OpenSystemBluetoothSetting)
+
+  /**
+   * 类型3：持续监听，res无方法
+   *
+   * @param listener
+   */
+  onWindowResize(listener: (res: WindowResizeResult)=>void)
 }
 
 class NativeApiImpl implements NativeApi {
+
   getWindowInfo(): WindowInfo {
     return {
       pixelRatio: 1,
@@ -45,6 +70,24 @@ class NativeApiImpl implements NativeApi {
   openSystemBluetoothSetting(options: OpenSystemBluetoothSetting) {
     wbLogger.debug('JsBridgeNative', `openSystemBluetoothSetting， options.success=${options.success}`)
     options && options.success && options.success('has opened')
+  }
+
+  onWindowResize(listener: (res: WindowResizeResult) => void) {
+    listener({
+      size: {
+        windowWidth: 340,
+        windowHeight: 720
+      }
+    })
+
+    setTimeout(()=>{
+      listener({
+        size: {
+          windowWidth: 720,
+          windowHeight: 1280
+        }
+      })
+    }, 1000)
   }
 }
 

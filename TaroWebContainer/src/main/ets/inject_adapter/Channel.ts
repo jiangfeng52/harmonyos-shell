@@ -1,3 +1,5 @@
+import { wbLogger } from '../utils/Logger'
+
 class Channel {
   // TODO-ly 当前的实现只适合单实例，如果出现多实例Web容器，当前的实现就会有问题
   private runJavascriptFun?: (jsCode: string)=>void
@@ -21,7 +23,8 @@ class Channel {
     if(!fun) {
       return undefined;
     }
-    return fun(JSON.parse(objectJson))
+    const result = fun(JSON.parse(objectJson))
+    return JSON.stringify(result);
   }
 
   jsCall(channelType: string, object: object){
@@ -34,13 +37,24 @@ export const ChannelInstance: Channel = new Channel();
 class MethodChannel {
   private ChannelType = 'MethodChannel'
 
-  private methodPools = new Map<string, (object: any)=>any>()
+  private methodPools = new Map<string, (arg: any)=>any>()
   // TODO-ly 改为装饰器实现
-  registerMethod(methodName: string, fun: (object: any)=>any) {
+  registerMethod(methodName: string, fun: (arg: any)=>any) {
     if(this.methodPools.has(methodName)){
       return
     }
     this.methodPools.set(methodName, fun)
+  }
+  registerMethods(object: object){
+    for (const methodName of Object.keys(object)) {
+      const method = object[methodName]
+      if (typeof method === 'function') {
+        // 注册
+        this.registerMethod(methodName, (arg: any)=>{
+          method.apply(object, arg)
+        })
+      }
+    }
   }
 
   constructor() {
@@ -50,21 +64,33 @@ class MethodChannel {
   }
 
   call(object): any{
-    const {call, argsJson, stubId} = object
+    const {call, isListener, arg, stubId} = object
     const fun = this.methodPools.get(call)
     if(!fun) {
       return undefined;
     }
 
-    if(argsJson == '') { // 无参数
-      return fun.call(null)
+    if (stubId == -1) { // 没有回调函数
+      return fun.call(null, arg)
     }
 
-    let argObject = {
-      callbackId:stubId,
-      ...JSON.parse(argsJson)
+    if(isListener) { // arg为函数
+      const argProxy = new Proxy(function (){}, {
+        apply(target, thisArg: any, argArray: any[]){
+          const object = {
+            call: '',
+            args: argArray,
+            stubId: stubId,
+            isListener: true
+          }
+          ChannelInstance.jsCall(MethodChannelInstance.ChannelType, object)
+        }
+      });
+      return fun.call(null, argProxy)
     }
-    argObject = new Proxy(argObject, {
+
+    // arg为对象
+    const argProxy = new Proxy(arg??{}, {
       get(target, prop, receiver) {
         let value = target[prop]
         if (value){
@@ -72,15 +98,16 @@ class MethodChannel {
         }
         return function (...args) {
           const object = {
-            objectId: target.callbackId,
-            callName: prop.toString(),
-            arg: args.length >= 1 ? args[0] : ''
+            call: prop.toString(),
+            args: args,
+            stubId: stubId,
+            isListener: false
           }
           ChannelInstance.jsCall(MethodChannelInstance.ChannelType, object)
         }
       }
     });
-    return fun.call(null, argObject)
+    return fun.call(null, argProxy)
   }
 }
 

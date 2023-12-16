@@ -104,25 +104,28 @@ export struct TaroWeb {
     this.taroWebController.addRequestHandler(this.handleInternalResource);
     this.taroWebController.addRequestHandler(this.useLocalCacheResource);
 
-    // TODO 由手动注册，改为自动注册
-    MethodChannelInstance.registerMethod('openSystemBluetoothSetting', (object: object)=>{
-      return NativeApiImplInstance.openSystemBluetoothSetting(object)
+    // TODO arkTS不支持，暂没有想到解决方案
+    // MethodChannelInstance.registerMethods(NativeApiImplInstance)
+    MethodChannelInstance.registerMethod('getWindowInfo', (options: ESObject)=>{
+      return NativeApiImplInstance.getWindowInfo()
     })
-    MethodChannelInstance.registerMethod('getWindowInfo', (object: object)=>{
-      return NativeApiImplInstance.getWindowInfo();
+    MethodChannelInstance.registerMethod('openSystemBluetoothSetting', (options: ESObject)=>{
+      return NativeApiImplInstance.openSystemBluetoothSetting(options)
+    })
+    MethodChannelInstance.registerMethod('onWindowResize', (object: ESObject)=>{
+      return NativeApiImplInstance.onWindowResize(object)
     })
 
     ChannelInstance.setRunJavascriptFun((jsCode: string)=>{
-      wbLogger.error('runJavascript', `jsCode=${jsCode}}`)
       try {
           this.taroWebController.webController.runJavaScript(jsCode, (error, result) => {
               if (error) {
                 wbLogger.error(TARO_WEB_TAG, `Run JavaScript error: ${JSON.stringify(error)}`)
                 return;
               }
-              if (result) {
-                wbLogger.info(TARO_WEB_TAG, `The asFinish() return value is: ${result}`)
-              }
+              // if (result) {
+              //   wbLogger.info(TARO_WEB_TAG, `The asFinish() return value is: ${result}`)
+              // }
             });
         } catch (error) {
           wbLogger.error(TARO_WEB_TAG, `runJavaScript error: ${(error as BusinessError).message}`);
@@ -204,8 +207,7 @@ export struct TaroWeb {
         object: {
           nativeMethod: (channelType: string, objectJson: string) => {
             wbLogger.debug('nativeObj', `channelType ${channelType} objectJson(${objectJson})`)
-            const result: object = ChannelInstance.call(channelType, objectJson)
-            return JSON.stringify(result);
+            return ChannelInstance.call(channelType, objectJson) as object
           },
         },
         name: 'JSBridge',
