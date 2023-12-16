@@ -33,7 +33,6 @@ import { TaroWebController } from './TaroWeb';
 import { NavigationBarData } from './NavigationBar';
 import router from '@ohos.router';
 import { wbLogger } from '../utils/Logger';
-import { NativeApiStubInstance } from '../inject_adapter/NativeApiStub';
 
 const CONTAINER_TAG = 'TaroWebContainer';
 

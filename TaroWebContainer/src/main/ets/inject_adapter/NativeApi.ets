@@ -1,4 +1,5 @@
 import { wbLogger } from '../utils/Logger'
+import { MethodChannelInstance } from './Channel'
 
 interface OpenSystemBluetoothSetting {
   success?: (res: object)=>void,

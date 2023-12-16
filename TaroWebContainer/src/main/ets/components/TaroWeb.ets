@@ -22,8 +22,8 @@ import webview from '@ohos.web.webview';
 import { wbLogger } from '../utils/Logger';
 import { FileUtils } from '../utils/FileUtils';
 import { LocalUpdateManagerInstance } from '../update/LocalUpdateManager';
-import { NativeApiStubInstance } from '../inject_adapter/NativeApiStub';
 import { NativeApiImplInstance } from '../inject_adapter/NativeApi'
+import { ChannelInstance, MethodChannelInstance } from '../inject_adapter/Channel';
 
 const TARO_WEB_TAG = 'TaroWeb';
 
@@ -104,9 +104,12 @@ export struct TaroWeb {
     this.taroWebController.addRequestHandler(this.handleInternalResource);
     this.taroWebController.addRequestHandler(this.useLocalCacheResource);
 
-    // TODO-ly 改为装饰器实现
-    NativeApiStubInstance.registerNativeApi('openSystemBluetoothSetting', {target: NativeApiImplInstance, fun: NativeApiImplInstance.openSystemBluetoothSetting})
-    NativeApiStubInstance.setRunJavascriptFun((jsCode: string)=>{
+    // TODO 由手动注册，改为自动注册
+    MethodChannelInstance.registerMethod('openSystemBluetoothSetting', (object: object)=>{
+      NativeApiImplInstance.openSystemBluetoothSetting(object)
+    })
+
+    ChannelInstance.setRunJavascriptFun((jsCode: string)=>{
       wbLogger.error('runJavascript', `jsCode=${jsCode}}`)
       try {
           this.taroWebController.webController.runJavaScript(jsCode, (error, result) => {
@@ -196,13 +199,13 @@ export struct TaroWeb {
       .javaScriptAccess(true)
       .javaScriptProxy({
         object: {
-          nativeCall: (call: string, argsJson: string, objectId: number) => {
-            wbLogger.debug('nativeObj', `nativeCall ${call}(${argsJson}) objectId=${objectId}`)
-            NativeApiStubInstance.onTransact(call, argsJson, objectId)
+          nativeMethod: (channelType: string, objectJson: string) => {
+            wbLogger.debug('nativeObj', `channelType ${channelType} objectJson(${objectJson})`)
+            ChannelInstance.call(channelType, objectJson)
           },
         },
-        name: 'as',
-        methodList: ['nativeCall'],
+        name: 'JSBridge',
+        methodList: ['nativeMethod'],
         controller: this.taroWebController.webController,
       })
       .onConsole((event) => {
