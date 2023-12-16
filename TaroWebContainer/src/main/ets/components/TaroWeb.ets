@@ -106,7 +106,10 @@ export struct TaroWeb {
 
     // TODO 由手动注册，改为自动注册
     MethodChannelInstance.registerMethod('openSystemBluetoothSetting', (object: object)=>{
-      NativeApiImplInstance.openSystemBluetoothSetting(object)
+      return NativeApiImplInstance.openSystemBluetoothSetting(object)
+    })
+    MethodChannelInstance.registerMethod('getWindowInfo', (object: object)=>{
+      return NativeApiImplInstance.getWindowInfo();
     })
 
     ChannelInstance.setRunJavascriptFun((jsCode: string)=>{
@@ -201,7 +204,8 @@ export struct TaroWeb {
         object: {
           nativeMethod: (channelType: string, objectJson: string) => {
             wbLogger.debug('nativeObj', `channelType ${channelType} objectJson(${objectJson})`)
-            ChannelInstance.call(channelType, objectJson)
+            const result: object = ChannelInstance.call(channelType, objectJson)
+            return JSON.stringify(result);
           },
         },
         name: 'JSBridge',

@@ -16,14 +16,15 @@ window.Channel = {
         // 最终调用原生Channel的通信方法
         var objectJson = JSON.stringify(object)
         // @ts-ignore
-        window.JSBridge && window.JSBridge.nativeMethod(channelType, objectJson)
+        var resultJson = window.JSBridge && window.JSBridge.nativeMethod(channelType, objectJson)
+        return resultJson && JSON.parse(resultJson)
     },
 
     /**
      * 给原生暴露的通信方法，原生调用"window.Channel.jsCall(objectId, 'xxx', 'xxxx')"
      */
     jsCall: function(channelType, objectJson){
-        // console.log(`jsCall objectId=${objectId}, callName=${callName}, argsJson=${argsJson}`);
+        console.log(`jsCall channelType=${channelType}, objectJson=${objectJson}`);
         // window.apiStubPool.onTransact(objectId, callName, argsJson)
         var fun = this.jsCallListeners[channelType]
         fun && fun(JSON.parse(objectJson))
@@ -50,7 +51,7 @@ window.MethodChannel = {
                           argsJson: args.length >= 1 ? JSON.stringify(args[0]) : '',
                           stubId: args.length >= 1 ? window.MethodChannel.__registerArgsStub(args[0]) : -1
                       }
-                      window.Channel.nativeCall(window.MethodChannel.ChannelType, methodCall)
+                      return window.Channel.nativeCall(window.MethodChannel.ChannelType, methodCall)
                   }
               }
 
@@ -69,7 +70,7 @@ window.MethodChannel = {
         return objectId
     },
     __ArgsMethodStub: function (object){
-        const {objectId, callName, argsJson} = object
+        const {objectId, callName, arg} = object
 
         const argsStub = this._argsStubMap[objectId];
         if(!argsStub) {
@@ -78,22 +79,31 @@ window.MethodChannel = {
         // 只回调一次，可能会有问题，需测试
         delete this._argsStubMap[objectId]
 
-        const args = JSON.parse(argsJson)
-        argsStub[callName].call(argsStub, args)
+        argsStub[callName].call(argsStub, arg)
     }
 }
 window.MethodChannel.init()
 
 
 window.NativeApi = {
+
     /**
+     * 类型1：同步调用
+     *
+     * @returns 返回值对象里无方法
+     */
+    getWindowInfo(){
+        return ''
+    },
+
+    /**
+     * 类型2：异步调用，res无方法
      * 打开系统蓝牙设置
      *
      * @param {Object} options - 选项对象
      * @param {Function} options.success - 成功回调函数
      * @param {Function} options.fail - 失败回调函数
      * @param {Function} options.complete - 完成回调函数
-     * 给原生暴露的通信方法，原生调用"window.Channel.jsCall(objectId, 'xxx', 'xxxx')"
      */
     openSystemBluetoothSetting(options) {}
 }
@@ -101,16 +111,20 @@ window.NativeApi = window.MethodChannel.createNativeApiProxy(window.NativeApi)
 
 // TODO-ly 测试
 setTimeout(()=>{
+    var result = window.NativeApi.getWindowInfo();
+    console.log('window.NativeApi.getWindowInfo() result is ', result ? JSON.stringify(result) : '')
+
+
     // @ts-ignore
     window.NativeApi.openSystemBluetoothSetting({
-        success: function (){
-            console.log('openSystemBluetoothSetting success')
+        success: function (res){
+            console.log('window.NativeApi.openSystemBluetoothSetting() success, res is ', res ? JSON.stringify(res) : '')
         },
-        fail: function (){
-            console.log('openSystemBluetoothSetting fail')
+        fail: function (res){
+            console.log('window.NativeApi.openSystemBluetoothSetting() fail, res is ', res ? JSON.stringify(res) : '')
         },
-        complete: function (){
-            console.log('openSystemBluetoothSetting complete')
+        complete: function (res){
+            console.log('window.NativeApi.openSystemBluetoothSetting() complete, res is ', res ? JSON.stringify(res) : '')
         }
     })
 }, 1000)

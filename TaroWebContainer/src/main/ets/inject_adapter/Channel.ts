@@ -8,17 +8,20 @@ class Channel {
     this.runJavascriptFun = null
   }
 
-  private channelListeners: Map<string, (object: any)=>void>
+  private channelListeners: Map<string, (object: any)=>any>
   constructor() {
-    this.channelListeners = new Map<string, (object: any)=>void>();
+    this.channelListeners = new Map<string, (object: any)=>any>();
   }
-  registerChannel(channelType: string, fun: (object: any)=>void){
+  registerChannel(channelType: string, fun: (object: any)=>any){
     this.channelListeners.set(channelType, fun)
   }
 
-  call(channelType: string, objectJson: string){
+  call(channelType: string, objectJson: string): any{
     const fun = this.channelListeners.get(channelType)
-    fun && fun(JSON.parse(objectJson))
+    if(!fun) {
+      return undefined;
+    }
+    return fun(JSON.parse(objectJson))
   }
 
   jsCall(channelType: string, object: object){
@@ -31,9 +34,9 @@ export const ChannelInstance: Channel = new Channel();
 class MethodChannel {
   private ChannelType = 'MethodChannel'
 
-  private methodPools = new Map<string, (object: any)=>void>()
+  private methodPools = new Map<string, (object: any)=>any>()
   // TODO-ly 改为装饰器实现
-  registerMethod(methodName: string, fun: (object: any)=>void) {
+  registerMethod(methodName: string, fun: (object: any)=>any) {
     if(this.methodPools.has(methodName)){
       return
     }
@@ -41,17 +44,22 @@ class MethodChannel {
   }
 
   constructor() {
-    ChannelInstance.registerChannel(this.ChannelType, (object: Object)=>{
-      this.call(object)
+    ChannelInstance.registerChannel(this.ChannelType, (object: any)=>{
+      return this.call(object)
     })
   }
 
-  call(object){
+  call(object): any{
     const {call, argsJson, stubId} = object
     const fun = this.methodPools.get(call)
     if(!fun) {
-      return ;
+      return undefined;
     }
+
+    if(argsJson == '') { // 无参数
+      return fun.call(null)
+    }
+
     let argObject = {
       callbackId:stubId,
       ...JSON.parse(argsJson)
@@ -66,13 +74,13 @@ class MethodChannel {
           const object = {
             objectId: target.callbackId,
             callName: prop.toString(),
-            argsJson: args.length >= 1 ? JSON.stringify(args[0]) : ''
+            arg: args.length >= 1 ? args[0] : ''
           }
           ChannelInstance.jsCall(MethodChannelInstance.ChannelType, object)
         }
       }
     });
-    fun.call(null, argObject)
+    return fun.call(null, argObject)
   }
 }
 
