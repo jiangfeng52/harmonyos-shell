@@ -106,14 +106,25 @@ export struct TaroWeb {
 
     // TODO arkTS不支持，暂没有想到解决方案
     // MethodChannelInstance.registerMethods(NativeApiImplInstance)
-    MethodChannelInstance.registerMethod('getWindowInfo', (options: ESObject)=>{
+    MethodChannelInstance.registerMethod('$getWindowInfo', (options: ESObject)=>{
       return NativeApiImplInstance.getWindowInfo()
     })
-    MethodChannelInstance.registerMethod('openSystemBluetoothSetting', (options: ESObject)=>{
+    MethodChannelInstance.registerMethod('$openSystemBluetoothSetting', (options: ESObject)=>{
       return NativeApiImplInstance.openSystemBluetoothSetting(options)
     })
-    MethodChannelInstance.registerMethod('onWindowResize', (object: ESObject)=>{
+    MethodChannelInstance.registerMethod('$onWindowResize', (object: ESObject)=>{
       return NativeApiImplInstance.onWindowResize(object)
+    })
+    MethodChannelInstance.registerMethod('UpdateManager$applyUpdate', (object: ESObject)=>{
+      wbLogger.debug('UpdateManager', 'UpdateManager$applyUpdate')
+      LocalUpdateManagerInstance.applyUpdate()
+    })
+    MethodChannelInstance.registerMethod('UpdateManager$onCheckForUpdate', (object: ESObject)=>{
+      wbLogger.debug('UpdateManager', 'UpdateManager$onCheckForUpdate')
+      LocalUpdateManagerInstance.onCheckForUpdate(object)
+
+      // TODO 模拟有更新，要删除的代码
+      LocalUpdateManagerInstance.notifyCheckForUpdate(true)
     })
 
     ChannelInstance.setRunJavascriptFun((jsCode: string)=>{

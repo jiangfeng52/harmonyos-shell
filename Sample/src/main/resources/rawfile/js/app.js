@@ -71,20 +71,24 @@ window.MethodChannel = {
       return new Proxy(nativeApi, {
           get(target, prop, receiver) {
               if(typeof target[prop] === 'function') {
-                  return function (...args) {
-                      const firstArg = args.length >= 1 ? args[0] : ''
-                      // 约定异步回调的方式，一次性回调，监听回调
-                      let isListener = isOnMehtod(prop.toString())
-                      let hasFun = isFunctionOrObjectWithFunction(firstArg)
+                  const shouldProxy = Reflect.get(target, `__proxy_${prop.toString()}`);
+                  if (shouldProxy) {
+                      const className = Reflect.get(target, `__proxy_className`);
+                      return function (...args) {
+                          const firstArg = args.length >= 1 ? args[0] : ''
+                          // 约定异步回调的方式，一次性回调，监听回调
+                          let isListener = isOnMehtod(prop.toString())
+                          let hasFun = isFunctionOrObjectWithFunction(firstArg)
 
-                      // 方法调用转换为数据
-                      var methodCall = {
-                          call: prop,
-                          isListener: isListener,
-                          arg: firstArg,
-                          stubId: hasFun ? window.MethodChannel.__registerArgStub(firstArg, isListener) : -1
+                          // 方法调用转换为数据
+                          var methodCall = {
+                              call: `${className?className:''}\$${prop.toString()}`,
+                              isListener: isListener,
+                              arg: firstArg,
+                              stubId: hasFun ? window.MethodChannel.__registerArgStub(firstArg, isListener) : -1
+                          }
+                          return window.Channel.nativeCall(window.MethodChannel.ChannelType, methodCall)
                       }
-                      return window.Channel.nativeCall(window.MethodChannel.ChannelType, methodCall)
                   }
               }
 
@@ -128,17 +132,56 @@ window.MethodChannel = {
 }
 window.MethodChannel.init()
 
+function proxyClassSign(className) {
+    return function (target) {
+        Reflect.defineProperty(target, `__proxy_className`, {
+            value: className,
+            configurable: true,
+            enumerable: false
+        })
+    }
+}
+function proxyMethodSign (target, propertyKey, descriptor){
+    Reflect.defineProperty(target, `__proxy_${propertyKey}}`, {
+        value: true,
+        configurable: true,
+        enumerable: false
+    })
+}
 
-window.NativeApi = {
+// @proxyClassSign('UpdateManager')
+class UpdateManager {
+    // TODO 采用typescript的装饰器来写，es6不支持装饰器，临时验证方案
+    __proxy_className = 'UpdateManager'
+    __proxy_applyUpdate = true
+    __proxy_onCheckForUpdate = true
+
+    // @proxyMethodSign
+    applyUpdate() {}
+
+    // @proxyMethodSign
+    onCheckForUpdate(){}
+}
+
+// @proxyClassSign('')
+class NativeApi {
+    // TODO 采用typescript的装饰器来写，es6不支持装饰器，临时验证方案
+    __proxy_className = ''
+    __proxy_getWindowInfo = true
+    __proxy_openSystemBluetoothSetting = true
+    __proxy_onWindowResize = true
+
+    updateManage = window.MethodChannel.createNativeApiProxy(new UpdateManager())
 
     /**
      * 类型1：同步调用
      *
      * @returns 返回值对象里无方法
      */
+    // @proxyMethodSign
     getWindowInfo(){
         return ''
-    },
+    }
 
     /**
      * 类型2：异步调用，res无方法
@@ -149,23 +192,31 @@ window.NativeApi = {
      * @param {Function} options.fail - 失败回调函数
      * @param {Function} options.complete - 完成回调函数
      */
-    openSystemBluetoothSetting(options) {},
+    // @proxyMethodSign
+    openSystemBluetoothSetting(options) {}
 
     /**
      * 类型3：持续监听，res无方法
      *
      * @param listener
      */
+    // @ts-ignore
+    // @proxyMethodSign
     onWindowResize(listener) {}
-}
-window.NativeApi = window.MethodChannel.createNativeApiProxy(window.NativeApi)
 
-// TODO-ly 测试
+    getUpdateManager(){
+        return this.updateManage
+    }
+
+}
+window.NativeApiInstance = window.MethodChannel.createNativeApiProxy(new NativeApi())
+
+// TODO-ly 测试代码
 setTimeout(()=>{
-    var result = window.NativeApi.getWindowInfo();
+    var result = window.NativeApiInstance.getWindowInfo();
     console.log('window.NativeApi.getWindowInfo() result is ', result ? JSON.stringify(result) : '')
 
-    window.NativeApi.openSystemBluetoothSetting({
+    window.NativeApiInstance.openSystemBluetoothSetting({
         success: function (res){
             console.log('window.NativeApi.openSystemBluetoothSetting() success, res is ', res ? JSON.stringify(res) : '')
         },
@@ -177,7 +228,13 @@ setTimeout(()=>{
         }
     })
 
-    window.NativeApi.onWindowResize((res)=>{
+    window.NativeApiInstance.onWindowResize((res)=>{
         console.log('window.NativeApi.onWindowResize() listen result is ', JSON.stringify(res));
     });
+
+    const updateManager = window.NativeApiInstance.getUpdateManager();
+    updateManager.applyUpdate()
+    updateManager.onCheckForUpdate((res)=>{
+        console.log('updateManager.onCheckForUpdate listener result is ', JSON.stringify(res));
+    })
 }, 1000)
