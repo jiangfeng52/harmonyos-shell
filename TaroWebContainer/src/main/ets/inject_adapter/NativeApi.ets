@@ -39,7 +39,7 @@ interface NativeApi {
    *
    * @returns 返回值对象里无方法
    */
-  getWindowInfo(): WindowInfo
+  getWindowInfoBridgeSync(): WindowInfo
 
   /**
    * 类型2：异步调用，res无方法
@@ -47,19 +47,19 @@ interface NativeApi {
    *
    * @param options
    */
-  openSystemBluetoothSetting(options: OpenSystemBluetoothSetting)
+  openSystemBluetoothSettingBridgeAsync(options: OpenSystemBluetoothSetting)
 
   /**
    * 类型3：持续监听，res无方法
    *
    * @param listener
    */
-  onWindowResize(listener: (res: WindowResizeResult)=>void)
+  onWindowResizeBridgeAsync(listener: (res: WindowResizeResult)=>void)
 }
 
 class NativeApiImpl implements NativeApi {
 
-  getWindowInfo(): WindowInfo {
+  getWindowInfoBridgeSync(): WindowInfo {
     return {
       pixelRatio: 1,
       screenWidth: 480,
@@ -67,12 +67,12 @@ class NativeApiImpl implements NativeApi {
     }
   }
 
-  openSystemBluetoothSetting(options: OpenSystemBluetoothSetting) {
+  openSystemBluetoothSettingBridgeAsync(options: OpenSystemBluetoothSetting) {
     wbLogger.debug('JsBridgeNative', `openSystemBluetoothSetting， options.success=${options.success}`)
     options && options.success && options.success('has opened')
   }
 
-  onWindowResize(listener: (res: WindowResizeResult) => void) {
+  onWindowResizeBridgeAsync(listener: (res: WindowResizeResult) => void) {
     listener({
       size: {
         windowWidth: 340,

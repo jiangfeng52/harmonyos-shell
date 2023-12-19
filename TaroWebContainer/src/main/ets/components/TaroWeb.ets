@@ -106,20 +106,20 @@ export struct TaroWeb {
 
     // TODO arkTS不支持，暂没有想到解决方案
     // MethodChannelInstance.registerMethods(NativeApiImplInstance)
-    MethodChannelInstance.registerMethod('$getWindowInfo', (options: ESObject)=>{
-      return NativeApiImplInstance.getWindowInfo()
+    MethodChannelInstance.registerMethod('NativeApi$getWindowInfoBridgeSync', (options: ESObject)=>{
+      return NativeApiImplInstance.getWindowInfoBridgeSync()
     })
-    MethodChannelInstance.registerMethod('$openSystemBluetoothSetting', (options: ESObject)=>{
-      return NativeApiImplInstance.openSystemBluetoothSetting(options)
+    MethodChannelInstance.registerMethod('NativeApi$openSystemBluetoothSettingBridgeAsync', (options: ESObject)=>{
+      NativeApiImplInstance.openSystemBluetoothSettingBridgeAsync(options)
     })
-    MethodChannelInstance.registerMethod('$onWindowResize', (object: ESObject)=>{
-      return NativeApiImplInstance.onWindowResize(object)
+    MethodChannelInstance.registerMethod('NativeApi$onWindowResizeBridgeAsync', (object: ESObject)=>{
+      NativeApiImplInstance.onWindowResizeBridgeAsync(object)
     })
-    MethodChannelInstance.registerMethod('UpdateManager$applyUpdate', (object: ESObject)=>{
+    MethodChannelInstance.registerMethod('UpdateManager$applyUpdateBridgeAsync', (object: ESObject)=>{
       wbLogger.debug('UpdateManager', 'UpdateManager$applyUpdate')
       LocalUpdateManagerInstance.applyUpdate()
     })
-    MethodChannelInstance.registerMethod('UpdateManager$onCheckForUpdate', (object: ESObject)=>{
+    MethodChannelInstance.registerMethod('UpdateManager$onCheckForUpdateBridgeAsync', (object: ESObject)=>{
       wbLogger.debug('UpdateManager', 'UpdateManager$onCheckForUpdate')
       LocalUpdateManagerInstance.onCheckForUpdate(object)
 

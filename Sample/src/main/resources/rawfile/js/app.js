@@ -71,9 +71,10 @@ window.MethodChannel = {
       return new Proxy(nativeApi, {
           get(target, prop, receiver) {
               if(typeof target[prop] === 'function') {
-                  const shouldProxy = Reflect.get(target, `__proxy_${prop.toString()}`);
-                  if (shouldProxy) {
-                      const className = Reflect.get(target, `__proxy_className`);
+                  const isSync = prop.toString().endsWith("BridgeSync")
+                  const isAsync = prop.toString().endsWith("BridgeAsync")
+                  if(isSync || isAsync) { // 走代理
+                      const className = target.constructor.name;
                       return function (...args) {
                           const firstArg = args.length >= 1 ? args[0] : ''
                           // 约定异步回调的方式，一次性回调，监听回调
@@ -82,6 +83,7 @@ window.MethodChannel = {
 
                           // 方法调用转换为数据
                           var methodCall = {
+                              isSync: isSync,
                               call: `${className?className:''}\$${prop.toString()}`,
                               isListener: isListener,
                               arg: firstArg,
@@ -132,91 +134,41 @@ window.MethodChannel = {
 }
 window.MethodChannel.init()
 
-function proxyClassSign(className) {
-    return function (target) {
-        Reflect.defineProperty(target, `__proxy_className`, {
-            value: className,
-            configurable: true,
-            enumerable: false
-        })
-    }
-}
-function proxyMethodSign (target, propertyKey, descriptor){
-    Reflect.defineProperty(target, `__proxy_${propertyKey}}`, {
-        value: true,
-        configurable: true,
-        enumerable: false
-    })
-}
-
-// @proxyClassSign('UpdateManager')
 class UpdateManager {
-    // TODO 采用typescript的装饰器来写，es6不支持装饰器，临时验证方案
-    __proxy_className = 'UpdateManager'
-    __proxy_applyUpdate = true
-    __proxy_onCheckForUpdate = true
-
-    // @proxyMethodSign
-    applyUpdate() {}
-
-    // @proxyMethodSign
-    onCheckForUpdate(){}
+    // 类型2：异步调用，res无方法
+    applyUpdateBridgeAsync() {}
+    // 类型3：持续监听，res无方法
+    onCheckForUpdateBridgeAsync(listener){}
 }
 
 // @proxyClassSign('')
 class NativeApi {
-    // TODO 采用typescript的装饰器来写，es6不支持装饰器，临时验证方案
-    __proxy_className = ''
-    __proxy_getWindowInfo = true
-    __proxy_openSystemBluetoothSetting = true
-    __proxy_onWindowResize = true
-
     updateManage = window.MethodChannel.createNativeApiProxy(new UpdateManager())
 
-    /**
-     * 类型1：同步调用
-     *
-     * @returns 返回值对象里无方法
-     */
-    // @proxyMethodSign
-    getWindowInfo(){
+    // 类型1：同步调用
+    getWindowInfoBridgeSync(){
         return ''
     }
 
-    /**
-     * 类型2：异步调用，res无方法
-     * 打开系统蓝牙设置
-     *
-     * @param {Object} options - 选项对象
-     * @param {Function} options.success - 成功回调函数
-     * @param {Function} options.fail - 失败回调函数
-     * @param {Function} options.complete - 完成回调函数
-     */
-    // @proxyMethodSign
-    openSystemBluetoothSetting(options) {}
+    // 类型2：异步调用，res无方法
+    openSystemBluetoothSettingBridgeAsync(options) {}
 
-    /**
-     * 类型3：持续监听，res无方法
-     *
-     * @param listener
-     */
-    // @ts-ignore
-    // @proxyMethodSign
-    onWindowResize(listener) {}
+    // 类型3：持续监听，res无方法
+    onWindowResizeBridgeAsync(listener) {}
 
+    // 类型4
     getUpdateManager(){
         return this.updateManage
     }
-
 }
 window.NativeApiInstance = window.MethodChannel.createNativeApiProxy(new NativeApi())
 
 // TODO-ly 测试代码
 setTimeout(()=>{
-    var result = window.NativeApiInstance.getWindowInfo();
+    var result = window.NativeApiInstance.getWindowInfoBridgeSync();
     console.log('window.NativeApi.getWindowInfo() result is ', result ? JSON.stringify(result) : '')
 
-    window.NativeApiInstance.openSystemBluetoothSetting({
+    window.NativeApiInstance.openSystemBluetoothSettingBridgeAsync({
         success: function (res){
             console.log('window.NativeApi.openSystemBluetoothSetting() success, res is ', res ? JSON.stringify(res) : '')
         },
@@ -228,13 +180,13 @@ setTimeout(()=>{
         }
     })
 
-    window.NativeApiInstance.onWindowResize((res)=>{
+    window.NativeApiInstance.onWindowResizeBridgeAsync((res)=>{
         console.log('window.NativeApi.onWindowResize() listen result is ', JSON.stringify(res));
     });
 
     const updateManager = window.NativeApiInstance.getUpdateManager();
-    updateManager.applyUpdate()
-    updateManager.onCheckForUpdate((res)=>{
+    updateManager.applyUpdateBridgeAsync()
+    updateManager.onCheckForUpdateBridgeAsync((res)=>{
         console.log('updateManager.onCheckForUpdate listener result is ', JSON.stringify(res));
     })
 }, 1000)
