@@ -3,5 +3,8 @@
   "dependencies": {
     "@ohos/hvigor-ohos-plugin": "file:../dependencies/hvigor-ohos-plugin-3.0.9-s.tgz",
     "rollup": "file:../dependencies/rollup.tgz",
+    "@babel/core": "^7.17.4",
+    "@babel/preset-env": "^7.16.7",
+    "@babel/plugin-transform-runtime": "^7.17.0"
   }
 }
