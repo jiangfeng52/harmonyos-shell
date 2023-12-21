@@ -11,6 +11,7 @@ export abstract class UpdateManager {
   reset(){
     this.hasUpdate = null
     this.updatedPath = null
+
   }
 
   applyUpdate(): void {
