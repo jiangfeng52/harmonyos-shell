@@ -173,6 +173,15 @@ export interface SaveDataUrlOptions {
   fail: Function;
 }
 
+export interface CapsuleState {
+  visible: boolean;
+}
+
+export interface CapsuleController {
+  changeCapsuleState: (visible: boolean) => void;
+  getCapsuleState: () => boolean;
+}
+
 export interface InnerInjectObj {
   setNavigationBarColor: (options: NavigationBarOptions) => void;
   showNavigationBarLoading: () => void;
@@ -186,6 +195,8 @@ export interface InnerInjectObj {
   getUpdateManager: () => ESObject;
   requestSubscribeMessage: (options: RequestSubscribeMessageOptions) => Promise<SubscribeMessageOptions>;
   saveDataUrlToFile: (options: SaveDataUrlOptions) => void;
+  setCapsuleState: (visible: boolean) => void;
+  getCapsuleState: () => CapsuleState;
 }
 
 export interface InjectObject {
