@@ -20,6 +20,7 @@ import Want from '@ohos.app.ability.Want'
 import bundleManager from '@ohos.bundle.bundleManager';
 import fs from '@ohos.file.fs';
 import { InnerInjectObj, MenuButtonOptions, ErrorMsg, PermissionInfo , RequestSubscribeMessageOptions ,SubscribeMessageOptions ,SubscriptionsSetting } from '../interfaces/InjectObject'
+import { SaveDataUrlOptions }  from '../interfaces/InjectObject'
 import {
   getBundleUsedPermission,
   getBundleUserPermissions,
@@ -41,8 +42,9 @@ import {
 import { NavigationBarData } from '../components/NavigationBar';
 import { setSystemBarProperties } from '../utils/WindowUtil';
 import { wbLogger } from '../utils/Logger';
-import { switchHapSandBoxToInternal } from '../utils/InternalPath'
+import { switchHapSandBoxToInternal, switchInternalToHapSandBox } from '../utils/InternalPath'
 import { LocalUpdateManagerInstance } from '../update/LocalUpdateManager';
+import util from '@ohos.util';
 
 const NATIVE_TAG = 'NativeInject';
 
@@ -329,6 +331,32 @@ export class NativeInject {
             return resolve(enableCode);
           }
         })
+      },
+      saveDataUrlToFile: (options: SaveDataUrlOptions) => {
+        try {
+          let tmpFilePath = `internal://cache/${Date.now()}_${options.url.split('/').splice(-1, 1).toString()}`;
+          const data = options.data.split(',');
+          if (data.length !== 2) {
+            options.fail({ errMsg: 'Invalid data' })
+            return;
+          }
+          if (data[0].startsWith('data:text/html')) {
+            tmpFilePath += '.html';
+          }
+          const cachePath = switchInternalToHapSandBox(options.filePath || tmpFilePath);
+          const base64 = new util.Base64Helper();
+          const buf = base64.decodeSync(data[1]);
+          const file = fs.openSync(cachePath, fs.OpenMode.READ_WRITE | fs.OpenMode.CREATE);
+          fs.write(file.fd, buf.buffer).then(() => {
+            options.success({ tempFilePath: options.filePath || tmpFilePath });
+          }).catch((err: BusinessError) => {
+            options.fail({ errMsg: err.message });
+          }).finally(() => {
+            fs.closeSync(file.fd);
+          })
+        } catch (err) {
+          options.fail({ errMsg: 'error' });
+        }
       },
     };
   }

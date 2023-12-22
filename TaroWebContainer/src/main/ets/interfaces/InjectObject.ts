@@ -165,6 +165,14 @@ export interface SubscribeMessageOptions {
   errMsg: string;
 }
 
+export interface SaveDataUrlOptions {
+  data: string;
+  url: string;
+  filePath?: string;
+  success: Function;
+  fail: Function;
+}
+
 export interface InnerInjectObj {
   setNavigationBarColor: (options: NavigationBarOptions) => void;
   showNavigationBarLoading: () => void;
@@ -177,6 +185,7 @@ export interface InnerInjectObj {
   copyFileToSandboxCache: (src: string) => copyFileToSandboxCacheRetOptions;
   getUpdateManager: () => ESObject;
   requestSubscribeMessage: (options: RequestSubscribeMessageOptions) => Promise<SubscribeMessageOptions>;
+  saveDataUrlToFile: (options: SaveDataUrlOptions) => void;
 }
 
 export interface InjectObject {
