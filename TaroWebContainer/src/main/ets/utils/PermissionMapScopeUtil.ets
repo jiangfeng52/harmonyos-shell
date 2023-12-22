@@ -201,10 +201,10 @@ export async function requestPermission(permissions: Permissions[]):Promise<numb
   let authResults: number[] = [];
 
   for (const permission of permissions.entries()) {
-    console.debug(PERMISSION_UTIL, "number: " + permission[0], " permission: " + permission[1])
+    wbLogger.debug(PERMISSION_UTIL, "number: " + permission[0], " permission: " + permission[1])
     let grantStatus: abilityAccessCtrl.GrantStatus = await checkAccessToken(permission[1])
     if (grantStatus === 0) {
-      console.debug(PERMISSION_UTIL, " permission " + permission[1] + " has granted")
+      wbLogger.debug(PERMISSION_UTIL, " permission " + permission[1] + " has granted")
       authResults.push(0)
       continue
     }
@@ -220,12 +220,11 @@ export async function requestPermission(permissions: Permissions[]):Promise<numb
     authResults.push(...permissionRequestResult.authResults)
   } catch (error) {
     let err: BusinessError = error as BusinessError;
-    console.error(PERMISSION_UTIL, `Failed to request permissions. Code is ${err.code}, message is ${err.message}`);
+    wbLogger.error(PERMISSION_UTIL, `Failed to request permissions. Code is ${err.code}, message is ${err.message}`);
     if (authResults.length < permissions.length){
       authResults.push(...new Array(permissions.length - authResults.length).fill(-1))
     }
   }
-  console.debug(PERMISSION_UTIL, " all authResults: " + JSON.stringify(authResults))
   return authResults
 }
 
