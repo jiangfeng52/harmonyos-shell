@@ -22,6 +22,7 @@ import webview from '@ohos.web.webview';
 import { wbLogger } from '../utils/Logger';
 import { FileUtils } from '../utils/FileUtils';
 import { LocalUpdateManagerInstance } from '../update/LocalUpdateManager';
+import { AlbumBackward } from '../interfaces/Media'
 
 const TARO_WEB_TAG = 'TaroWeb';
 
@@ -32,6 +33,7 @@ export class TaroWebController {
   public webController: webview.WebviewController;
   public hasBindedTaroWeb: boolean;
   public callbacks: InterceptRequestHandler[];
+  public albumBackward?: AlbumBackward;
 
   constructor() {
     this.webController = new webview.WebviewController();
@@ -52,7 +54,14 @@ export class TaroWebController {
     }
   }
 
+  setAlbumBackward(albumBackward: AlbumBackward) {
+    this.albumBackward = albumBackward;
+  }
+
   accessBackward(): boolean {
+    if (this.albumBackward?.accessBackward()) {
+      return this.albumBackward.accessBackward()
+    }
     if (!this.hasBindedTaroWeb) {
       return false;
     }
@@ -60,6 +69,10 @@ export class TaroWebController {
   }
 
   backward() {
+    if (this.albumBackward && this.albumBackward.accessBackward()) {
+      this.albumBackward.backward();
+      return;
+    }
     if (!this.hasBindedTaroWeb) {
       return;
     }
