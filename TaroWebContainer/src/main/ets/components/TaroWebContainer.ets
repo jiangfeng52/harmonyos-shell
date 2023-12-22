@@ -23,7 +23,7 @@ import { TaroWeb } from './taroweb';
 import { ApiAdapter } from '../inject_adapter/ApiAdapter'
 import { NativeInject  } from '../inject_adapter/NativeInject';
 import { LaunchOptions } from '../interfaces/LaunchOptions';
-import { InjectObject, MenuButtonOptions } from '../interfaces/InjectObject';
+import { InjectObject, MenuButtonOptions, CapsuleController } from '../interfaces/InjectObject';
 import { setFullScreen, setSystemBarProperties, getWindowWidth, getSystemBarHeight } from '../utils/WindowUtil';
 import { GlobalThis } from '../utils/GlobalThis';
 import { getBundleInfoPermissions } from '../utils/PermissionMapScopeUtil';
@@ -100,6 +100,15 @@ export struct TaroWebContainer {
     }
   }
 
+  capsuleController: CapsuleController = {
+    changeCapsuleState: (visible: boolean) => {
+      this.showCapsule = visible;
+    },
+    getCapsuleState: () => {
+      return this.showCapsule;
+    }
+  }
+
   build() {
     Stack({ alignContent: Alignment.TopEnd }) {
       TaroWeb({
@@ -145,7 +154,7 @@ export struct TaroWebContainer {
     // 创建高阶API适配器，合并注入的对象
     this.adapter = new ApiAdapter();
     this.adapter.setWebController(this.taroWebController.webController)
-    const nativeInject = new NativeInject(this.navigationBarData, this.capsuleOptions);
+    const nativeInject = new NativeInject(this.navigationBarData, this.capsuleOptions, this.capsuleController);
     this.adapter.mergeInjectObj(nativeInject.buildInjectObj());
     this.injectObj && this.adapter.mergeInjectObj(this.injectObj);
 

@@ -45,6 +45,7 @@ import { wbLogger } from '../utils/Logger';
 import { switchHapSandBoxToInternal, switchInternalToHapSandBox } from '../utils/InternalPath'
 import { LocalUpdateManagerInstance } from '../update/LocalUpdateManager';
 import util from '@ohos.util';
+import { CapsuleController } from '../interfaces/InjectObject';
 
 const NATIVE_TAG = 'NativeInject';
 
@@ -63,13 +64,16 @@ export class NativeInject {
   private permissionInfo: bundleManager.ReqPermissionDetail[];
   // 胶囊的尺寸
   private capsuleOptions: MenuButtonOptions;
+  // 胶囊显示控制
+  private capsuleController: CapsuleController;
 
-  constructor(navigationBarData: NavigationBarData, capsuleOptions: MenuButtonOptions) {
+  constructor(navigationBarData: NavigationBarData, capsuleOptions: MenuButtonOptions, capsuleController: CapsuleController) {
     this.navigationBarData = navigationBarData;
     this.systemBarHeight = 0;
     this.windowWidth = 0;
     this.permissionInfo = [];
     this.capsuleOptions = capsuleOptions
+    this.capsuleController = capsuleController
   }
 
   private setStatusBarFrontColor(barFrontColor: string) {
@@ -357,6 +361,12 @@ export class NativeInject {
         } catch (err) {
           options.fail({ errMsg: 'error' });
         }
+      },
+      setCapsuleState: (visible: boolean) => {
+        this.capsuleController.changeCapsuleState(visible);
+      },
+      getCapsuleState: () => {
+        return { visible: this.capsuleController.getCapsuleState() }
       },
     };
   }
