@@ -195,6 +195,40 @@ async function checkAccessToken(permission: Permissions): Promise<abilityAccessC
   return grantStatus;
 }
 
+export async function requestPermission(permissions: Permissions[]):Promise<number[]> {
+  let notGranted: Permissions[] = [];
+  let atManager = abilityAccessCtrl.createAtManager();
+  let authResults: number[] = [];
+
+  for (const permission of permissions.entries()) {
+    console.debug(PERMISSION_UTIL, "number: " + permission[0], " permission: " + permission[1])
+    let grantStatus: abilityAccessCtrl.GrantStatus = await checkAccessToken(permission[1])
+    if (grantStatus === 0) {
+      console.debug(PERMISSION_UTIL, " permission " + permission[1] + " has granted")
+      authResults.push(0)
+      continue
+    }
+    notGranted.push(permission[1])
+  }
+  if (notGranted.length === 0) {
+    return authResults
+  }
+
+  let context: Context = GlobalThis.getInstance().getContext('context') as Context
+  try {
+    let permissionRequestResult = await atManager.requestPermissionsFromUser(context, notGranted)
+    authResults.push(...permissionRequestResult.authResults)
+  } catch (error) {
+    let err: BusinessError = error as BusinessError;
+    console.error(PERMISSION_UTIL, `Failed to request permissions. Code is ${err.code}, message is ${err.message}`);
+    if (authResults.length < permissions.length){
+      authResults.push(...new Array(permissions.length - authResults.length).fill(-1))
+    }
+  }
+  console.debug(PERMISSION_UTIL, " all authResults: " + JSON.stringify(authResults))
+  return authResults
+}
+
 
 export async function openPermissionsInSystemSettings(): Promise<void> {
   let bundleInfo: bundleManager.BundleInfo = await bundleManager.getBundleInfoForSelf(bundleManager.BundleFlag.GET_BUNDLE_INFO_WITH_APPLICATION);
