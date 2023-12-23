@@ -197,8 +197,43 @@ export interface InnerInjectObj {
   saveDataUrlToFile: (options: SaveDataUrlOptions) => void;
   setCapsuleState: (visible: boolean) => void;
   getCapsuleState: () => CapsuleState;
+  chooseImage1: (options: ChooseImageOptions) => void;
 }
 
 export interface InjectObject {
   [propName: string]: <T extends Object>(options?: any) => void | Promise<T> | Object;
+}
+
+export interface CompressImageParams {
+  src: string;
+  quality?: number;
+  compressedWidth?: number;
+  compressHeight?: number;
+}
+
+export interface CompressImageResults {
+  tempFilePath?: string;
+  tempFileSize?: number;
+  tempFileName?: string;
+}
+
+export interface ChooseImageOptions {
+  count?: number;
+  sizeType?: string[];
+  sourceType?: string[];
+  imageId?: string;
+  success: Function;
+  fail: Function;
+}
+
+export interface ChooseImageResults {
+  tempFilePaths: string[];
+  tempFiles: ImageFile[];
+}
+
+export interface ImageFile {
+  path: string;
+  size: number;
+  name: string;
+  type: string;
 }

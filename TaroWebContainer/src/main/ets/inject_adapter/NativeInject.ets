@@ -19,16 +19,26 @@ import { BusinessError } from '@ohos.base'
 import Want from '@ohos.app.ability.Want'
 import bundleManager from '@ohos.bundle.bundleManager';
 import fs from '@ohos.file.fs';
-import { InnerInjectObj, MenuButtonOptions, ErrorMsg, PermissionInfo , RequestSubscribeMessageOptions ,SubscribeMessageOptions ,SubscriptionsSetting } from '../interfaces/InjectObject'
-import { SaveDataUrlOptions }  from '../interfaces/InjectObject'
+import {
+  InnerInjectObj,
+  MenuButtonOptions,
+  ErrorMsg,
+  PermissionInfo,
+  RequestSubscribeMessageOptions,
+  SubscribeMessageOptions,
+  SubscriptionsSetting,
+  ChooseImageOptions
+} from '../interfaces/InjectObject'
+import { SaveDataUrlOptions } from '../interfaces/InjectObject'
 import {
   getBundleUsedPermission,
   getBundleUserPermissions,
   getBundleWxScopeList,
-  openPermissionsInSystemSettings
+  openPermissionsInSystemSettings,
+  requestPermission
 } from '../utils/PermissionMapScopeUtil';
 import {
-  addNotificationManagerSlot ,
+  addNotificationManagerSlot,
   enableNotification,
   NotificationBasicContent,
   NotificationContent,
@@ -46,6 +56,10 @@ import { switchHapSandBoxToInternal, switchInternalToHapSandBox } from '../utils
 import { LocalUpdateManagerInstance } from '../update/LocalUpdateManager';
 import util from '@ohos.util';
 import { CapsuleController } from '../interfaces/InjectObject';
+import {
+  getCameraUris,
+  getChooseImageRet, getPhotoAssetList, getPhotoVideoUris, PHOTO_TYPE } from '../utils/MediaUtil';
+import { Permissions } from '@ohos.abilityAccessCtrl';
 
 const NATIVE_TAG = 'NativeInject';
 
@@ -103,7 +117,7 @@ export class NativeInject {
         const sandboxPath = `${context.cacheDir}/${Date.now()}_${fileName}`;
         const fd = fs.openSync(src, fs.OpenMode.READ_ONLY).fd;
         fs.copyFileSync(fd, sandboxPath);
-        return { internalCachePath: switchHapSandBoxToInternal(sandboxPath)}
+        return { internalCachePath: switchHapSandBoxToInternal(sandboxPath) }
       },
       setNavigationBarColor: (options) => {
         wbLogger.info(NATIVE_TAG, `setNavigationBarColor: ${JSON.stringify(options || {})}`)
@@ -144,7 +158,7 @@ export class NativeInject {
         // - EntryAbility:///pages/api/framework/index?paramA=good
         // - /pages/api/framework/index?paramA=good
         return new Promise((resolve, reject) => {
-          resolve({errMsg: ''});
+          resolve({ errMsg: '' });
           wbLogger.info(NATIVE_TAG, 'navigateToMiniProgram options:' + JSON.stringify(options));
           const entryAbility = 'EntryAbility';
           let abilityName = entryAbility;
@@ -173,7 +187,7 @@ export class NativeInject {
             context.startAbility(wantInfo).then(() => {
               resolve({ errMsg: '' });
             }).catch(() => {
-              reject({ errMsg: 'invalid appid or path scheme' }  as ErrorMsg);
+              reject({ errMsg: 'invalid appid or path scheme' } as ErrorMsg);
             })
           } catch (paramError) {
             wbLogger.warn(NATIVE_TAG, `navigateToMiniProgram failed: ${JSON.stringify(paramError)}`);
@@ -193,7 +207,7 @@ export class NativeInject {
       },
       openSetting: (options) => {
         const apiName: string = 'openSetting';
-         // 接口返回
+        // 接口返回
         return new Promise(async (resolve, reject) => {
           try {
             const curPermissions: Array<PermissionInfo> = getBundleUserPermissions(this.permissionInfo);
@@ -202,43 +216,47 @@ export class NativeInject {
             // 打开应用的权限列表
             openPermissionsInSystemSettings();
             if (options.withSubscriptions) {
-              let NotificationBasicContent:NotificationBasicContent = {
-                title:'设置',
-                text:'获取中',
-                additionalText:"",
+              let NotificationBasicContent: NotificationBasicContent = {
+                title: '设置',
+                text: '获取中',
+                additionalText: "",
               }
-              let NotificationContent:NotificationContent = {
-                contentType:'NOTIFICATION_CONTENT_BASIC_TEXT',
-                normal:NotificationBasicContent
+              let NotificationContent: NotificationContent = {
+                contentType: 'NOTIFICATION_CONTENT_BASIC_TEXT',
+                normal: NotificationBasicContent
               }
-              let notificationRequests:NotificationRequest = {
-                id:1222287986,
-                slotType:'OTHER_TYPES',
-                content:NotificationContent,
-                path:''
+              let notificationRequests: NotificationRequest = {
+                id: 1222287986,
+                slotType: 'OTHER_TYPES',
+                content: NotificationContent,
+                path: ''
               }
-              let sendMessageOption:SendMessageOptions = {
-                notificationRequest:notificationRequests
+              let sendMessageOption: SendMessageOptions = {
+                notificationRequest: notificationRequests
               }
-              let subscriptionsSetting:SubscriptionsSetting = {
-                mainSwitch:false,
-                itemSettings:[]
+              let subscriptionsSetting: SubscriptionsSetting = {
+                mainSwitch: false,
+                itemSettings: []
               }
-              await sendMessage(sendMessageOption).then( async (res) => {
-                let cancelMessageOptions:CancelMessageOptions = {
-                  id:1222287986
+              await sendMessage(sendMessageOption).then(async (res) => {
+                let cancelMessageOptions: CancelMessageOptions = {
+                  id: 1222287986
                 }
                 await cancelMessage(cancelMessageOptions).then((res) => {
                   subscriptionsSetting.mainSwitch = true
-                }).catch((err:Error) => {
+                }).catch((err: Error) => {
                   subscriptionsSetting.mainSwitch = false
                 })
-              }).catch((err:Error) => {
-                console.log('requestSubscribeMessage',JSON.stringify(err))
+              }).catch((err: Error) => {
+                console.log('requestSubscribeMessage', JSON.stringify(err))
               })
               const subscribeCode = await getMassageList()
               subscriptionsSetting.itemSettings = subscribeCode.massageList
-              return resolve({ authSetting: bundleUsedScope.allScope,subscriptionsSetting:subscriptionsSetting,  errMsg: `${apiName}:ok` });
+              return resolve({
+                authSetting: bundleUsedScope.allScope,
+                subscriptionsSetting: subscriptionsSetting,
+                errMsg: `${apiName}:ok`
+              });
             }
             return resolve({ authSetting: bundleUsedScope.allScope, errMsg: `${apiName}:ok` });
           } catch (paramError) {
@@ -260,43 +278,47 @@ export class NativeInject {
             const bundleScope = await getBundleWxScopeList(curPermissions);
             const bundleUsedScope = getBundleUsedPermission(bundleScope.allScope, bundleScope.bundleScope);
             if (options.withSubscriptions) {
-              let NotificationBasicContent:NotificationBasicContent = {
-                title:'设置',
-                text:'获取中',
-                additionalText:"",
+              let NotificationBasicContent: NotificationBasicContent = {
+                title: '设置',
+                text: '获取中',
+                additionalText: "",
               }
-              let NotificationContent:NotificationContent = {
-                contentType:'NOTIFICATION_CONTENT_BASIC_TEXT',
-                normal:NotificationBasicContent
+              let NotificationContent: NotificationContent = {
+                contentType: 'NOTIFICATION_CONTENT_BASIC_TEXT',
+                normal: NotificationBasicContent
               }
-              let notificationRequests:NotificationRequest = {
-                id:1222287986,
-                slotType:'OTHER_TYPES',
-                content:NotificationContent,
-                path:''
+              let notificationRequests: NotificationRequest = {
+                id: 1222287986,
+                slotType: 'OTHER_TYPES',
+                content: NotificationContent,
+                path: ''
               }
-              let sendMessageOption:SendMessageOptions = {
-                notificationRequest:notificationRequests
+              let sendMessageOption: SendMessageOptions = {
+                notificationRequest: notificationRequests
               }
-              let subscriptionsSetting:SubscriptionsSetting = {
-                mainSwitch:false,
-                itemSettings:[]
+              let subscriptionsSetting: SubscriptionsSetting = {
+                mainSwitch: false,
+                itemSettings: []
               }
-              await sendMessage(sendMessageOption).then( async (res) => {
-                let cancelMessageOptions:CancelMessageOptions = {
-                  id:1222287986
+              await sendMessage(sendMessageOption).then(async (res) => {
+                let cancelMessageOptions: CancelMessageOptions = {
+                  id: 1222287986
                 }
                 await cancelMessage(cancelMessageOptions).then((res) => {
                   subscriptionsSetting.mainSwitch = true
-                }).catch((err:Error) => {
+                }).catch((err: Error) => {
                   subscriptionsSetting.mainSwitch = false
                 })
-              }).catch((err:Error) => {
-                console.log('requestSubscribeMessage',JSON.stringify(err))
+              }).catch((err: Error) => {
+                console.log('requestSubscribeMessage', JSON.stringify(err))
               })
               const subscribeCode = await getMassageList()
               subscriptionsSetting.itemSettings = subscribeCode.massageList
-              return resolve({ authSetting: bundleUsedScope.allScope,subscriptionsSetting:subscriptionsSetting,  errMsg: `${apiName}:ok` });
+              return resolve({
+                authSetting: bundleUsedScope.allScope,
+                subscriptionsSetting: subscriptionsSetting,
+                errMsg: `${apiName}:ok`
+              });
             }
             return resolve({ authSetting: bundleUsedScope.allScope, errMsg: `${apiName}:ok` });
           } catch (paramError) {
@@ -311,14 +333,14 @@ export class NativeInject {
       getUpdateManager: () => {
         return LocalUpdateManagerInstance;
       },
-      requestSubscribeMessage: async (options:RequestSubscribeMessageOptions) => {
+      requestSubscribeMessage: async (options: RequestSubscribeMessageOptions) => {
         const apiName: string = 'requestSubscribeMessage';
         return new Promise(async (resolve) => {
           try {
             const enableCode = await enableNotification();
             if (enableCode.errMsg === 'success') {
               const addSlotCode = await addNotificationManagerSlot(options)
-              console.log('requestSubscribeMessage',JSON.stringify(addSlotCode))
+              console.log('requestSubscribeMessage', JSON.stringify(addSlotCode))
               if (addSlotCode.errMsg == 'success') {
                 return resolve(addSlotCode);
               } else {
@@ -328,9 +350,9 @@ export class NativeInject {
               return resolve(enableCode);
             }
           } catch (paramError) {
-            let enableCode:SubscribeMessageOptions = {
-              errCode:(paramError as BusinessError).code,
-              errMsg:`${apiName}:fail error ${(paramError as BusinessError).message}`
+            let enableCode: SubscribeMessageOptions = {
+              errCode: (paramError as BusinessError).code,
+              errMsg: `${apiName}:fail error ${(paramError as BusinessError).message}`
             }
             return resolve(enableCode);
           }
@@ -367,6 +389,50 @@ export class NativeInject {
       },
       getCapsuleState: () => {
         return { visible: this.capsuleController.getCapsuleState() }
+      },
+      chooseImage1: async (options: ChooseImageOptions) => {
+        const apiName: string = 'chooseImage';
+        try {
+          if (options.count && typeof (options.count) !== 'number') {
+            options.fail({ errMsg: `${apiName}:fail parameter count:Expected Number with value NaN` })
+            return;
+          }
+          if (options.count === undefined || options.count < 1) {
+            options.count = 9
+          }
+          let uris: string[] = []
+          if (options.sourceType && options.sourceType.length === 1 && options.sourceType.includes('camera')) {
+            uris = await getCameraUris();
+            if (uris.length === 0) {
+              options.fail({ errMsg: `${apiName}:fail to pull up camera app` })
+              return
+            }
+          } else {
+            // 申请读取图库图片的权限
+            const permissionsParams: Permissions[] = ['ohos.permission.READ_IMAGEVIDEO']
+            const permissionsResults = await requestPermission(permissionsParams);
+            for (let i = 0; i < permissionsResults.length; i++) {
+              if (permissionsResults[i] !== 0) {
+                options.fail({ errMsg: `${apiName}:permission fail` })
+                return
+              }
+            }
+            // 获取图库的数量
+            const list = await getPhotoAssetList();
+            uris = getPhotoVideoUris(list, PHOTO_TYPE.IMAGE);
+          }
+          if (!uris) {
+            options.fail({ errMsg: `${apiName}:get uri fail` })
+            return
+          } else if (uris.includes('cancel')) {
+            // 取消时不触发success和fail
+            return
+          }
+          const ret = await getChooseImageRet(uris, options)
+          options.success({ tempFilePaths: ret.tempFilePaths, tempFiles: ret.tempFiles })
+        } catch (err) {
+          options.fail({ errMsg: `${apiName}:fail` })
+        }
       },
     };
   }
