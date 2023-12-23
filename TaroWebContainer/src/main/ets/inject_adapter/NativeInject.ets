@@ -417,15 +417,9 @@ export class NativeInject {
                 return
               }
             }
-            // const ret = await requestPermissionsFromUser(['ohos.permission.READ_IMAGEVIDEO']);
-            // if (!ret) {
-            //   options.fail({ errMsg: `${apiName}:permission fail` })
-            //   return
-            // }
             // 获取图库的数量
             const list = await getPhotoAssetList();
             uris = getPhotoVideoUris(list, PHOTO_TYPE.IMAGE);
-            console.info('-----chooseImage photo len:', uris.length);
           }
           if (!uris) {
             options.fail({ errMsg: `${apiName}:get uri fail` })
@@ -435,14 +429,6 @@ export class NativeInject {
             return
           }
           const ret = await getChooseImageRet(uris, options)
-          for (let i = 0; i < uris.length; i++) {
-            console.info('-----chooseImage :', i);
-            console.info('-----chooseImage  1:', ret.tempFilePaths[i]);
-            console.info('-----chooseImage  2:', ret.tempFiles[i].path);
-            console.info('-----chooseImage  3:', ret.tempFiles[i].size);
-            console.info('-----chooseImage  4:', ret.tempFiles[i].type);
-            console.info('-----chooseImage  5:', ret.tempFiles[i].name);
-          }
           options.success({ tempFilePaths: ret.tempFilePaths, tempFiles: ret.tempFiles })
         } catch (err) {
           options.fail({ errMsg: `${apiName}:fail` })
