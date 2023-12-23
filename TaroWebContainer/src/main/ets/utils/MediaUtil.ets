@@ -112,17 +112,6 @@ export async function compressImage(params: CompressImageParams): Promise<Compre
       fd = FileUtils.getFdFromUriOrSandBoxPath(src);
     }
     // 压缩
-    // const imageSourceApi: image.ImageSource = image.createImageSource(fd);
-    // const imagePackerApi: image.ImagePacker = image.createImagePacker();
-    // let packOpts: image.PackingOption = { format: 'image/jpeg', quality };
-    // const arrayBuf = await imagePackerApi.packing(imageSourceApi, packOpts);
-
-    // const color: ArrayBuffer = new ArrayBuffer(96);
-    // let opts: image.InitializationOptions = { editable: true, pixelFormat: 3, size: { height: 4, width: 6 } }
-    // let pixeMap: image.PixelMap = await image.createPixelMap(color, opts);
-    // const imagePackerApi: image.ImagePacker = image.createImagePacker();
-    // let packOpts: image.PackingOption = { format: 'image/jpeg', quality };
-    // const arrayBuf = await imagePackerApi.packing(pixeMap, packOpts);
     const arrayBuf = await getArrayBuffer(20, fd, params.compressHeight, params.compressedWidth);
 
     const context = GlobalThis.getInstance().getContext('context');
