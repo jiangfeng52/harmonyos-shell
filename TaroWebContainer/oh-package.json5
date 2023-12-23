@@ -13,5 +13,7 @@
   "description": "web-container提供定制化Web容器来运行Taro生成的mpharmony类型的Web应用",
   "main": "Index.ets",
   "version": "1.0.0",
-  "dependencies": {}
+  "dependencies": {
+    "@ohos/videocompressor": "1.0.2-rc.1"
+  }
 }

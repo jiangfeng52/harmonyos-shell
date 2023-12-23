@@ -14,6 +14,7 @@ import { FileUtils } from './FileUtils';
 import fs from '@ohos.file.fs'
 import image from '@ohos.multimedia.image'
 import bundleManager from '@ohos.bundle.bundleManager';
+import { CompressorResponseCode, CompressQuality, VideoCompressor } from '@ohos/videocompressor';
 
 const MEDIA_UTIL = 'MediaUtil';
 
@@ -121,7 +122,6 @@ export async function compressImage(params: CompressImageParams): Promise<Compre
     const currentTime = new Date().getTime();
     const jpgName = 'IMAGE_' + currentTime;
     const tmpPath = context.tempDir + '/' + currentTime + '/' + jpgName + '.jpg'
-    let size = 0;
     try {
       await fs.mkdir(context.tempDir + '/' + currentTime)
       fs.openSync(tmpPath, fs.OpenMode.CREATE)
@@ -199,6 +199,26 @@ export async function getChooseImageRet(uris: string[], params: ChooseImageOptio
   }
   return { tempFilePaths, tempFiles }
 }
+
+export async function compressVideo(src: string): Promise<CompressImageResults> {
+  try {
+    let videoCompressor: VideoCompressor = new VideoCompressor();
+    const context = GlobalThis.getInstance().getContext('context');
+    const data = await videoCompressor.compressVideo(context, src, CompressQuality.COMPRESS_QUALITY_HIGH);
+    if (data.code == CompressorResponseCode.SUCCESS) {
+      const stat = FileUtils.getFileStatFromUri(data.outputPath);
+      const length = data.outputPath.split('/').length - 1;
+      const name = data.outputPath.split('/')[length]
+      return { tempFilePath: data.outputPath, tempFileSize: stat.size, tempFileName: name.split('.')[0] };
+    } else {
+      wbLogger.error(MEDIA_UTIL, `videoCompressor error:`, data.message);
+    }
+  } catch (err) {
+    wbLogger.error(MEDIA_UTIL, `videoCompressor error:`, err.message);
+  }
+  return {};
+}
+
 
 
 
