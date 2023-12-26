@@ -12,54 +12,53 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import uri from '@ohos.uri'
+import uri from '@ohos.uri';
 import window from '@ohos.window';
-import common from '@ohos.app.ability.common'
-import { BusinessError } from '@ohos.base'
-import Want from '@ohos.app.ability.Want'
+import common from '@ohos.app.ability.common';
+import { BusinessError } from '@ohos.base';
+import Want from '@ohos.app.ability.Want';
 import bundleManager from '@ohos.bundle.bundleManager';
 import fs from '@ohos.file.fs';
+
 import {
+  CapsuleController,
+  ErrorMsg,
   InnerInjectObj,
   MenuButtonOptions,
-  ErrorMsg,
   PermissionInfo,
   RequestSubscribeMessageOptions,
+  SaveDataUrlOptions,
   SubscribeMessageOptions,
   SubscriptionsSetting,
-  ChooseImageOptions
-} from '../interfaces/InjectObject'
-import { SaveDataUrlOptions } from '../interfaces/InjectObject'
+  ChooseMediaOptions,
+} from '../interfaces/InjectObject';
 import {
   getBundleUsedPermission,
   getBundleUserPermissions,
   getBundleWxScopeList,
   openPermissionsInSystemSettings,
-  requestPermission
 } from '../utils/PermissionMapScopeUtil';
 import {
   addNotificationManagerSlot,
+  cancelMessage,
+  CancelMessageOptions,
   enableNotification,
+  getMassageList,
   NotificationBasicContent,
   NotificationContent,
-  SendMessageOptions,
-  getMassageList,
   NotificationRequest,
   sendMessage,
-  CancelMessageOptions,
-  cancelMessage
-} from '../utils/SubscribeMessageUtil'
+  SendMessageOptions
+} from '../utils/SubscribeMessageUtil';
 import { NavigationBarData } from '../components/NavigationBar';
 import { setSystemBarProperties } from '../utils/WindowUtil';
 import { wbLogger } from '../utils/Logger';
-import { switchHapSandBoxToInternal, switchInternalToHapSandBox } from '../utils/InternalPath'
+import { switchHapSandBoxToInternal, switchInternalToHapSandBox } from '../utils/InternalPath';
 import { LocalUpdateManagerInstance } from '../update/LocalUpdateManager';
 import util from '@ohos.util';
-import { CapsuleController } from '../interfaces/InjectObject';
-import {
-  getCameraUris,
-  getChooseImageRet, getPhotoAssetList, getPhotoVideoUris, PHOTO_TYPE } from '../utils/MediaUtil';
-import { Permissions } from '@ohos.abilityAccessCtrl';
+import { selectMediaAssets } from '../utils/MediaUtil';
+import { MediaItemData, ChooseAlbumResult, chooseAlbumOptions } from '../interfaces/Media';
+
 
 const NATIVE_TAG = 'NativeInject';
 
@@ -80,6 +79,7 @@ export class NativeInject {
   private capsuleOptions: MenuButtonOptions;
   // 胶囊显示控制
   private capsuleController: CapsuleController;
+  private chooseAlbumCallback?: (options: chooseAlbumOptions, mediaItems: MediaItemData[]) => Promise<ChooseAlbumResult>;
 
   constructor(navigationBarData: NavigationBarData, capsuleOptions: MenuButtonOptions, capsuleController: CapsuleController) {
     this.navigationBarData = navigationBarData;
@@ -95,6 +95,10 @@ export class NativeInject {
     window.getLastWindow(context).then((windowClass) => {
       setSystemBarProperties(windowClass, barFrontColor);
     });
+  }
+
+  public setChooseAlbumCallback(cb: (options: chooseAlbumOptions, mediaItems: MediaItemData[]) => Promise<ChooseAlbumResult>) {
+    this.chooseAlbumCallback = cb;
   }
 
   public setSystemBarHeight(systemBarHeight: number) {
@@ -390,49 +394,8 @@ export class NativeInject {
       getCapsuleState: () => {
         return { visible: this.capsuleController.getCapsuleState() }
       },
-      chooseImage1: async (options: ChooseImageOptions) => {
-        const apiName: string = 'chooseImage';
-        try {
-          if (options.count && typeof (options.count) !== 'number') {
-            options.fail({ errMsg: `${apiName}:fail parameter count:Expected Number with value NaN` })
-            return;
-          }
-          if (options.count === undefined || options.count < 1) {
-            options.count = 9
-          }
-          let uris: string[] = []
-          if (options.sourceType && options.sourceType.length === 1 && options.sourceType.includes('camera')) {
-            uris = await getCameraUris();
-            if (uris.length === 0) {
-              options.fail({ errMsg: `${apiName}:fail to pull up camera app` })
-              return
-            }
-          } else {
-            // 申请读取图库图片的权限
-            const permissionsParams: Permissions[] = ['ohos.permission.READ_IMAGEVIDEO']
-            const permissionsResults = await requestPermission(permissionsParams);
-            for (let i = 0; i < permissionsResults.length; i++) {
-              if (permissionsResults[i] !== 0) {
-                options.fail({ errMsg: `${apiName}:permission fail` })
-                return
-              }
-            }
-            // 获取图库的数量
-            const list = await getPhotoAssetList();
-            uris = getPhotoVideoUris(list, PHOTO_TYPE.IMAGE);
-          }
-          if (!uris) {
-            options.fail({ errMsg: `${apiName}:get uri fail` })
-            return
-          } else if (uris.includes('cancel')) {
-            // 取消时不触发success和fail
-            return
-          }
-          const ret = await getChooseImageRet(uris, options)
-          options.success({ tempFilePaths: ret.tempFilePaths, tempFiles: ret.tempFiles })
-        } catch (err) {
-          options.fail({ errMsg: `${apiName}:fail` })
-        }
+      chooseMediaAssets: (options: ChooseMediaOptions) => {
+          selectMediaAssets(options, this.chooseAlbumCallback!)
       },
     };
   }

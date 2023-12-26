@@ -20,6 +20,7 @@ import bundleManager from '@ohos.bundle.bundleManager';
 import  AdvancedAPI from '../utils/advancedapi.min';
 import { NavigationBar } from './navigationbar';
 import { TaroWeb } from './taroweb';
+import { Album } from './Album/Album';
 import { ApiAdapter } from '../inject_adapter/ApiAdapter'
 import { NativeInject  } from '../inject_adapter/NativeInject';
 import { LaunchOptions } from '../interfaces/LaunchOptions';
@@ -33,6 +34,7 @@ import { TaroWebController } from './TaroWeb';
 import { NavigationBarData } from './NavigationBar';
 import router from '@ohos.router';
 import { wbLogger } from '../utils/Logger';
+import { AlbumBackward, ChooseAlbumResult, MediaItemData, chooseAlbumOptions } from '../interfaces/Media'
 
 const CONTAINER_TAG = 'TaroWebContainer';
 
@@ -59,6 +61,19 @@ export struct TaroWebContainer {
   @State navigationBarData: NavigationBarData = new NavigationBarData();
   // 系统状态状态栏高度
   @State systemBarHeight: number = 0;
+
+  // 显示图库
+  @State showAlbum: boolean = false;
+  // 退出图库返回选择的媒体数据
+  private mediaResolve?: (res: ChooseAlbumResult) => void;
+  // 退出图库取消选择
+  private mediaReject?: () => void;
+  // 是否处在图库的详情页面
+  @State isAlbumOnDetail: boolean = false;
+  // 图库初始配置
+  albumOptions?: chooseAlbumOptions;
+  // 图库媒体数据数据列表
+  mediaItems: MediaItemData[] = [];
 
   // 路由控制器
   @Link taroWebController: TaroWebController;
@@ -108,6 +123,39 @@ export struct TaroWebContainer {
       return this.showCapsule;
     }
   }
+  
+  chooseAlbumCallback = (options: chooseAlbumOptions, mediaItems: MediaItemData[]) => {
+    const mediaPromise = new Promise<ChooseAlbumResult>((resolve, reject) => {
+      this.mediaResolve = resolve;
+      this.mediaReject = reject;
+      this.albumOptions = options;
+      this.mediaItems = mediaItems;
+    })
+    this.showAlbum = true;
+    return mediaPromise;
+  }
+
+  onExitAlbumHandler = (success: boolean, res: ChooseAlbumResult) => {
+    if (success) {
+      this.mediaResolve?.(res)
+    } else {
+      this.mediaReject?.()
+    }
+    this.showAlbum = false;
+  }
+
+  albumBackward: AlbumBackward = {
+    accessBackward: () => { return this.showAlbum; },
+    backward: () => {
+      if (this.isAlbumOnDetail) {
+        this.isAlbumOnDetail = false;
+        return;
+      } else {
+        this.showAlbum = false;
+        this.mediaReject?.()
+      }
+    },
+  }
 
   build() {
     Stack({ alignContent: Alignment.TopEnd }) {
@@ -139,6 +187,17 @@ export struct TaroWebContainer {
             RouterUtils.pushUrlWithLog(this.capsulePage)
           })
       }
+      if (this.showAlbum) {
+        Album({
+          mediaItemList: this.mediaItems,
+          onExitAlbumHandler: this.onExitAlbumHandler,
+          showDetail: this.isAlbumOnDetail,
+          options: this.albumOptions,
+          avoidAreaHeight: this.systemBarHeight,
+        })
+          .width('100%')
+          .height('100%')
+      }
     }.layoutWeight(1)
   }
 
@@ -155,6 +214,8 @@ export struct TaroWebContainer {
     this.adapter = new ApiAdapter();
     this.adapter.setWebController(this.taroWebController.webController)
     const nativeInject = new NativeInject(this.navigationBarData, this.capsuleOptions, this.capsuleController);
+    this.taroWebController.setAlbumBackward(this.albumBackward);
+    nativeInject.setChooseAlbumCallback(this.chooseAlbumCallback);
     this.adapter.mergeInjectObj(nativeInject.buildInjectObj());
     this.injectObj && this.adapter.mergeInjectObj(this.injectObj);
 
