@@ -428,9 +428,17 @@ export class ApiAdapter {
                   }
                 }
               })
-              return asObject[method].apply(asObject, argsT)
+              try {
+                return asObject[method].apply(asObject, argsT)
+              } catch (error) {
+                wbLogger.error(ADAPTER_TAG, `${method} : ${error}`)
+              }
             } else {
-              return asObject[method]()
+              try {
+                return asObject[method]()
+              } catch (error) {
+                wbLogger.error(ADAPTER_TAG, `${method} : ${error}`)
+              }
             }
           } else if (type === 'get_value') {
             const res = asObject[method]
