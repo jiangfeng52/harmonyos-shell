@@ -51,6 +51,10 @@ export struct Album {
   @State allowAdd: boolean = true;
   // 全部媒体文件列表
   @Prop mediaItemList: MediaItemData[];
+  // 只预览一张图片模式
+  @Prop previewOneMode: boolean = false;
+  // 选中媒体文件的原图大小总和
+  @State totalOriginalSize: string = '0B';
   // 当前选中的媒体文件列表
   @State @Watch('onSelectedItemListUpdate') selectedItemList: MediaItemData[] = [];
   // 懒加载详情页面数据源
@@ -80,6 +84,21 @@ export struct Album {
   onSelectedItemListUpdate() {
     this.selectedCount = this.selectedItemList.length;
     this.allowAdd = this.selectedCount < this.options.count;
+    this.calculateSelectedSize();
+  }
+
+  calculateSelectedSize() {
+    let size: number = 0;
+    for (const item of this.selectedItemList) {
+      size += item.originSize;
+    }
+    if (size > 1024 * 1024) {
+      this.totalOriginalSize = `共${Math.floor(size / 1024 / 1024)}MB`;
+    } else if (size > 1024) {
+      this.totalOriginalSize = `共${Math.floor(size / 1024)}KB`;
+    } else {
+      this.totalOriginalSize = `共${size}B`;
+    }
   }
 
   // 切换媒体文件选中状态时，更新选中列表
@@ -98,6 +117,13 @@ export struct Album {
     })
   }
 
+  previewMedia() {
+    this.selectedItemList = this.mediaItemList.filter((item) => item.isSelected);
+    this.dataSource = new MediaDataSource(this.selectedItemList);
+    this.currentDetailIndex = 0;
+    this.showDetail = true;
+  }
+
   aboutToAppear() {
     if (this.options.sizeType.length === 1 && this.options.sizeType[0] === 'original') {
       this.checkOriginPhoto = true;
@@ -111,6 +137,12 @@ export struct Album {
           wbLogger.error(ALBUM_TAG, 'getThumbnailForVideo fail')
         })
       }
+    }
+    if (this.previewOneMode) {
+      this.previewMedia();
+    }
+    if (this.checkOriginPhoto) {
+      this.calculateSelectedSize();
     }
   }
 
@@ -143,25 +175,29 @@ export struct Album {
               .width(28)
               .margin({ left: 10 })
               .onClick(() => {
-                this.showDetail = false
+                if (this.previewOneMode) {
+                  this.onExitAlbumHandler?.(false, {} as ChooseAlbumResult);
+                } else {
+                  this.showDetail = false;
+                }
               })
-            Text(`${this.currentDetailIndex}/${this.dataSource.getList().length}`)
+            Text(`${this.currentDetailIndex + 1}/${this.dataSource.getList().length}`)
               .fontColor(Color.White)
             Row() {
               Checkbox()
                 .selectedColor(Color.Green)
                 .select(this.dataSource.getData(this.currentDetailIndex)?.isSelected || false)
                 .onClick(() => {
-                  const originState = this.dataSource.getData(this.currentDetailIndex).isSelected
+                  const originState = this.dataSource.getData(this.currentDetailIndex)?.isSelected || false;
                   this.dataSource.getData(this.currentDetailIndex).isSelected = !originState;
                   this.selectedItemList = this.mediaItemList.filter((item) => item.isSelected);
                 })
-                .enabled(this.allowAdd || this.dataSource.getData(this.currentDetailIndex).isSelected)
+                .enabled(this.allowAdd || this.dataSource.getData(this.currentDetailIndex)?.isSelected || false)
               Text('选择')
                 .fontColor(Color.White)
             }
             .onClick(() => {
-              if (!(this.allowAdd || this.dataSource.getData(this.currentDetailIndex).isSelected)) {
+              if (!(this.allowAdd || this.dataSource.getData(this.currentDetailIndex)?.isSelected || false)) {
                 this.notAllowSelectTip()
               }
             })
@@ -284,16 +320,23 @@ export struct Album {
         .backgroundColor(Color.Transparent)
         .visibility(this.showDetail ? Visibility.Hidden : Visibility.Visible)
         .onClick(() => {
-          this.selectedItemList = this.mediaItemList.filter((item) => item.isSelected);
-          this.dataSource = new MediaDataSource(this.selectedItemList);
-          this.currentDetailIndex = 0;
-          this.showDetail = true;
+          this.previewMedia();
         })
         .enabled(this.selectedCount > 0)
         .width(70)
 
-        CheckOriginal({ checked: this.checkOriginPhoto, active: this.options.sizeType.length === 2 })
-          .visibility(this.options.sizeType.length === 1 && this.options.sizeType[0] === 'compressed' ? Visibility.Hidden : Visibility.Visible)
+        Column() {
+          CheckOriginal({ checked: this.checkOriginPhoto, active: this.options.sizeType.length === 2 })
+            .visibility(this.options.sizeType.length === 1 && this.options.sizeType[0] === 'compressed'
+              ? Visibility.Hidden : Visibility.Visible)
+            .margin({ top: 8 })
+          Text(this.totalOriginalSize)
+            .fontSize(8)
+            .fontColor(Color.Gray)
+            .visibility(this.checkOriginPhoto ? Visibility.Visible : Visibility.Hidden)
+        }
+        .alignItems(HorizontalAlign.Center)
+        .justifyContent(FlexAlign.Start)
 
         Button({ type: ButtonType.Normal, stateEffect: true }) {
           Row() {

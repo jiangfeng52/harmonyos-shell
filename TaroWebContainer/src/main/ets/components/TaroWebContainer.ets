@@ -74,6 +74,7 @@ export struct TaroWebContainer {
   albumOptions?: chooseAlbumOptions;
   // 图库媒体数据数据列表
   mediaItems: MediaItemData[] = [];
+  @State previewOneImage: boolean = false;
 
   // 路由控制器
   @Link taroWebController: TaroWebController;
@@ -124,13 +125,15 @@ export struct TaroWebContainer {
     }
   }
   
-  chooseAlbumCallback = (options: chooseAlbumOptions, mediaItems: MediaItemData[]) => {
+  chooseAlbumCallback = (options: chooseAlbumOptions, mediaItems: MediaItemData[], previewOneMode?: boolean) => {
     const mediaPromise = new Promise<ChooseAlbumResult>((resolve, reject) => {
       this.mediaResolve = resolve;
       this.mediaReject = reject;
-      this.albumOptions = options;
-      this.mediaItems = mediaItems;
     })
+    this.albumOptions = options;
+    this.mediaItems = mediaItems;
+    this.previewOneImage = previewOneMode === undefined ? false : previewOneMode;
+    this.isAlbumOnDetail = false
     this.showAlbum = true;
     return mediaPromise;
   }
@@ -194,6 +197,7 @@ export struct TaroWebContainer {
           showDetail: this.isAlbumOnDetail,
           options: this.albumOptions,
           avoidAreaHeight: this.systemBarHeight,
+          previewOneMode: this.previewOneImage,
         })
           .width('100%')
           .height('100%')
