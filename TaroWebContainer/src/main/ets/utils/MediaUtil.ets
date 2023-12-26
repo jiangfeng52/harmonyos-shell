@@ -338,7 +338,7 @@ export async function getVideoThumbnail(asset: photoAccessHelper.PhotoAsset): Pr
   return await asset.getThumbnail({ height: 768, width: 768 })
 }
 
-type ChooseAlbumCallback = (options: chooseAlbumOptions, mediaItems: MediaItemData[]) => Promise<ChooseAlbumResult>
+type ChooseAlbumCallback = (options: chooseAlbumOptions, mediaItems: MediaItemData[], previewOneImage?: boolean) => Promise<ChooseAlbumResult>
 
 export async function selectMediaAssets(options: ChooseMediaOptions, chooseAlbumCallback: ChooseAlbumCallback) {
   const apiName = options.apiName;
@@ -383,8 +383,25 @@ export async function selectMediaAssets(options: ChooseMediaOptions, chooseAlbum
       ]
       options.sizeType ||= ['original', 'compressed'];
       options.sizeType = Array.from(new Set(options.sizeType));
-      const useOriginal = (options.sizeType.length === 2) || (options.sizeType[0] === 'original');
-      const ret = await getChooseMediaRet(mediaList, useOriginal)
+      let useOriginal = (options.sizeType.length === 2) || (options.sizeType[0] === 'original');
+
+      // chooseImage在设置sizeType=['original', 'compressed']时，拍照的场景下弹出原图设置界面
+      if (apiName === 'chooseImage' && options.sizeType.length === 2 && assetType === 'image') {
+        const mediaItemData = new MediaItemData(mediaList[0]);
+        mediaItemData.isSelected = true;
+        try {
+          const chooseInfo = await chooseAlbumCallback({
+            count: 1,
+            sizeType: ['original', 'compressed'],
+            mediaType: ['image'],
+          }, [mediaItemData], true);
+          useOriginal = chooseInfo.isOriginal;
+        }  catch(err) {
+          options.fail({ errMsg: 'cancel' });
+          return;
+        }
+      }
+      const ret = await getChooseMediaRet(mediaList, useOriginal);
       options.success({
         tempFilePaths: ret.tempFilePaths,
         tempFiles: ret.tempFiles,
