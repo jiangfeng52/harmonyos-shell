@@ -71,7 +71,7 @@ export struct MediaItem {
       }
 
       Button({ type: ButtonType.Normal })
-        .backgroundColor('#000000')
+        .backgroundColor(Color.Black)
         .width('100%')
         .height('100%')
         .opacity(this.data.isSelected ? 0.5 : 0)
@@ -88,8 +88,8 @@ export struct MediaItem {
       Circle()
         .width(20)
         .height(20)
-        .fillOpacity(this.data.isSelected ? 100 : 0)
-        .fill(this.data.isSelected ? Color.Green : Color.Transparent)
+        .fillOpacity(this.data.isSelected ? 1 : 0.4)
+        .fill(this.data.isSelected ? Color.Green : Color.Black)
         .strokeWidth(1)
         .stroke(this.data.isSelected ? Color.Green : Color.White)
         .margin({ top: 5, right: 5 })
