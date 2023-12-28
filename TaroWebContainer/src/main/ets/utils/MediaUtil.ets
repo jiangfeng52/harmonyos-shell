@@ -9,8 +9,6 @@ import image from '@ohos.multimedia.image'
 import bundleManager from '@ohos.bundle.bundleManager';
 import { CompressorResponseCode, CompressQuality, VideoCompressor } from '@ohos/videocompressor';
 import { IMediaData, MediaFile, ChooseAlbumResult, ChooseMediaResults, MediaItemData, chooseAlbumOptions } from '../interfaces/Media'
-import fileUri from '@ohos.file.fileuri'
-
 import { requestPermission } from '../utils/PermissionMapScopeUtil';
 import { Permissions } from '@ohos.abilityAccessCtrl';
 import { ChooseMediaOptions } from '../interfaces/InjectObject'
@@ -183,7 +181,7 @@ export async function compressImage(params: CompressImageParams): Promise<Compre
       const stat = FileUtils.getFileStatFromUri(tmpPath);
       fs.closeSync(fileOpen);
       return {
-        tempFilePath: fileUri.getUriFromPath(tmpPath),
+        tempFilePath: tmpPath,
         tempFileSize: stat.size,
         tempFileName: jpgName
       };
@@ -230,7 +228,7 @@ export async function compressVideo(src: string): Promise<CompressResult> {
       const length = data.outputPath.split('/').length - 1;
       const name = data.outputPath.split('/')[length]
       return {
-        tempFilePath: fileUri.getUriFromPath(data.outputPath),
+        tempFilePath: data.outputPath,
         tempFileSize: stat.size,
         tempFileName: name.split('.')[0]
       };
@@ -316,21 +314,21 @@ export async function getChooseMediaRet(mediaList: IMediaData[], useOriginal: bo
 
 export async function generateThumbnailFile(asset: photoAccessHelper.PhotoAsset): Promise<string> {
   try {
-    const thumbnail = await asset.getThumbnail({ height: 768, width: 768 })
-    const imagePacker = image.createImagePacker()
+    const thumbnail = await asset.getThumbnail({ height: 768, width: 768 });
+    const imagePacker = image.createImagePacker();
     const buffer = await imagePacker.packing(thumbnail, {
       format: 'image/jpeg',
       quality: 100,
-    })
-    const context = getContext()
-    const sandboxThumbPath = `${context.cacheDir}/${Date.now()}.jpg`
+    });
+    const context = getContext();
+    const sandboxThumbPath = `${context.cacheDir}/${Date.now()}.jpg`;
     const file = fs.openSync(sandboxThumbPath, fs.OpenMode.READ_WRITE | fs.OpenMode.CREATE);
-    fs.writeSync(file.fd, buffer)
+    fs.writeSync(file.fd, buffer);
     fs.closeSync(file.fd);
-    return fileUri.getUriFromPath(sandboxThumbPath)
+    return sandboxThumbPath;
   } catch(err) {
     wbLogger.info(MEDIA_UTIL, 'generateThumbnailFile failed');
-    return ''
+    return '';
   }
 }
 
