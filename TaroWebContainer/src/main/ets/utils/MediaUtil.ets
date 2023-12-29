@@ -11,7 +11,8 @@ import { CompressorResponseCode, CompressQuality, VideoCompressor } from '@ohos/
 import { IMediaData, MediaFile, ChooseAlbumResult, ChooseMediaResults, MediaItemData, chooseAlbumOptions } from '../interfaces/Media'
 import { requestPermission } from '../utils/PermissionMapScopeUtil';
 import { Permissions } from '@ohos.abilityAccessCtrl';
-import { ChooseMediaOptions } from '../interfaces/InjectObject'
+import { ChooseMediaOptions } from '../interfaces/InjectObject';
+import { switchHapSandBoxToInternal } from './InternalPath';
 
 const MEDIA_UTIL = 'MediaUtil';
 
@@ -58,7 +59,7 @@ export async function getPhotoAssetList(): Promise<Array<photoAccessHelper.Photo
       if (photoAsset !== undefined) {
         wbLogger.info(MEDIA_UTIL, 'photoAsset.length :' + photoAsset.length);
       }
-      return photoAsset;
+      return photoAsset.reverse();
     }
   } catch (err) {
     wbLogger.error(MEDIA_UTIL, `getPhotoAssetList failed. Cause: ${JSON.stringify(err)}`);
@@ -169,11 +170,9 @@ export async function compressImage(params: CompressImageParams): Promise<Compre
     if (context === undefined) {
       return options;
     }
-    const currentTime = new Date().getTime();
-    const jpgName = 'IMAGE_' + currentTime;
-    const tmpPath = context.tempDir + '/' + currentTime + '/' + jpgName + '.jpg'
+    const jpgName = `IMAGE_${Date.now()}` ;
+    const tmpPath = `${context.tempDir}/${jpgName}.jpg`;
     try {
-      await fs.mkdir(context.tempDir + '/' + currentTime)
       fs.openSync(tmpPath, fs.OpenMode.CREATE)
       const fileOpen = fs.openSync(tmpPath, fs.OpenMode.READ_WRITE)
       fs.writeSync(fileOpen.fd, arrayBuf)
@@ -181,7 +180,7 @@ export async function compressImage(params: CompressImageParams): Promise<Compre
       const stat = FileUtils.getFileStatFromUri(tmpPath);
       fs.closeSync(fileOpen);
       return {
-        tempFilePath: tmpPath,
+        tempFilePath: switchHapSandBoxToInternal(tmpPath),
         tempFileSize: stat.size,
         tempFileName: jpgName
       };
@@ -228,7 +227,7 @@ export async function compressVideo(src: string): Promise<CompressResult> {
       const length = data.outputPath.split('/').length - 1;
       const name = data.outputPath.split('/')[length]
       return {
-        tempFilePath: data.outputPath,
+        tempFilePath: switchHapSandBoxToInternal(data.outputPath),
         tempFileSize: stat.size,
         tempFileName: name.split('.')[0]
       };
@@ -248,7 +247,6 @@ export async function getChooseMediaRet(mediaList: IMediaData[], useOriginal: bo
   for (const media of mediaList) {
     resTypes.add(media.type)
     if (useOriginal) {
-      tempFilePaths.push(media.originPath)
       let thumbPath: string|undefined = '';
       if (media.type === 'video') {
         const asset = await getAssetByUri(media.originPath)
@@ -256,8 +254,17 @@ export async function getChooseMediaRet(mediaList: IMediaData[], useOriginal: bo
           thumbPath = await generateThumbnailFile(asset)
         }
       }
+      // 复制相册原图/原视频到应用沙箱临时路径
+      const context = getContext();
+      const originTempPath = `${context.tempDir}/${Date.now()}_${media.originPath.split('/').splice(-1, 1).toString()}`;
+      const asset = await getAssetByUri(media.originPath);
+      await asset?.getReadOnlyFd().then((fd) => {
+        fs.copyFileSync(fd, originTempPath);
+        asset?.close(fd);
+      })
+      const internalTempPath = switchHapSandBoxToInternal(originTempPath);
       const resMediaInfo: MediaFile = {
-        tempFilePath: media.originPath,
+        tempFilePath: internalTempPath,
         size: media.originSize,
         fileType: media.type,
         duration: media.type === 'video' ? Math.floor((media.duration || 0) / 1000) : undefined,
@@ -266,6 +273,7 @@ export async function getChooseMediaRet(mediaList: IMediaData[], useOriginal: bo
         thumbTempFilePath: media.type === 'video' ? thumbPath : undefined,
       }
       tempFiles.push(resMediaInfo)
+      tempFilePaths.push(internalTempPath)
     } else {
       if (media.type === 'image') {
         const compress: CompressResult = await compressImage({ src: media.originPath })
@@ -321,11 +329,11 @@ export async function generateThumbnailFile(asset: photoAccessHelper.PhotoAsset)
       quality: 100,
     });
     const context = getContext();
-    const sandboxThumbPath = `${context.cacheDir}/${Date.now()}.jpg`;
+    const sandboxThumbPath = `${context.tempDir}/${Date.now()}.jpg`;
     const file = fs.openSync(sandboxThumbPath, fs.OpenMode.READ_WRITE | fs.OpenMode.CREATE);
     fs.writeSync(file.fd, buffer);
     fs.closeSync(file.fd);
-    return sandboxThumbPath;
+    return switchHapSandBoxToInternal(sandboxThumbPath);
   } catch(err) {
     wbLogger.info(MEDIA_UTIL, 'generateThumbnailFile failed');
     return '';
