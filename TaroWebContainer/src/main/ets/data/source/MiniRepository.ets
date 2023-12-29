@@ -1,3 +1,5 @@
+import { LocalVersionInfo } from './bean/LocalVersionInfo'
+import { UpdateConfig } from './bean/UpdateConfig'
 import { MiniLocalFileDataSource } from './local/MiniLocalFileDataSource'
 import { MiniRawFileDataSource } from './local/MiniRawFileDataSource'
 import { MiniNetworkDataSource } from './network/MiniNetworkDataSource'
@@ -13,8 +15,8 @@ export class MiniRepository {
     this.miniRawFileDataSource = new MiniRawFileDataSource()
   }
 
-  getLastMiniVersion(context: Context){
-    // this.miniLocalFileDataSource.getLastMiniVersion()
+  getLastMiniVersion(context: Context, updateConfig:  UpdateConfig): LocalVersionInfo {
+    return this.miniLocalFileDataSource.getLastMiniVersion(context, updateConfig)
   }
 
   async downloadMini(context: Context, version: number, miniDownloadUrl: string): Promise<string>{
