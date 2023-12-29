@@ -1,22 +1,11 @@
 # harmonyos-shell
 ### 简介
-harmonyos-shell包含一个定制化的TaroWebContainer实现，旨在为Taro工程的mpharmony平台产物提供运行环境。同时提供Sample例程演示如何使用该容器。
+harmonyos-shell包含一个定制化的TaroWebContainer实现，旨在为Taro工程的harmony-hybrid平台产物提供运行环境。同时提供Sample例程演示如何使用该容器。
 
 ### 使用
-- 根据Taro官方文档，把Taro工程编译成mpharmony平台应用
+- 根据Taro官方文档，把Taro工程编译成harmony-hybrid平台应用
 - 把生成产物放置到Sample/src/main/resources/rawfile目录下
 - 编译运行Sample应用
-
-### [项目目录解析](./design/目录结构解析.md)
-- Sample： TaroWebContainer应用示例 
-- TaroWebContainer: 定制化的Web运行环境，允许运行Taro的mpharmony类型生成的bundles
-  - src
-    - main
-      - ets
-         - components： 自定义组件
-         - inject_adapter： 高阶API注入对象适配
-         - interfaces： 接口
-         - utils： 实用工具类和函数
 
 ### 使用示例
 ```js
@@ -55,6 +44,9 @@ struct TaroMpharmonySample {
 
 
 ### 版本修订记录
+2023//12/26
+- 增加相册组件，支持chooseImage/chooseMedia接口
+
 2023/11/27
 - 修复API返回值对象属性缺失的问题
 - 增加native API: getUpdateManager
