@@ -18,7 +18,7 @@ import window from '@ohos.window';
 import common from '@ohos.app.ability.common';
 import bundleManager from '@ohos.bundle.bundleManager';
 import  AdvancedAPI from '../utils/advancedapi.min';
-import { NavigationBar } from './navigationbar';
+import { NavigationBar, NavigationBarData } from './NavigationBar';
 import { TaroWeb } from './taroweb';
 import { Album } from './Album/Album';
 import { ApiAdapter } from '../inject_adapter/ApiAdapter'
@@ -31,7 +31,6 @@ import { getBundleInfoPermissions } from '../utils/PermissionMapScopeUtil';
 import { HostPageState } from '../interfaces/HostPageState';
 import { RouterUtils } from '../utils/RouterUtils';
 import { TaroWebController } from './TaroWeb';
-import { NavigationBarData } from './NavigationBar';
 import router from '@ohos.router';
 import { wbLogger } from '../utils/Logger';
 import { AlbumBackward, ChooseAlbumResult, MediaItemData, chooseAlbumOptions } from '../interfaces/Media'
