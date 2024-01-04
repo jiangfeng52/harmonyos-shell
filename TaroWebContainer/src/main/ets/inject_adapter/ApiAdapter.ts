@@ -12,7 +12,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import WebView from '@ohos.web.webview'
+import WebView from '@ohos.web.webview';
+import buffer from '@ohos.buffer';
 import  { as } from '../utils/advancedapi.min';
 import { wbLogger } from '../utils/Logger';
 
@@ -237,8 +238,14 @@ export class ApiAdapter {
             var systemBarHeight = ${this.systemBarHeight};
             var customLaunchOptions = '${this.launchOptions}';
             var asCallbackId = 0;
-            var receiveTask = (callbackId,resObject) =>{
+            var receiveTask = (callbackId, resObject, bufList) => {
                 if(asCallbackMap.get(callbackId)){
+                   for (let i = 0; i < bufList.length; i++) {
+                       for (const key in bufList[i]) {
+                           bufList[i][key] = window.base64ToArrayBuffer(bufList[i][key])
+                       }
+                       Object.assign(resObject[i], bufList[i])
+                   }
                    asCallbackMap.get(callbackId).apply(null,resObject);
                 }
                 return true
@@ -301,7 +308,15 @@ export class ApiAdapter {
                                 if(type ==='function'){
                                     return (...args1) => {
                                         const callbackParam = getCallbackParam(args1)
-                                        return as.sendToAs(asObjectId,'get_function',property,callbackParam[0], callbackParam[1])
+                                        const resJson = as.sendToAs(asObjectId,'get_function',property,callbackParam[0], callbackParam[1])
+                                        const res = JSON.parse(resJson)
+                                        if (res.error) {
+                                            throw res.error
+                                        } else if (res.bufBase64) {
+                                            return window.base64ToArrayBuffer(res.bufBase64)
+                                        } else {
+                                          return res.result
+                                        }
                                     }
                                 } else {
                                     return as.sendToAs(asObjectId,'get_value',property)
@@ -333,8 +348,20 @@ export class ApiAdapter {
         `
   }
 
+  // 高评率触发的限流，单位时间触发过多会导致进程锁死
   sendTask(callbackId, res) {
-    // 高评率触发的限流，单位时间触发过多会导致进程锁死
+    // 对返回对象中属性值是ArrayBuffer类型的做特殊处理，序列化成base64字符串
+    const bufList = []
+    for (const item of res) {
+      const bufInfo = {}
+      for (const key in item) {
+        if (item[key] instanceof ArrayBuffer) {
+          Object.assign(bufInfo, { [key]: buffer.from(item[key]).toString('base64') })
+        }
+      }
+      bufList.push(bufInfo)
+    }
+
     const resStrTmp = JSON.stringify(res)
     if (this.blockMap.has(callbackId)) {
       const lastTime = this.blockMap.get(callbackId);
@@ -351,7 +378,7 @@ export class ApiAdapter {
     wbLogger.debug(ADAPTER_TAG, `res: ${resStrTmp}`)
     const that = this
     that.sendTaskPromise = that.sendTaskPromise.then(() => {
-      return that.controller.runJavaScript(`receiveTask(${callbackId},${resStrTmp})`)
+      return that.controller.runJavaScript(`receiveTask(${callbackId},${resStrTmp}, ${JSON.stringify(bufList)})`)
         .then(result => {
           wbLogger.info(ADAPTER_TAG, `The receiveTask() return value is: ${result}`)
           return result
@@ -429,15 +456,33 @@ export class ApiAdapter {
                 }
               })
               try {
-                return asObject[method].apply(asObject, argsT)
+                const res = asObject[method].apply(asObject, argsT)
+                // 对象方法返回值是ArrayBuffer的, 序列化成base64字符串
+                return JSON.stringify({
+                  result: res,
+                  bufBase64: (res instanceof ArrayBuffer) ? buffer.from(res).toString('base64') : '',
+                })
               } catch (error) {
                 wbLogger.error(ADAPTER_TAG, `${method} : ${error}`)
+                // 异常捕获并封装成JSON字符串
+                return JSON.stringify({
+                  error: `${error}` || `${method}:fail`
+                })
               }
             } else {
               try {
-                return asObject[method]()
+                const res = asObject[method]()
+                // 对象方法返回值是ArrayBuffer的, 序列化成base64字符串
+                return JSON.stringify({
+                  result: res,
+                  bufBase64: (res instanceof ArrayBuffer) ? buffer.from(res).toString('base64') : '',
+                })
               } catch (error) {
                 wbLogger.error(ADAPTER_TAG, `${method} : ${error}`)
+                // 异常捕获并封装成JSON字符串
+                return JSON.stringify({
+                  error: `${error}` || `${method}:fail`
+                })
               }
             }
           } else if (type === 'get_value') {
