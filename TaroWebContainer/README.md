@@ -1,10 +1,10 @@
 # web-container
 ### 简介
-**web-container 是一个定制化Web容器以及提供热更新、路由管理等功能的模块。支持运行Taro生成的harmony-hybrid应用**
+**web-container 是一个定制化Web容器以及提供热更新等功能的模块。支持运行Taro生成的harmony-hybrid应用**
 
 提供的能力：
 - 提供`TaroWebContainer`组件，支持运行harmony-hybrid应用（Taro框架）
-- 支持热更新
+- [支持热更新](./docs/热更新使用.md)
 
 ### 下载安装
 
@@ -68,6 +68,7 @@ let storage = LocalStorage.getShared() // 获取共享的本地存储对象
 @Component
 struct TaroMpharmonySample {
   @LocalStorageProp('want') want: Want = {};
+  @State pageState: HostPageState = HostPageState.PageInit;
   @State taroWebController: TaroWebController = new TaroWebController();
 
   // 用户可以自定义对象注入到Web环境中，使用native.sayHello格式进行调用
@@ -100,7 +101,7 @@ struct TaroMpharmonySample {
   webUrl(): string {
     // 开发阶段可以把网站静态资源文件放置到src/main/resources/rawfile/目录下
     // 生产环境下把网站静态资源放置到web服务器, 这里填写实际的网站地址url
-    return $rawfile('index.html') + 'index.html';
+    return 'resource://rawfile/index.html';
   }
 
   webUrlPrefix() {

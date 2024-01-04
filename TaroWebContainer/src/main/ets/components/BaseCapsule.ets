@@ -3,7 +3,7 @@ import { NavigationBar, NavigationBarData } from '../components/NavigationBar';
 
 @Component
 export struct BaseCapsule {
-  title: string = '账户设置'
+  title: string = '设置'
 
   @State navigationBarData: NavigationBarData = new NavigationBarData();
   @Prop targetPage: string;
