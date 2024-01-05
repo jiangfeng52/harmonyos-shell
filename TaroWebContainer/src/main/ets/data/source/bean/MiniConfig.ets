@@ -1,6 +1,4 @@
-
 export class MiniConfig {
-
   hasUpdate: boolean
   miniVersion: number
   miniDownloadUrl: string
