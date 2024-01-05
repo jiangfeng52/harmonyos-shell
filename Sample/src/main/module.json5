@@ -21,9 +21,9 @@
           "when": "inuse"
         }
       },
-//      {
-//        "name": "ohos.permission.NOTIFICATION_CONTROLLER"
-//      },
+      {
+        "name": "ohos.permission.NOTIFICATION_CONTROLLER"
+      },
       {
         "name": "ohos.permission.READ_CALENDAR",
         "reason": "$string:calendar_reason",
@@ -43,15 +43,15 @@
       {
         "name": "ohos.permission.SET_WIFI_INFO"
       },
-//      {
-//        "name": "ohos.permission.MANAGE_WIFI_CONNECTION"
-//      },
-//      {
-//        "name": "ohos.permission.GET_WIFI_INFO_INTERNAL"
-//      },
-//      {
-//        "name": "ohos.permission.SET_WIFI_CONFIG"
-//      },
+      {
+        "name": "ohos.permission.MANAGE_WIFI_CONNECTION"
+      },
+      {
+        "name": "ohos.permission.GET_WIFI_INFO_INTERNAL"
+      },
+      {
+        "name": "ohos.permission.SET_WIFI_CONFIG"
+      },
       {
         "name": "ohos.permission.WRITE_CONTACTS",
         "reason": "$string:contacts_reason",
@@ -65,9 +65,9 @@
       {
         "name": "ohos.permission.VIBRATE"
       },
-//      {
-//        "name": "ohos.permission.START_ABILITIES_FROM_BACKGROUND"
-//      },
+      {
+        "name": "ohos.permission.START_ABILITIES_FROM_BACKGROUND"
+      },
       {
         "name": "ohos.permission.READ_MEDIA",
         "reason": "$string:media_reason",
@@ -146,9 +146,9 @@
       {
         "name": "ohos.permission.ACCESS_BIOMETRIC"
       },
-//      {
-//        "name": "ohos.permission.CONNECT_IME_ABILITY"
-//      },
+      {
+        "name": "ohos.permission.CONNECT_IME_ABILITY"
+      },
       {
         "name": "ohos.permission.MICROPHONE",
         "reason": "$string:microphone_reason",
