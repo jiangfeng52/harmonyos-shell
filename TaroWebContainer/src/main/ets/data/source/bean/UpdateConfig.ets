@@ -1,16 +1,32 @@
+import versionCompare from '../bean/CompareVersion'
 export class UpdateConfig {
-  url: string
-  initialVersion: string
-  compareVersionFunc: (a: string, b: string) => boolean
-  hasCompareVersionFunc: boolean
+  private static instance : UpdateConfig
+  private url: string = ''
+  private initialVersion: string = '0'
+  private compareVersionFunc: (a: string, b: string) => boolean = versionCompare
 
-  constructor(url: string = '', initialVersion = '0', hasCompareVersionFunc: boolean = false,
-              compareVersionFunc = (a: string, b: string) => {
-                return false
-              }) {
-    this.url = url
-    this.initialVersion = initialVersion
-    this.compareVersionFunc = compareVersionFunc
-    this.hasCompareVersionFunc = hasCompareVersionFunc
+
+
+  private constructor() {
+  }
+  public static getInstance(): UpdateConfig {
+    if (!UpdateConfig.instance) {
+      UpdateConfig.instance = new UpdateConfig();
+    }
+    return UpdateConfig.instance;
+  }
+  getLocalVersion(): string{
+    return this.initialVersion
+  }
+  getUrl(): string{
+    return this.url
+  }
+  getCompareVersionFunc(): (a: string, b: string) => boolean{
+    return this.compareVersionFunc
+  }
+  setUpdateConfig(getUrlFunc: (version: string)=>string, initialVersion: string, compareVersionFunc = versionCompare): void {
+      this.url = getUrlFunc(initialVersion)
+      this.initialVersion = initialVersion
+      this.compareVersionFunc = compareVersionFunc
   }
 }

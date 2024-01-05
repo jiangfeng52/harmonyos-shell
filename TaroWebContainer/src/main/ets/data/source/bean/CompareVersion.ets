@@ -5,7 +5,7 @@
  * @returns {boolean} is v1 bigger than v2
  */
 
-function versionCompare(v1: string | number, v2: string | number) {
+function versionCompare(v1: string, v2: string) {
   if (!v1 || !v2) {
     throw new Error('lack the version when compare the versions');
   }

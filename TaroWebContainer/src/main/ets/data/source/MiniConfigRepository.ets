@@ -9,8 +9,8 @@ export class MiniConfigRepository {
     this.miniConfigNetworkDataSource = new MiniConfigNetworkDataSource();
   }
 
-  async fetchMiniConfig(version: string, urlInfo: string): Promise<MiniConfig>{
-    const networkTask:NetworkTask<MiniConfig> = await this.miniConfigNetworkDataSource.fetchMiniConfig(version, urlInfo)
+  async fetchMiniConfig(urlInfo: string): Promise<MiniConfig>{
+    const networkTask:NetworkTask<MiniConfig> = await this.miniConfigNetworkDataSource.fetchMiniConfig(urlInfo)
     const miniConfig: MiniConfig = networkTask.data ?? new MiniConfig(false)
     if (!miniConfig.miniDownloadUrl) {
       miniConfig.hasUpdate = false

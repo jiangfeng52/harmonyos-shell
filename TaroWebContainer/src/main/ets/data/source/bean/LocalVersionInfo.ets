@@ -2,7 +2,7 @@ export class LocalVersionInfo {
   localVersion: string
   path: string
 
-  constructor(localVersion: string = '-1', path: string = '') {
+  constructor(localVersion: string = '', path: string = '') {
     this.localVersion = localVersion
     this.path = path
   }

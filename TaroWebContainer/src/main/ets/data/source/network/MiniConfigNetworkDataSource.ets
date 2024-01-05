@@ -6,10 +6,10 @@ import { wbLogger } from '../../../utils/Logger';
 
 export class MiniConfigNetworkDataSource {
 
-  async fetchMiniConfig(localVersion: string, urlInfo: string): Promise<NetworkTask<MiniConfig>>{
+  async fetchMiniConfig(urlInfo: string): Promise<NetworkTask<MiniConfig>>{
     const networkTask = new NetworkTask<MiniConfig>(null, NetworkTaskStatus.ACTIVE);
 
-    const url = `${urlInfo}${localVersion}`
+    const url = `${urlInfo}`
     const httpRequest = http.createHttp();
     try {
       wbLogger.debug('network', '%{public}s request', url)
