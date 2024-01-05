@@ -15,18 +15,17 @@ export class MiniRepository {
     this.miniRawFileDataSource = new MiniRawFileDataSource()
   }
 
-  getLastMiniVersion(context: Context, updateConfig:  UpdateConfig): LocalVersionInfo {
-    return this.miniLocalFileDataSource.getLastMiniVersion(context, updateConfig)
+  getLastMiniVersion(context: Context): LocalVersionInfo {
+    return this.miniLocalFileDataSource.getLastMiniVersion(context)
   }
 
-  async downloadMini(context: Context, version: number, miniDownloadUrl: string): Promise<string>{
+  async downloadMini(context: Context, version: number, miniDownloadUrl: string): Promise<string> {
     let tempPath = await this.miniNetworkDataSource.fetchMini(context, version, miniDownloadUrl)
-    if(tempPath == null) {
+    if (tempPath == null) {
       return ''
     }
     // 解压并缓存
     let unzipPath = await this.miniLocalFileDataSource.saveAndUnzip(context, version, tempPath)
     return unzipPath
   }
-
 }

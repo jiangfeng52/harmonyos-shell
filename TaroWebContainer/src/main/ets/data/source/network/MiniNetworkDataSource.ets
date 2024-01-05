@@ -4,7 +4,6 @@ import { NetworkTask, NetworkTaskStatus } from '../bean/NetworkTask';
 import { MiniLocalFileDataSource } from '../local/MiniLocalFileDataSource';
 
 export class MiniNetworkDataSource {
-
   constructor() {
   }
 
@@ -12,8 +11,8 @@ export class MiniNetworkDataSource {
     return `${context.tempDir}/mini_${version.toString()}.zip`
   }
 
-  async fetchMini(context: Context, version: number, url: string): Promise<string>{
-    return new Promise<string>((resolve: Function, reject: Function)=>{
+  async fetchMini(context: Context, version: number, url: string): Promise<string> {
+    return new Promise<string>((resolve: Function, reject: Function) => {
       let tempPath = this.getDownloadTempPath(context, version)
 
       let downloadConfig: request.DownloadConfig = {
@@ -23,8 +22,8 @@ export class MiniNetworkDataSource {
         background: true
       };
       request.downloadFile(context, downloadConfig)
-        .then((downloadTask: request.DownloadTask)=>{
-          downloadTask.on('complete', ()=>{
+        .then((downloadTask: request.DownloadTask) => {
+          downloadTask.on('complete', () => {
             wbLogger.debug("UpdateManager", '%{public}s download succeed', url)
             resolve(tempPath)
           })
@@ -41,5 +40,4 @@ export class MiniNetworkDataSource {
         })
     })
   }
-  
 }
