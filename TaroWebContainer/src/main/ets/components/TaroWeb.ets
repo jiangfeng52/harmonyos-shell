@@ -23,6 +23,7 @@ import { wbLogger } from '../utils/Logger';
 import { FileUtils } from '../utils/FileUtils';
 import { LocalUpdateManagerInstance } from '../update/LocalUpdateManager';
 import { AlbumBackward } from '../interfaces/Media'
+import webView from '@ohos.web.webview';
 
 const TARO_WEB_TAG = 'TaroWeb';
 
@@ -110,6 +111,7 @@ export struct TaroWeb {
 
 
   aboutToAppear() {
+    webView.WebviewController.setWebDebuggingAccess(true);
     this.scriptProxy = this.apiAdapter.getAdapterProxy();
     this.taroWebController.hasBindedTaroWeb = true
     this.taroWebController.addRequestHandler(this.handleInternalResource);

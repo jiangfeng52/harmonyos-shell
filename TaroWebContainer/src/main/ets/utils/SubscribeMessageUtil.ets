@@ -323,9 +323,9 @@ async function publishNotification(options: SendMessageOptions): Promise<pushCod
       if (options.notificationRequest.content.normal) {
         notificationRequest = { // 描述通知的请求
           id: options.notificationRequest.id, // 通知ID
-          slotType: slotType,
+          notificationSlotType: slotType,
           content: {
-            contentType: notificationManager.ContentType.NOTIFICATION_CONTENT_BASIC_TEXT,
+            notificationContentType: notificationManager.ContentType.NOTIFICATION_CONTENT_BASIC_TEXT,
             normal: {
               title: options.notificationRequest.content.normal.title,
               text: options.notificationRequest.content.normal.text,
@@ -339,9 +339,9 @@ async function publishNotification(options: SendMessageOptions): Promise<pushCod
       if (options.notificationRequest.content.longText) {
         notificationRequest = { // 描述通知的请求
           id: options.notificationRequest.id, // 通知ID
-          slotType: slotType,
+          notificationSlotType: slotType,
           content: {
-            contentType: notificationManager.ContentType.NOTIFICATION_CONTENT_LONG_TEXT,
+            notificationContentType: notificationManager.ContentType.NOTIFICATION_CONTENT_LONG_TEXT,
             longText: {
               title: options.notificationRequest.content.longText.title,
               text: options.notificationRequest.content.longText.text,
@@ -361,9 +361,9 @@ async function publishNotification(options: SendMessageOptions): Promise<pushCod
           if (options.notificationRequest.content.picture) {
             notificationRequest = { // 描述通知的请求
               id: options.notificationRequest.id, // 通知ID
-              slotType: slotType,
+              notificationSlotType: slotType,
               content: {
-                contentType: notificationManager.ContentType.NOTIFICATION_CONTENT_PICTURE,
+                notificationContentType: notificationManager.ContentType.NOTIFICATION_CONTENT_PICTURE,
                 picture: {
                   title: options.notificationRequest.content.picture.title,
                   text: options.notificationRequest.content.picture.text,
@@ -385,9 +385,9 @@ async function publishNotification(options: SendMessageOptions): Promise<pushCod
       if (options.notificationRequest.content.multiLine) {
         notificationRequest = { // 描述通知的请求
           id: options.notificationRequest.id, // 通知ID
-          slotType: slotType,
+          notificationSlotType: slotType,
           content: {
-            contentType: notificationManager.ContentType.NOTIFICATION_CONTENT_MULTILINE,
+            notificationContentType: notificationManager.ContentType.NOTIFICATION_CONTENT_MULTILINE,
             multiLine: {
               title: options.notificationRequest.content.multiLine.title,
               text: options.notificationRequest.content.multiLine.text,
