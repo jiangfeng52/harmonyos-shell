@@ -1,6 +1,5 @@
 import { LocalVersionInfo } from '../data/source/bean/LocalVersionInfo';
 import { MiniConfig } from '../data/source/bean/MiniConfig';
-import { UpdateConfig } from '../data/source/bean/UpdateConfig';
 import { MiniConfigRepository } from '../data/source/MiniConfigRepository';
 import { MiniRepository } from '../data/source/MiniRepository';
 import { UpdateManager } from './UpdateManager';
@@ -29,7 +28,7 @@ class LocalUpdateManager extends UpdateManager {
     let lastVersionInfo = this.miniRepository.getLastMiniVersion(context)
     this.localVersionInfo = lastVersionInfo
 
-    const miniConfig = await this.miniConfigRepository.fetchMiniConfig(UpdateConfig.getInstance().getUrl())
+    const miniConfig = await this.miniConfigRepository.fetchMiniConfig(this.localVersionInfo.localVersion)
     // 通知注册的监听者
     this.notifyCheckForUpdate(miniConfig.hasUpdate)
 

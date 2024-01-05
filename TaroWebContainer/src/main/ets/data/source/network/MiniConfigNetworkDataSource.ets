@@ -3,13 +3,14 @@ import { BusinessError } from '@ohos.base';
 import { MiniConfig } from '../bean/MiniConfig'
 import { NetworkTask, NetworkTaskStatus } from '../bean/NetworkTask';
 import { wbLogger } from '../../../utils/Logger';
+import { UpdateConfig } from '../bean/UpdateConfig';
 
 export class MiniConfigNetworkDataSource {
 
-  async fetchMiniConfig(urlInfo: string): Promise<NetworkTask<MiniConfig>>{
+  async fetchMiniConfig(localVersion: string): Promise<NetworkTask<MiniConfig>>{
     const networkTask = new NetworkTask<MiniConfig>(null, NetworkTaskStatus.ACTIVE);
 
-    const url = `${urlInfo}`
+    const url = `${UpdateConfig.getInstance().getUrl(localVersion)}`
     const httpRequest = http.createHttp();
     try {
       wbLogger.debug('network', '%{public}s request', url)
