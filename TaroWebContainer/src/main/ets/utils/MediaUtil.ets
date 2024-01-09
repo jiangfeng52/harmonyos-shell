@@ -163,29 +163,45 @@ export async function compressImage(params: CompressImageParams): Promise<Compre
     } else if (FileUtils.isFileUri(src)) {
       fd = FileUtils.getFdFromUriOrSandBoxPath(src);
     }
-    // 压缩
-    const arrayBuf = await getArrayBuffer(20, fd, params.compressHeight, params.compressedWidth);
-
-    const context = GlobalThis.getInstance().getContext('context');
-    if (context === undefined) {
-      return options;
-    }
-    const jpgName = `IMAGE_${Date.now()}` ;
-    const tmpPath = `${context.tempDir}/${jpgName}.jpg`;
-    try {
-      fs.openSync(tmpPath, fs.OpenMode.CREATE)
-      const fileOpen = fs.openSync(tmpPath, fs.OpenMode.READ_WRITE)
-      fs.writeSync(fileOpen.fd, arrayBuf)
-      // 获取临时文件的大小
-      const stat = FileUtils.getFileStatFromUri(tmpPath);
-      fs.closeSync(fileOpen);
+    const supportTypes: string[] = ['jpg', 'png', 'webp'];
+    const fileName = src.split('/').pop() || '';
+    // 无后缀的src以jpg处理
+    const originSrcSuffix = fileName.indexOf('.') >= 0  ? (src.toLowerCase().split('.').pop() || 'jpg'): 'jpg';
+    const context = getContext();
+    if (supportTypes.includes(originSrcSuffix)) {
+      // 压缩
+      const arrayBuf = await getArrayBuffer(20, fd, originSrcSuffix, params.compressHeight, params.compressedWidth);
+      const newFileName = `IMAGE_${Date.now()}` ;
+      const tmpPath = `${context.tempDir}/${newFileName}.${originSrcSuffix}`;
+      try {
+        fs.openSync(tmpPath, fs.OpenMode.CREATE)
+        const fileOpen = fs.openSync(tmpPath, fs.OpenMode.READ_WRITE)
+        fs.writeSync(fileOpen.fd, arrayBuf)
+        // 获取临时文件的大小
+        const stat = FileUtils.getFileStatFromUri(tmpPath);
+        fs.closeSync(fileOpen);
+        return {
+          tempFilePath: switchHapSandBoxToInternal(tmpPath),
+          tempFileSize: stat.size,
+          tempFileName: newFileName
+        };
+      } catch (error) {
+        wbLogger.error(MEDIA_UTIL, `compressImage----file deal error:`, error)
+      }
+    } else {
+      const newFileName = `IMAGE_${Date.now()}` ;
+      const originTempPath = `${context.tempDir}/${newFileName}.${originSrcSuffix}`;
+      const asset = await getAssetByUri(src);
+      await asset?.getReadOnlyFd().then((fd) => {
+        fs.copyFileSync(fd, originTempPath);
+        asset?.close(fd);
+      })
+      const stat = FileUtils.getFileStatFromUri(originTempPath);
       return {
-        tempFilePath: switchHapSandBoxToInternal(tmpPath),
+        tempFilePath: switchHapSandBoxToInternal(originTempPath),
         tempFileSize: stat.size,
-        tempFileName: jpgName
+        tempFileName: newFileName,
       };
-    } catch (error) {
-      wbLogger.error(MEDIA_UTIL, `compressImage----file deal error:`, error)
     }
   } catch (error) {
     wbLogger.error(MEDIA_UTIL, `compressImage----pack error:`, error)
@@ -193,7 +209,7 @@ export async function compressImage(params: CompressImageParams): Promise<Compre
   return options;
 }
 
-async function getArrayBuffer(quality: number, fd: number, height?: number, width?: number) {
+async function getArrayBuffer(quality: number, fd: number, suffix: string, height?: number, width?: number) {
   if (height !== undefined || width !== undefined) {
     let heightSize: number = height || width || 0;
     let widthSize: number = width || height || 0;
@@ -203,10 +219,10 @@ async function getArrayBuffer(quality: number, fd: number, height?: number, widt
       pixelFormat: 3,
       size: { height: heightSize, width: widthSize }
     }
-    let pixeMap: image.PixelMap = await image.createPixelMap(color, opts);
+    const pixelMap: image.PixelMap = await image.createPixelMap(color, opts);
     const imagePackerApi: image.ImagePacker = image.createImagePacker();
-    let packOpts: image.PackingOption = { format: 'image/jpeg', quality };
-    const arrayBuf = await imagePackerApi.packing(pixeMap, packOpts);
+    let packOpts: image.PackingOption = { format: `image/${suffix}`, quality };
+    const arrayBuf = await imagePackerApi.packing(pixelMap, packOpts);
     return arrayBuf;
   } else {
     const imageSourceApi: image.ImageSource = image.createImageSource(fd);
