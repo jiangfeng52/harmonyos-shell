@@ -56,7 +56,6 @@ export default class EntryAbility extends UIAbility {
 
 ```js
 // entry/src/main/ets/pages/Index.ets
-import webView from '@ohos.web.webview';
 import Want from '@ohos.app.ability.Want';
 import Url from '@ohos.url';
 import { TaroWebContainer, InjectObject, HostPageState, TaroWebController, Logger, LoggerLevel, wbLogger } from '@ohos/web-container';
@@ -85,8 +84,6 @@ struct TaroMpharmonySample {
   }
 
   aboutToAppear() {
-    // 开启Web调试功能
-    webView.WebviewController.setWebDebuggingAccess(true);
     Logger.setLogLevel(LoggerLevel.LOG_DEBUG);
   }
 
@@ -175,6 +172,7 @@ $ npx taro build --type harmony-hybrid
 | injectObj         | ESObject          | 注入ets对象到Web环境                                         | 否：默认值：undefined       |
 | showCapsule       | boolean           | 是否显示胶囊按钮                                              | 否：默认值：true            |
 | capsulePage       | string            | 点击胶囊按钮跳转的页面                                           | 否：默认值：`pages/Capsule` |
+| enableWebDebug    | boolean           | [开启Web调试功能][Web调试devtools配置]                          | 否：默认值：true            |
 
 ### 项目目录解析
 - src/main/ets
@@ -183,3 +181,6 @@ $ npx taro build --type harmony-hybrid
   - interfaces： 接口
   - utils： 实用工具类和函数
   - update: 热更新
+
+
+[Web调试devtools配置]: https://gitee.com/openharmony/docs/blob/master/zh-cn/application-dev/web/web-debugging-with-devtools.md
