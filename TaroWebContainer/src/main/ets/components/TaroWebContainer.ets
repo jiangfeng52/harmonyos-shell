@@ -91,6 +91,8 @@ export struct TaroWebContainer {
   private appearDone: boolean = false
   // 备份初始indexUrl
   private originIndexUrl: string = '';
+  // 开启Web组件调试功能
+  enableWebDebug: boolean = true;
 
   capsuleOptions: MenuButtonOptions = { width: 50, height: this.navigationBarData.titleHeight, marginRight: 16 };
 
@@ -167,7 +169,8 @@ export struct TaroWebContainer {
         apiAdapter: this.adapter,
         taroWebController: this.taroWebController,
         onTitleReceive: this.onTitleReceive,
-        onRefreshAccessedHistory: this.onRefreshAccessedHistory
+        onRefreshAccessedHistory: this.onRefreshAccessedHistory,
+        enableWebDebug: this.enableWebDebug,
       })
       NavigationBar({
         navigationBarData: this.navigationBarData,

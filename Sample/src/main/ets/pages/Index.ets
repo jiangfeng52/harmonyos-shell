@@ -1,4 +1,3 @@
-import webView from '@ohos.web.webview';
 import Want from '@ohos.app.ability.Want';
 import Url from '@ohos.url';
 import { TaroWebContainer, InjectObject, HostPageState, TaroWebController, Logger, LoggerLevel, wbLogger } from '@ohos/web-container';
@@ -35,7 +34,6 @@ struct TaroMpharmonySample {
   }
 
   aboutToAppear() {
-    webView.WebviewController.setWebDebuggingAccess(true);
     Logger.setLogLevel(LoggerLevel.LOG_DEBUG);
   }
 

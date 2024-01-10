@@ -108,10 +108,10 @@ export struct TaroWeb {
   @ObjectLink taroWebController: TaroWebController;
   apiAdapter: ApiAdapter = new ApiAdapter();
   scriptProxy: ESObject;
-
+  enableWebDebug: boolean = true;
 
   aboutToAppear() {
-    webView.WebviewController.setWebDebuggingAccess(true);
+    webView.WebviewController.setWebDebuggingAccess(this.enableWebDebug);
     this.scriptProxy = this.apiAdapter.getAdapterProxy();
     this.taroWebController.hasBindedTaroWeb = true
     this.taroWebController.addRequestHandler(this.handleInternalResource);
