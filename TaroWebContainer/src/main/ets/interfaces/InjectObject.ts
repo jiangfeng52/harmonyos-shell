@@ -67,6 +67,8 @@ interface NavigateToMiniProgramOptions {
   appId: string;
   path: string;
   extraData: NavigateToMiniProgramOptionsExtraData;
+  success: Function;
+  fail: Function;
 }
 
 // ------------------- Settings -------------------
@@ -149,6 +151,12 @@ export interface GetSettingRetOptions {
   errMsg: string;
 }
 
+export interface SettingOptions {
+  success: Function;
+  fail: Function;
+  withSubscriptions?: boolean;
+}
+
 export interface copyFileToSandboxCacheRetOptions {
   internalCachePath: string
 }
@@ -188,10 +196,10 @@ export interface InnerInjectObj {
   showNavigationBarLoading: () => void;
   hideNavigationBarLoading: () => void;
   getMenuButtonBoundingClientRect: () => MenuButtonBoundingClientResult;
-  navigateToMiniProgram: (options: NavigateToMiniProgramOptions) => Promise<ErrorMsg>;
+  navigateToMiniProgram: (options: NavigateToMiniProgramOptions) => void;
   setNavigationStyle: (style: string, textStyle: string, backgroundColor: string) => void;
-  openSetting: (options: OpenSettingOptions) => Promise<OpenSettingRetOptions>;
-  getSetting: (options: OpenSettingOptions) => Promise<GetSettingRetOptions>;
+  openSetting: (options: SettingOptions) => void;
+  getSetting: (options: SettingOptions) => void;
   copyFileToSandboxCache: (src: string) => copyFileToSandboxCacheRetOptions;
   getUpdateManager: () => ESObject;
   requestSubscribeMessage: (options: RequestSubscribeMessageOptions) => Promise<SubscribeMessageOptions>;

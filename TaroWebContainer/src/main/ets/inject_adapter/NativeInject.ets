@@ -31,6 +31,7 @@ import {
   SubscribeMessageOptions,
   SubscriptionsSetting,
   ChooseMediaOptions,
+  SettingOptions,
 } from '../interfaces/InjectObject';
 import {
   getBundleUsedPermission,
@@ -161,8 +162,6 @@ export class NativeInject {
         // options.path 格式:
         // - EntryAbility:///pages/api/framework/index?paramA=good
         // - /pages/api/framework/index?paramA=good
-        return new Promise((resolve, reject) => {
-          resolve({ errMsg: '' });
           wbLogger.info(NATIVE_TAG, 'navigateToMiniProgram options:' + JSON.stringify(options));
           const entryAbility = 'EntryAbility';
           let abilityName = entryAbility;
@@ -189,18 +188,16 @@ export class NativeInject {
           try {
             const context = getContext(this) as common.UIAbilityContext;
             context.startAbility(wantInfo).then(() => {
-              resolve({ errMsg: '' });
+              options.success({ errMsg: '' })
             }).catch(() => {
-              reject({ errMsg: 'invalid appid or path scheme' } as ErrorMsg);
+              options.fail({ errMsg: 'invalid appid or path scheme' } as ErrorMsg)
             })
           } catch (paramError) {
             wbLogger.warn(NATIVE_TAG, `navigateToMiniProgram failed: ${JSON.stringify(paramError)}`);
-            reject({
+            options.fail({
               errMsg: `code: ${(paramError as BusinessError).code}, message ${(paramError as BusinessError).message}`
-            } as ErrorMsg
-            );
+            } as ErrorMsg)
           }
-        })
       },
       setNavigationStyle: (style, textStyle, backgroundColor) => {
         this.navigationBarData.visible = style !== 'custom';
@@ -209,10 +206,10 @@ export class NativeInject {
         this.navigationBarData.animationDuration = 0;
         this.setStatusBarFrontColor(this.navigationBarData.barFrontColor);
       },
-      openSetting: (options) => {
+      openSetting: async (options) => {
         const apiName: string = 'openSetting';
         // 接口返回
-        return new Promise(async (resolve, reject) => {
+
           try {
             const curPermissions: Array<PermissionInfo> = getBundleUserPermissions(this.permissionInfo);
             const bundleScope = await getBundleWxScopeList(curPermissions);
@@ -256,27 +253,23 @@ export class NativeInject {
               })
               const subscribeCode = await getMassageList()
               subscriptionsSetting.itemSettings = subscribeCode.massageList
-              return resolve({
+              options.success({
                 authSetting: bundleUsedScope.allScope,
                 subscriptionsSetting: subscriptionsSetting,
                 errMsg: `${apiName}:ok`
-              });
+              })
             }
-            return resolve({ authSetting: bundleUsedScope.allScope, errMsg: `${apiName}:ok` });
+            options.success({ authSetting: bundleUsedScope.allScope, errMsg: `${apiName}:ok` })
           } catch (paramError) {
             wbLogger.warn(NATIVE_TAG, `openSetting: ${JSON.stringify(paramError)}`);
-            return reject(
-              {
-                errMsg: `${apiName}:fail error code: ${(paramError as BusinessError).code} ${(paramError as BusinessError).message}`
-              } as ErrorMsg
-            );
+            options.fail({
+              errMsg: `${apiName}:fail error code: ${(paramError as BusinessError).code} ${(paramError as BusinessError).message}`
+            } as ErrorMsg)
           }
-        })
       },
-      getSetting: (options) => {
+      getSetting: async (options: SettingOptions) => {
         const apiName: string = 'getSetting';
         // 接口返回
-        return new Promise(async (resolve, reject) => {
           try {
             const curPermissions: Array<PermissionInfo> = getBundleUserPermissions(this.permissionInfo);
             const bundleScope = await getBundleWxScopeList(curPermissions);
@@ -318,21 +311,19 @@ export class NativeInject {
               })
               const subscribeCode = await getMassageList()
               subscriptionsSetting.itemSettings = subscribeCode.massageList
-              return resolve({
+              options.success({
                 authSetting: bundleUsedScope.allScope,
                 subscriptionsSetting: subscriptionsSetting,
                 errMsg: `${apiName}:ok`
-              });
+              })
+
             }
-            return resolve({ authSetting: bundleUsedScope.allScope, errMsg: `${apiName}:ok` });
+            options.success({ authSetting: bundleUsedScope.allScope, errMsg: `${apiName}:ok` })
           } catch (paramError) {
-            return reject(
-              {
-                errMsg: `${apiName}:fail error code: ${(paramError as BusinessError).code} ${(paramError as BusinessError).message}`
-              } as ErrorMsg
-            );
+            options.fail({
+              errMsg: `${apiName}:fail error code: ${(paramError as BusinessError).code} ${(paramError as BusinessError).message}`
+            } as ErrorMsg)
           }
-        })
       },
       getUpdateManager: () => {
         return LocalUpdateManagerInstance;

@@ -33,6 +33,9 @@ import { RouterUtils } from '../utils/RouterUtils';
 import router from '@ohos.router';
 import { wbLogger } from '../utils/Logger';
 import { AlbumBackward, ChooseAlbumResult, MediaItemData, chooseAlbumOptions } from '../interfaces/Media'
+import { ChannelInstance, MethodChannelInstance } from '../inject_adapter/Channel';
+import { BusinessError } from '@ohos.base';
+import { NativeApiImplInstance } from '../inject_adapter/NativeApi';
 
 const CONTAINER_TAG = 'TaroWebContainer';
 
@@ -220,6 +223,64 @@ export struct TaroWebContainer {
     nativeInject.setChooseAlbumCallback(this.chooseAlbumCallback);
     this.adapter.mergeInjectObj(nativeInject.buildInjectObj());
     this.injectObj && this.adapter.mergeInjectObj(this.injectObj);
+
+
+    MethodChannelInstance.registerMethod('NativeApi$navigateToMiniProgramBridgeAsync', (options: ESObject)=>{
+      wbLogger.debug('JsBridgeNative', `NativeApi$navigateToMiniProgram`)
+      return nativeInject.buildInjectObj().navigateToMiniProgram(options)
+    })
+
+    MethodChannelInstance.registerMethod('NativeApi$setNavigationBarColorBridgeSync', (options: ESObject)=>{
+      wbLogger.debug('JsBridgeNative', `NativeApi$setNavigationBarColor`)
+      return nativeInject.buildInjectObj().setNavigationBarColor(options)
+    })
+
+    MethodChannelInstance.registerMethod('NativeApi$getMenuButtonBoundingClientRectBridgeSync', (options: ESObject)=>{
+      wbLogger.debug('JsBridgeNative', `NativeApi$getMenuButtonBoundingClientRect`)
+      return nativeInject.buildInjectObj().getMenuButtonBoundingClientRect()
+    })
+
+    MethodChannelInstance.registerMethod('NativeApi$saveDataUrlToFileBridgeAsync', (options: ESObject)=>{
+      wbLogger.debug('JsBridgeNative', `NativeApi$getMenuButtonBoundingClientRect`)
+      return nativeInject.buildInjectObj().saveDataUrlToFile(options)
+    })
+
+    MethodChannelInstance.registerMethod('NativeApi$copyFileToSandboxCacheBridgeSync', (options: ESObject)=>{
+      wbLogger.debug('JsBridgeNative', `NativeApi$copyFileToSandboxCache`)
+      return nativeInject.buildInjectObj().copyFileToSandboxCache(options)
+    })
+
+    MethodChannelInstance.registerMethod('NativeApi$chooseMediaAssetsBridgeAsync', (options: ESObject)=>{
+      wbLogger.debug('JsBridgeNative', `NativeApi$chooseMediaAssets`)
+      return nativeInject.buildInjectObj().chooseMediaAssets(options)
+    })
+
+    MethodChannelInstance.registerMethod('NativeApi$openSettingBridgeAsync', (options: ESObject)=>{
+      wbLogger.debug('JsBridgeNative', `NativeApi$openSetting`)
+      return nativeInject.buildInjectObj().openSetting(options)
+    })
+
+    MethodChannelInstance.registerMethod('NativeApi$getSettingBridgeAsync', (options: ESObject)=>{
+      wbLogger.debug('JsBridgeNative', `NativeApi$getSetting`)
+      return nativeInject.buildInjectObj().getSetting(options)
+    })
+
+
+    ChannelInstance.setRunJavascriptFun((jsCode: string)=>{
+      try {
+        this.taroWebController.webController.runJavaScript(jsCode, (error, result) => {
+          if (error) {
+            wbLogger.error(CONTAINER_TAG, `Run JavaScript error: ${JSON.stringify(error)}`)
+            return;
+          }
+          // if (result) {
+          //   wbLogger.info(TARO_WEB_TAG, `The asFinish() return value is: ${result}`)
+          // }
+        });
+      } catch (error) {
+        wbLogger.error(CONTAINER_TAG, `runJavaScript error: ${(error as BusinessError).message}`);
+      }
+    })
 
     // 注入对象的内部依赖更新
     // nativeInject.setNaviController(this.navigationBarData);
