@@ -12,7 +12,7 @@ let storage = LocalStorage.getShared();
 
 @Entry(storage)
 @Component
-export struct Developer {
+struct Developer {
   title: string = '开发者选项'
   @StorageLink('enableDevDomain') enableDevDomain: boolean = false;
   @StorageLink('devDomain') devDomain: string = '';
