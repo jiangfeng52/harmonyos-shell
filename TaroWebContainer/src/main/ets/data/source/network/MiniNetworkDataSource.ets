@@ -33,7 +33,7 @@ export class MiniNetworkDataSource {
             resolve(null)
           })
         })
-        .catch((err: ESObject) => {
+        .catch((err: Object) => {
           wbLogger.debug("UpdateManager", '%{public}s download error, err is %{public}s', url, err.toString())
           MiniLocalFileDataSource.delTempFile(tempPath)
           resolve(null)

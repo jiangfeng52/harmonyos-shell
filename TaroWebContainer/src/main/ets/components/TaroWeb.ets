@@ -107,7 +107,7 @@ export struct TaroWeb {
   @Prop useCache: boolean;
   @ObjectLink taroWebController: TaroWebController;
   apiAdapter: ApiAdapter = new ApiAdapter();
-  scriptProxy: ESObject;
+  scriptProxy: Object | undefined = undefined;
   enableWebDebug: boolean = true;
 
   aboutToAppear() {

@@ -2,7 +2,7 @@ import { BaseCapsule } from '@ohos/web-container'
 
 @Entry
 @Component
-export struct Capsule {
+struct Capsule {
   build() {
     Column() {
       BaseCapsule({
