@@ -182,5 +182,203 @@ $ npx taro build --type harmony-hybrid
   - utils： 实用工具类和函数
   - update: 热更新
 
+### Taro API - 权限配置表
+部分API在使用的时候，需要在应用的src/main/module.json5文件中配置权限，相应的功能才能启用, 如下示例：
+
+```json5
+{
+  requestPermissions: [{
+      "name": "ohos.permission.INTERNET"
+    }
+  ]
+}
+```
+
+详细信息如下：
+<table>
+  <tr><th>分类</th><th>Taro API</th><th>需要权限</th></tr>
+
+  <tr>
+    <td rowspan="3"  align="center">网络</td>
+    <td>Taro.request</td>
+    <td rowspan="3">ohos.permission.INTERNET</td>
+  </tr>
+  <tr><td>Taro.downloadFile</td></tr>
+  <tr><td>Taro.uploadFile</td></tr>
+
+  <tr>
+    <td rowspan="9"  align="center">位置</td>
+    <td>Taro.getLocation</td>
+    <td rowspan="8">
+      ohos.permission.LOCATION<br>
+      ohos.permission.APPROXIMATELY_LOCATION
+    </td>
+  </tr>
+  <tr><td>Taro.getFuzzyLocation</td></tr>
+  <tr><td>Taro.onLocationChange</td></tr>
+  <tr><td>Taro.offLocationChange</td></tr>
+  <tr><td>Taro.onLocationChangeError</td></tr>
+  <tr><td>Taro.offLocationChangeError</td></tr>
+  <tr><td>Taro.startLocationUpdate</td></tr>
+  <tr><td>Taro.stopLocationUpdate</td></tr>
+  <tr>
+    <td>Taro.startLocationUpdateBackground</td>
+    <td>
+      ohos.permission.LOCATION<br>
+      ohos.permission.APPROXIMATELY_LOCATION<br>
+      ohos.permission.LOCATION_IN_BACKGROUND<br>
+      ohos.permission.KEEP_BACKGROUND_RUNNING
+    </td>
+  </tr>
+
+  <tr>
+    <td rowspan="11" align="center">设备 - 蓝牙(通用)</td>
+    <td>Taro.openBluetoothAdapter</td>
+    <td rowspan="9">
+      ohos.permission.USE_BLUETOOTH<br>
+      ohos.permission.DISCOVER_BLUETOOTH
+    </td>
+  </tr>
+  <tr><td>Taro.closeBluetoothAdapter</td></tr>
+  <tr><td>Taro.getBluetoothAdapterState</td></tr>
+  <tr><td>Taro.getBluetoothDevices</td></tr>
+  <tr><td>Taro.getConnectedBluetoothDevices</td></tr>
+  <tr><td>Taro.onBluetoothAdapterStateChange</td></tr>
+  <tr><td>Taro.offBluetoothAdapterStateChange</td></tr>
+  <tr><td>Taro.onBluetoothDeviceFound</td></tr>
+  <tr><td>Taro.offBluetoothDeviceFound</td></tr>
+  <tr>
+    <td>Taro.startBluetoothDevicesDiscovery</td>
+    <td rowspan="2">
+      ohos.permission.LOCATION<br>
+      ohos.permission.APPROXIMATELY_LOCATION<br>
+      ohos.permission.USE_BLUETOOTH<br>
+      ohos.permission.DISCOVER_BLUETOOTH<br>
+      ohos.permission.MANAGE_BLUETOOTH
+    </td>
+  </tr>
+  <tr><td>Taro.stopBluetoothDevicesDiscovery</td></tr>
+
+  <tr>
+    <td rowspan="11" align="center">设备 - 蓝牙(低功耗中心设备)</td>
+    <td>Taro.createBLEConnection</td>
+    <td rowspan="11">
+      ohos.permission.USE_BLUETOOTH<br>
+      ohos.permission.DISCOVER_BLUETOOTH
+    </td>
+  </tr>
+  <tr><td>Taro.closeBLEConnection</td></tr>
+  <tr><td>Taro.getBLEDeviceCharacteristics</td></tr>
+  <tr><td>Taro.getBLEDeviceRSSI</td></tr>
+  <tr><td>Taro.getBLEDeviceServices</td></tr>
+  <tr><td>Taro.notifyBLECharacteristicValueChange</td></tr>
+  <tr><td>Taro.onBLECharacteristicValueChange</td></tr>
+  <tr><td>Taro.onBLEConnectionStateChange</td></tr>
+  <tr><td>Taro.readBLECharacteristicValue</td></tr>
+  <tr><td>Taro.setBLEMTU</td></tr>
+  <tr><td>Taro.writeBLECharacteristicValue</td></tr>
+
+  <tr>
+    <td rowspan="11" align="center">设备 - WIFI</td>
+    <td>Taro.startWifi</td>
+    <td rowspan="2">
+      ohos.permission.GET_WIFI_INFO<br>
+      ohos.permission.SET_WIFI_INFO<br>
+      ohos.permission.MANAGE_WIFI_CONNECTION
+    </td>
+  </tr>
+  <tr><td>Taro.stopWifi</td></tr>
+  <tr>
+    <td>Taro.connectWifi</td>
+    <td>
+      ohos.permission.GET_WIFI_INFO<br>
+      ohos.permission.SET_WIFI_INFO<br>
+      ohos.permission.MANAGE_WIFI_CONNECTION<br>
+      ohos.permission.SET_WIFI_CONFIG
+    </td>
+  </tr>
+  <tr>
+    <td>Taro.getConnectedWifi</td>
+    <td rowspan="8">
+      ohos.permission.GET_WIFI_INFO<br>
+      ohos.permission.SET_WIFI_INFO<br>
+    </td>
+  </tr>
+  <tr><td>Taro.getWifiList</td></tr>
+  <tr><td>Taro.onGetWifiList</td></tr>
+  <tr><td>Taro.offWifiList</td></tr>
+  <tr><td>Taro.onWifiConnected</td></tr>
+  <tr><td>Taro.offWifiConnected</td></tr>
+  <tr><td>Taro.onWifiConnectedWithPartialInfo</td></tr>
+  <tr><td>Taro.offWifiConnectedWithPartialInfo</td></tr>
+
+  <tr>
+    <td rowspan="7" align="center">设备 - 其他</td>
+    <td>Taro.startAccelerometer</td><td>ohos.permission.ACCELEROMETER</td>
+  </tr>
+  <tr><td>Taro.startGyroscope</td><td>ohos.permission.GYROSCOPE</td></tr>
+  <tr><td>Taro.vibrateShort</td><td rowspan="2">ohos.permission.VIBRATE</td></tr>
+  <tr><td>Taro.vibrateLong</td></tr>
+  <tr><td>Taro.addPhoneContact</td><td>ohos.permission.WRITE_CONTACTS</td></tr>
+  <tr><td>Taro.hideKeyboard</td><td>ohos.permission.CONNECT_IME_ABILITY</td></tr>
+  <tr><td>Taro.getRecorderManager</td><td>ohos.permission.MICROPHONE</td></tr>
+
+  <tr>
+    <td rowspan="12" align="center">媒体</td>
+    <td>Taro.previewImage</td>
+    <td>
+      ohos.permission.READ_MEDIA<br>
+      ohos.permission.WRITE_MEDIA<br>
+      ohos.permission.READ_IMAGEVIDEO<br>
+      ohos.permission.INTERNET
+    </td>
+  </tr>
+  <tr>
+    <td>Taro.previewMedia</td>
+    <td rowspan="11">
+      ohos.permission.READ_MEDIA<br>
+      ohos.permission.WRITE_MEDIA<br>
+      ohos.permission.READ_IMAGEVIDEO<br>
+    </td>
+  </tr>
+  <tr><td>Taro.chooseImage</td></tr>
+  <tr><td>Taro.compressImage</td></tr>
+  <tr><td>Taro.getImageInfo</td></tr>
+  <tr><td>Taro.saveImageToPhotosAlbum</td></tr>
+  <tr><td>Taro.chooseMedia</td></tr>
+  <tr><td>Taro.chooseVideo</td></tr>
+  <tr><td>Taro.compressVideo</td></tr>
+  <tr><td>Taro.getVideoInfo</td></tr>
+  <tr><td>Taro.saveVideoToPhotosAlbum</td></tr>
+  <tr><td>Taro.createInnerAudioContext</td></tr>
+
+</table>
+
+权限配置相关说明请访问官方文档指南的《开发 -- 安全 -- 访问控制》章节。
+权限基本信息如下：
+
+| 权限                                      | 权限级别         | 授权方式         | ACL使能 |
+|-----------------------------------------|--------------|--------------|-------|
+| ohos.permission.INTERNET                | normal       | system_grant | TRUE  |
+| ohos.permission.LOCATION                | normal       | user_grant   | TRUE  |
+| ohos.permission.APPROXIMATELY_LOCATION  | normal       | user_grant   | FALSE |
+| ohos.permission.LOCATION_IN_BACKGROUND  | normal       | user_grant   | FALSE |
+| ohos.permission.KEEP_BACKGROUND_RUNNING | normal       | system_grant | TRUE  |
+| ohos.permission.USE_BLUETOOTH           | normal       | system_grant | TRUE  |
+| ohos.permission.DISCOVER_BLUETOOTH      | normal       | system_grant | TRUE  |
+| ohos.permission.MANAGE_BLUETOOTH        | system_basic | system_grant | TRUE  |
+| ohos.permission.GET_WIFI_INFO           | normal       | system_grant | TRUE  |
+| ohos.permission.SET_WIFI_INFO           | normal       | system_grant | TRUE  |
+| ohos.permission.MANAGE_WIFI_CONNECTION  | system_core  | system_grant | TRUE  |
+| ohos.permission.SET_WIFI_CONFIG         | system_basic | system_grant | TRUE  |
+| ohos.permission.ACCELEROMETER           | normal       | system_grant | TRUE  |
+| ohos.permission.GYROSCOPE               | normal       | system_grant | TRUE  |
+| ohos.permission.VIBRATE                 | normal       | system_grant | TRUE  |
+| ohos.permission.WRITE_CONTACTS          | system_basic | user_grant   | TRUE  |
+| ohos.permission.CONNECT_IME_ABILITY     | system_core  | system_grant | TRUE  |
+| ohos.permission.MICROPHONE              | normal       | user_grant   | TRUE  |
+| ohos.permission.READ_MEDIA              | normal       | user_grant   | TRUE  |
+| ohos.permission.WRITE_MEDIA             | normal       | user_grant   | TRUE  |
+| ohos.permission.READ_IMAGEVIDEO         | system_basic | user_grant   | TRUE  |
 
 [Web调试devtools配置]: https://gitee.com/openharmony/docs/blob/master/zh-cn/application-dev/web/web-debugging-with-devtools.md
