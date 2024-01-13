@@ -124,6 +124,13 @@ export struct TaroWebContainer {
       return this.showCapsule;
     }
   }
+
+  setSystemBarFrontColor = (color: string) => {
+    const context = getContext(this) as common.UIAbilityContext;
+    window.getLastWindow(context).then((windowClass) => {
+      setSystemBarProperties(windowClass, color);
+    });
+  }
   
   chooseAlbumCallback = (options: chooseAlbumOptions, mediaItems: MediaItemData[], previewOneMode?: boolean) => {
     const mediaPromise = new Promise<ChooseAlbumResult>((resolve, reject) => {
@@ -135,6 +142,7 @@ export struct TaroWebContainer {
     this.previewOneImage = previewOneMode === undefined ? false : previewOneMode;
     this.isAlbumOnDetail = false
     this.showAlbum = true;
+    this.setSystemBarFrontColor('#ffffff');
     return mediaPromise;
   }
 
@@ -144,6 +152,7 @@ export struct TaroWebContainer {
     } else {
       this.mediaReject?.()
     }
+    this.setSystemBarFrontColor(this.navigationBarData.barFrontColor);
     this.showAlbum = false;
   }
 
@@ -154,6 +163,7 @@ export struct TaroWebContainer {
         this.isAlbumOnDetail = false;
         return;
       } else {
+        this.setSystemBarFrontColor(this.navigationBarData.barFrontColor);
         this.showAlbum = false;
         this.mediaReject?.()
       }
