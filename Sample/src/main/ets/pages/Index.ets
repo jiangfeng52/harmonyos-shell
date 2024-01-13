@@ -1,6 +1,7 @@
 import Want from '@ohos.app.ability.Want';
 import Url from '@ohos.url';
 import { TaroWebContainer, InjectObject, HostPageState, TaroWebController, Logger, LoggerLevel, wbLogger } from '@ohos/web-container';
+import webView from '@ohos.web.webview'
 
 const SAMPLE_INDEX_TAG = 'SampleIndex';
 const defaultEntryDomain = 'resource://rawfile/';
@@ -35,6 +36,7 @@ struct TaroMpharmonySample {
 
   aboutToAppear() {
     Logger.setLogLevel(LoggerLevel.LOG_DEBUG);
+    webView.WebviewController.setWebDebuggingAccess(true);
   }
 
   onPageShow() {

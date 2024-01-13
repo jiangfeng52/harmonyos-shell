@@ -111,7 +111,6 @@ export struct TaroWeb {
   enableWebDebug: boolean = true;
 
   aboutToAppear() {
-    webView.WebviewController.setWebDebuggingAccess(this.enableWebDebug);
     this.scriptProxy = this.apiAdapter.getAdapterProxy();
     this.taroWebController.hasBindedTaroWeb = true
     this.taroWebController.addRequestHandler(this.handleInternalResource);
