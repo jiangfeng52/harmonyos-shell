@@ -1,5 +1,6 @@
 import dataSharePredicates from '@ohos.data.dataSharePredicates';
 import photoAccessHelper from '@ohos.file.photoAccessHelper';
+import cameraPicker from '@ohos.multimedia.cameraPicker';
 import { GlobalThis } from './GlobalThis';
 import common from '@ohos.app.ability.common';
 import { wbLogger } from './Logger';
@@ -13,6 +14,8 @@ import { requestPermission } from '../utils/PermissionMapScopeUtil';
 import { Permissions } from '@ohos.abilityAccessCtrl';
 import { ChooseMediaOptions } from '../interfaces/InjectObject';
 import { switchHapSandBoxToInternal } from './InternalPath';
+import camera from '@ohos.multimedia.camera';
+import { BusinessError } from '@ohos.base';
 
 const MEDIA_UTIL = 'MediaUtil';
 
@@ -112,27 +115,32 @@ export function filterPhotoVideo(assetArr: photoAccessHelper.PhotoAsset[], type:
   return photoAsset;
 }
 
-export async function getCameraUris(captureType: PHOTO_TYPE, maxDuration: number): Promise<string[]> {
+export async function getCameraUris(captureType: PHOTO_TYPE, maxDuration: number, cameraPos?: string): Promise<string[]> {
   captureType ||= PHOTO_TYPE.IMAGE
   let uris: string[] = [];
   const context = GlobalThis.getInstance().getContext('context') as common.UIAbilityContext;
   // 单独指定使用相机
-  const info = await bundleManager.getBundleInfoForSelf(bundleManager.BundleFlag.GET_BUNDLE_INFO_DEFAULT)
-  const data = await context.startAbilityForResult({
-    action: [PHOTO_TYPE.IMAGE, PHOTO_TYPE.IMAGE_VIDEO].includes(captureType) ? 'ohos.want.action.imageCapture' : 'ohos.want.action.videoCapture',
-
-    parameters: {
-      supportMultiMode: captureType === PHOTO_TYPE.IMAGE_VIDEO,
-      durationLimit: maxDuration - 1, // 实际测试结果比设置值多1s
-      callBundleName: info.name,
-    },
-  })
-  if (data.resultCode === 0) {
-    if (data?.want?.parameters?.['resourceUri']) {
-      uris = [data.want.parameters['resourceUri'].toString()];
+  const info = await bundleManager.getBundleInfoForSelf(bundleManager.BundleFlag.GET_BUNDLE_INFO_DEFAULT);
+  const pickerProfile: cameraPicker.PickerProfile = {
+    cameraPosition: cameraPos === 'front' ? camera.CameraPosition.CAMERA_POSITION_FRONT : camera.CameraPosition.CAMERA_POSITION_BACK,
+    videoDuration: maxDuration,
+  }
+  let mediaTypes: cameraPicker.PickerMediaType[] = []
+  if (captureType === PHOTO_TYPE.IMAGE_VIDEO) {
+    mediaTypes.push(cameraPicker.PickerMediaType.VIDEO, cameraPicker.PickerMediaType.PHOTO);
+  } else if (captureType === PHOTO_TYPE.IMAGE) {
+    mediaTypes.push(cameraPicker.PickerMediaType.PHOTO);
+  } else if (captureType === PHOTO_TYPE.VIDEO) {
+    mediaTypes.push(cameraPicker.PickerMediaType.VIDEO);
+  }
+  try {
+    const pickerResult: cameraPicker.PickerResult = await cameraPicker.pick(context, mediaTypes, pickerProfile);
+    if (pickerResult.resultUri) {
+      uris = [pickerResult.resultUri];
     }
-  } else {
-    wbLogger.error(MEDIA_UTIL, `Failed to pull up camera app.`);
+  } catch (error) {
+    const err = error as BusinessError;
+    wbLogger.error(MEDIA_UTIL, `Failed camera capture: ${err.message}`);
   }
   return uris;
 }
@@ -385,7 +393,7 @@ export async function selectMediaAssets(options: ChooseMediaOptions, chooseAlbum
       let maxDuration = options.maxDuration || 10;
       maxDuration = maxDuration > 60 ? 60 : maxDuration;
       maxDuration = maxDuration < 3 ? 3 : maxDuration;
-      chosenUris = await getCameraUris(photoType, maxDuration);
+      chosenUris = await getCameraUris(photoType, maxDuration, options.camera);
       if (chosenUris.length === 0) {
         options.fail({ errMsg: `${apiName}:fail to pull up camera app` })
         return
