@@ -4,7 +4,7 @@
 
 提供的能力：
 - 提供`TaroWebContainer`组件，支持运行harmony-hybrid应用（Taro框架）
-- [支持热更新](./docs/热更新使用.md)
+- [支持热更新](#热更新使用指南)
 
 ### 下载安装
 
@@ -12,7 +12,7 @@
 ohpm install @ohos/web-container
 ```
 
-### 使用示例
+## TaroWebContainer组件使用指南
 1. 使用DevEco Studio开发工具新建应用工程，选择`Empty Ability`模板，使用默认配置。
 2. 在`entry/oh-package.json5`文件中添加`@ohos/web-container`模块的依赖并点击`Sync`进行同步：
 
@@ -174,13 +174,6 @@ $ npx taro build --type harmony-hybrid
 | capsulePage       | string            | 点击胶囊按钮跳转的页面                                           | 否：默认值：`pages/Capsule` |
 | enableWebDebug    | boolean           | [开启Web调试功能][Web调试devtools配置]                          | 否：默认值：true            |
 
-### 项目目录解析
-- src/main/ets
-  - components： 自定义组件
-  - inject_adapter： 高阶API注入对象适配
-  - interfaces： 接口
-  - utils： 实用工具类和函数
-  - update: 热更新
 
 ### Taro API - 权限配置表
 部分API在使用的时候，需要在应用的src/main/module.json5文件中配置权限，相应的功能才能启用, 如下示例：
@@ -380,5 +373,87 @@ $ npx taro build --type harmony-hybrid
 | ohos.permission.READ_MEDIA              | normal       | user_grant   | TRUE  |
 | ohos.permission.WRITE_MEDIA             | normal       | user_grant   | TRUE  |
 | ohos.permission.READ_IMAGEVIDEO         | system_basic | user_grant   | TRUE  |
+
+
+## 热更新使用指南
+
+热更新功能支持开发者设置应用启动时访问远程API接口获取升级信息、下载远程升级包，并在应用下次启动时生效。开发者也可以结合Taro框架的API `Taro.getUpdateManager()`得到`updateManager`对象, 使用该对象的方法与用户进行交互, 提示是否立即应用更新。
+
+### `arkts`端配置
+
+热更新功能的配置与调用, 如示例所示：
+
+```ts
+import { LocalUpdateManagerInstance, UpdateConfig } from '@ohos/web-container';
+const localDefaultVersion: string = '0';
+
+export default class EntryAbility extends UIAbility {
+  onCreate(want: Want) {
+    const versionCompare = (a: string, b: string) => a > b;
+    const urlFunc = (version: string) => `http://域名/apis/config?local_version=${version}`;
+    const updateConfig = UpdateConfig.getInstance().setup(localDefaultVersion, urlFunc, versionCompare);
+    LocalUpdateManagerInstance.updateMiniOnLaunch(this.context);
+  }
+  onNewWant(want: Want) {
+    storage.setOrCreate('want',  want);
+  }
+  //...
+}
+```
+UpdateConfig的setup方法包含三个参数：
+- initialVersion: string 初始版本号；应用内置的资源初始版本。
+- urlFunc: (string) => string 自定义版本信息url生成函数；通过该函数生成新的网络请求url，附带有本地的版本号，用于服务器判断是否需要升级。
+- versionCompare: (string, string) => boolean 自定义版本比对函数；通过该函数排序本地缓存的升级包，得到本地在用的最新版本号。
+
+
+服务器端通过版本比对，返回两种信息之一：
+- 需要更新离线资源
+
+假设本地版本号为`0`，服务端的最新资源版本为`1`，则需要更新。服务端根据接口约定将升级信息返回给应用。信息示例如下所示：
+
+```json
+{
+  "code": 200,
+  "message":"request OK",
+  "data": {
+    "mini_download_url": "https://域名/mpharmony/mpharmony.zip",
+    "mini_version": 1
+  }
+}
+```
+
+其中，`data`字段中的`mini_download_url`字段表示需要下载资源的网络url，热更新模块使用该url进行资源下载。
+
+- 本地资源是最新的
+
+假设本地版本号为`1`，服务端的最新资源版本为`1`，则不需要更新。服务端根据接口约定将信息返回给应用。信息示例如下所示：
+
+```json
+{
+  "code": "300",
+  "message": "latest version"
+}
+```
+
+### js端
+
+用户可以在`js`端通过Taro API实现相应的业务，实现例子如下所示：
+
+```ts
+const updateManager = Taro.getUpdateManager()
+updateManager.onCheckForUpdate((hasUpdate: boolean) => {
+    console.log("onCheckForUpdate")
+})
+updateManager.onUpdateReady((updatedPath: string) => {
+    updateManager.applyUpdate()
+})
+updateManager.onUpdateFailed(() => {
+    console.log("UpdateFailed")
+})
+```
+
+**注意：需要确保在arkTs端热更新模块请求网络完成或者下载好更新之前完成监听函数的注册，不然可能arkTs已通知完毕，js端监听不到通知**
+
+
 
 [Web调试devtools配置]: https://gitee.com/openharmony/docs/blob/master/zh-cn/application-dev/web/web-debugging-with-devtools.md
