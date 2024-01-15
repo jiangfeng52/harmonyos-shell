@@ -3,6 +3,8 @@ import { MiniConfig } from '../data/source/bean/MiniConfig';
 import { MiniConfigRepository } from '../data/source/MiniConfigRepository';
 import { MiniRepository } from '../data/source/MiniRepository';
 import { UpdateManager } from './UpdateManager';
+import AppContext from '@ohos.app.ability.common'
+
 
 class LocalUpdateManager extends UpdateManager {
   private miniConfigRepository: MiniConfigRepository;
@@ -21,8 +23,8 @@ class LocalUpdateManager extends UpdateManager {
     return this.localVersionInfo.path
   }
 
-  async updateMiniOnLaunch(context: Context) {
-    this.reset()
+  async updateMiniOnLaunch(context: AppContext.UIAbilityContext) {
+    this.reset(context)
 
     // 获取本地最新的版本号
     let lastVersionInfo = this.miniRepository.getLastMiniVersion(context)
