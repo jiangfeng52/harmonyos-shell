@@ -1,4 +1,7 @@
 import ArrayList from '@ohos.util.ArrayList'
+import AppContext from '@ohos.app.ability.common'
+import { BusinessError } from '@ohos.base';
+import { wbLogger } from '../utils/Logger';
 
 export abstract class UpdateManager {
   protected onCheckForUpdateListeners: ArrayList<(hasUpdate: boolean) => void> = new ArrayList<(hasUpdate: boolean) => void>();
@@ -6,15 +9,22 @@ export abstract class UpdateManager {
   protected onUpdateFailedListeners: ArrayList<() => void> = new ArrayList<() => void>();
   protected hasUpdate: boolean | null = null
   protected updatedPath: string | null = null
+  protected context: AppContext.UIAbilityContext | null = null
 
-  reset() {
+  reset(context: AppContext.UIAbilityContext) {
     this.hasUpdate = null
     this.updatedPath = null
-
+    this.context = context
   }
 
   applyUpdate(): void {
-
+    (this.context as AppContext.UIAbilityContext).terminateSelf((err: BusinessError) =>{
+      if (err.code){
+        wbLogger.debug('UpdateManager', 'terminateSelf failed, code is %{public}, message is %{public}', err.code, err.message)
+        return
+      }
+      wbLogger.debug('UpdateManager', 'applyUpdate success')
+    })
   }
 
   onCheckForUpdate(listener: (hasUpdate: boolean) => void): void {
