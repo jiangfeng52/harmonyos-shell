@@ -71,7 +71,7 @@ export async function getPhotoAssetList(): Promise<Array<photoAccessHelper.Photo
   return [];
 }
 
-export async function getAssetByUri(uri: string): Promise<photoAccessHelper.PhotoAsset|undefined> {
+export async function getAssetByUri(uri: string): Promise<photoAccessHelper.PhotoAsset | undefined> {
   const context = getContext();
   let phAccessHelper = photoAccessHelper.getPhotoAccessHelper(context);
   let predicates: dataSharePredicates.DataSharePredicates = new dataSharePredicates.DataSharePredicates();
@@ -174,12 +174,12 @@ export async function compressImage(params: CompressImageParams): Promise<Compre
     const supportTypes: string[] = ['jpg', 'png', 'webp'];
     const fileName = src.split('/').pop() || '';
     // 无后缀的src以jpg处理
-    const originSrcSuffix = fileName.indexOf('.') >= 0  ? (src.toLowerCase().split('.').pop() || 'jpg'): 'jpg';
+    const originSrcSuffix = fileName.indexOf('.') >= 0 ? (src.toLowerCase().split('.').pop() || 'jpg') : 'jpg';
     const context = getContext();
     if (supportTypes.includes(originSrcSuffix)) {
       // 压缩
       const arrayBuf = await getArrayBuffer(20, fd, originSrcSuffix, params.compressHeight, params.compressedWidth);
-      const newFileName = `IMAGE_${Date.now()}` ;
+      const newFileName = `IMAGE_${Date.now()}`;
       const tmpPath = `${context.tempDir}/${newFileName}.${originSrcSuffix}`;
       try {
         fs.openSync(tmpPath, fs.OpenMode.CREATE)
@@ -197,7 +197,7 @@ export async function compressImage(params: CompressImageParams): Promise<Compre
         wbLogger.error(MEDIA_UTIL, `compressImage----file deal error:`, error)
       }
     } else {
-      const newFileName = `IMAGE_${Date.now()}` ;
+      const newFileName = `IMAGE_${Date.now()}`;
       const originTempPath = `${context.tempDir}/${newFileName}.${originSrcSuffix}`;
       const asset = await getAssetByUri(src);
       await asset?.getReadOnlyFd().then((fd) => {
@@ -218,6 +218,7 @@ export async function compressImage(params: CompressImageParams): Promise<Compre
 }
 
 async function getArrayBuffer(quality: number, fd: number, suffix: string, height?: number, width?: number) {
+  suffix = ['jpeg', 'jpg'].includes(suffix) ? 'jpeg' : suffix;
   if (height !== undefined || width !== undefined) {
     let heightSize: number = height || width || 0;
     let widthSize: number = width || height || 0;
@@ -235,9 +236,19 @@ async function getArrayBuffer(quality: number, fd: number, suffix: string, heigh
   } else {
     const imageSourceApi: image.ImageSource = image.createImageSource(fd);
     const imagePackerApi: image.ImagePacker = image.createImagePacker();
-    let packOpts: image.PackingOption = { format: 'image/jpeg', quality };
-    const arrayBuf = await imagePackerApi.packing(imageSourceApi, packOpts);
-    return arrayBuf;
+    const packOpts: image.PackingOption = { format: `image/${suffix}`, quality };
+    if (suffix !== 'png') {
+      return (await imagePackerApi.packing(imageSourceApi, packOpts));
+    } else {
+      const imageInfo = await imageSourceApi.getImageInfo();
+      const pixelMap = await imageSourceApi.createPixelMap({
+        desiredSize: {
+          width: imageInfo.size.width / 2,
+          height: imageInfo.size.height / 2,
+        }
+      });
+      return (await imagePackerApi.packing(pixelMap, packOpts));
+    }
   }
 }
 
@@ -271,7 +282,7 @@ export async function getChooseMediaRet(mediaList: IMediaData[], useOriginal: bo
   for (const media of mediaList) {
     resTypes.add(media.type)
     if (useOriginal) {
-      let thumbPath: string|undefined = '';
+      let thumbPath: string | undefined = '';
       if (media.type === 'video') {
         const asset = await getAssetByUri(media.originPath)
         if (asset) {
@@ -316,7 +327,7 @@ export async function getChooseMediaRet(mediaList: IMediaData[], useOriginal: bo
           continue;
         }
         tempFilePaths.push(compress.tempFilePath)
-        let thumbPath: string|undefined = '';
+        let thumbPath: string | undefined = '';
         if (media.type === 'video') {
           const asset = await getAssetByUri(media.originPath)
           if (asset) {
@@ -336,7 +347,7 @@ export async function getChooseMediaRet(mediaList: IMediaData[], useOriginal: bo
     }
   }
   const resType: string = resTypes.size === 2 ? 'mix' : (resTypes.size === 1 ? Array.from(resTypes)[0] : '')
-  const retData:ChooseMediaResults = {
+  const retData: ChooseMediaResults = {
     tempFilePaths: tempFilePaths,
     tempFiles: tempFiles,
     type: resType,
@@ -358,7 +369,7 @@ export async function generateThumbnailFile(asset: photoAccessHelper.PhotoAsset)
     fs.writeSync(file.fd, buffer);
     fs.closeSync(file.fd);
     return switchHapSandBoxToInternal(sandboxThumbPath);
-  } catch(err) {
+  } catch (err) {
     wbLogger.info(MEDIA_UTIL, 'generateThumbnailFile failed');
     return '';
   }
@@ -385,7 +396,7 @@ export async function selectMediaAssets(options: ChooseMediaOptions, chooseAlbum
     options.mediaType = Array.from(new Set(options.mediaType))
 
     // 如果mediaType的项多于2项或者包含mix, 则拉起的摄像头允许拍照和录像
-    const photoType = (options.mediaType.length >= 2 || (options.mediaType || []).includes('mix'))?
+    const photoType = (options.mediaType.length >= 2 || (options.mediaType || []).includes('mix')) ?
     PHOTO_TYPE.IMAGE_VIDEO : (options.mediaType[0] === 'image' ? PHOTO_TYPE.IMAGE : PHOTO_TYPE.VIDEO)
 
     if (options.sourceType === 'camera') {
@@ -400,7 +411,7 @@ export async function selectMediaAssets(options: ChooseMediaOptions, chooseAlbum
       }
       const captureUrl = chosenUris[0]
       const asset = await getAssetByUri(captureUrl)
-      const assetType = asset?.photoType === photoAccessHelper.PhotoType.IMAGE ? 'image': 'video';
+      const assetType = asset?.photoType === photoAccessHelper.PhotoType.IMAGE ? 'image' : 'video';
       const mediaList: IMediaData[] = [
         {
           originPath: captureUrl,
@@ -426,7 +437,7 @@ export async function selectMediaAssets(options: ChooseMediaOptions, chooseAlbum
             mediaType: ['image'],
           }, [mediaItemData], true);
           useOriginal = chooseInfo.isOriginal;
-        }  catch(err) {
+        } catch (err) {
           options.fail({ errMsg: 'cancel' });
           return;
         }
@@ -486,7 +497,7 @@ export async function selectMediaAssets(options: ChooseMediaOptions, chooseAlbum
           tempFiles: ret.tempFiles,
           type: ret.type,
         })
-      } catch(err) {
+      } catch (err) {
         options.fail({ errMsg: 'cancel' })
         return;
       }
@@ -523,6 +534,3 @@ export function getThumbnailPixelMap(originPath: string): Promise<PixelMap> {
     })
   })
 }
-
-
-
