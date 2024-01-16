@@ -31,6 +31,7 @@ import {
   SubscribeMessageOptions,
   SubscriptionsSetting,
   ChooseMediaOptions,
+  ExitMiniProgramOptions,
 } from '../interfaces/InjectObject';
 import {
   getBundleUsedPermission,
@@ -113,7 +114,7 @@ export class NativeInject {
     this.permissionInfo = permissionInfo;
   }
 
-  public buildInjectObj(): InnerInjectObj {
+  public buildInjectObj(context: common.UIAbilityContext): InnerInjectObj {
     return {
       copyFileToSandboxCache: (src: string) => {
         const context = getContext() as common.UIAbilityContext;
@@ -397,6 +398,20 @@ export class NativeInject {
       chooseMediaAssets: (options: ChooseMediaOptions) => {
           selectMediaAssets(options, this.chooseAlbumCallback!)
       },
+      exitMiniProgram: (options?: ExitMiniProgramOptions) => {
+        try {
+          context.terminateSelf()
+            .then(() => {
+              options && options.success()
+            })
+            .catch((err: BusinessError) => {
+              options && options.fail()
+            });
+        } catch (err) {
+          options && options.fail()
+        }
+        options && options.complete()
+      }
     };
   }
 }
