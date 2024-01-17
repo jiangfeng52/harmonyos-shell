@@ -1,4 +1,4 @@
-import { BaseCapsule } from '@ohos/web-container'
+import { BaseCapsule } from '@hybrid/web-container'
 
 @Entry
 @Component

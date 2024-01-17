@@ -9,12 +9,12 @@
 ### 下载安装
 
 ```
-ohpm install @ohos/web-container
+ohpm install @hybrid/web-container
 ```
 
 ### 使用示例
 1. 使用DevEco Studio开发工具新建应用工程，选择`Empty Ability`模板，使用默认配置。
-2. 在`entry/oh-package.json5`文件中添加`@ohos/web-container`模块的依赖并点击`Sync`进行同步：
+2. 在`entry/oh-package.json5`文件中添加`@hybrid/web-container`模块的依赖并点击`Sync`进行同步：
 
 ```json
 {
@@ -24,7 +24,7 @@ ohpm install @ohos/web-container
   "description": "演示如何使用TaroWebContainer组件",
   "version": "1.0.0",
   "dependencies": {
-    "@ohos/web-container": "1.0.0"
+    "@hybrid/web-container": "1.0.0"
   }
 }
 
@@ -32,7 +32,7 @@ ohpm install @ohos/web-container
 3. 在`entry/src/main/ets/entryability/EntryAbility.ets`中增加Want信息的处理：
 ```js
 import Want from '@ohos.app.ability.Want';
-import { wbLogger } from '@ohos/web-container';
+import { wbLogger } from '@hybrid/web-container';
 
 const ABILITY_TAG = 'EntryAbility';
 const storage = new LocalStorage();
@@ -58,7 +58,7 @@ export default class EntryAbility extends UIAbility {
 // entry/src/main/ets/pages/Index.ets
 import Want from '@ohos.app.ability.Want';
 import Url from '@ohos.url';
-import { TaroWebContainer, InjectObject, HostPageState, TaroWebController, Logger, LoggerLevel, wbLogger } from '@ohos/web-container';
+import { TaroWebContainer, InjectObject, HostPageState, TaroWebController, Logger, LoggerLevel, wbLogger } from '@hybrid/web-container';
 
 const SAMPLE_INDEX_TAG = 'SampleIndex';
 let storage = LocalStorage.getShared() // 获取共享的本地存储对象
@@ -381,4 +381,12 @@ $ npx taro build --type harmony-hybrid
 | ohos.permission.WRITE_MEDIA             | normal       | user_grant   | TRUE  |
 | ohos.permission.READ_IMAGEVIDEO         | system_basic | user_grant   | TRUE  |
 
+
+### 约束与限制
+
+- 请使用 `DevEco Studio NEXT Developer Preview1` 及以上版本进行开发 （可以通过 [HarmonyOS NEXT 开发者
+  预览版 Beta 招募][NEXT招募] 申请获得）
+- Taro 版本 3.6.24+
+
 [Web调试devtools配置]: https://gitee.com/openharmony/docs/blob/master/zh-cn/application-dev/web/web-debugging-with-devtools.md
+[NEXT招募]: https://developer.huawei.com/consumer/cn/activityDetail/harmonyos-next-preview/

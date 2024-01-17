@@ -5,6 +5,6 @@
   "description": "演示如何使用TaroWebContainer组件",
   "version": "1.0.0",
   "dependencies": {
-    "@ohos/web-container": "file:../TaroWebContainer"
+    "@hybrid/web-container": "file:../TaroWebContainer"
   }
 }
