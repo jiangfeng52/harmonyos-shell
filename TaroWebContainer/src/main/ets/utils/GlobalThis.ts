@@ -12,6 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { Context } from '@ohos.abilityAccessCtrl';
 
 /**
  * 存储全局信息，构造单例对象
