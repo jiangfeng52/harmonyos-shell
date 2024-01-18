@@ -157,6 +157,12 @@ export interface GetSettingRetOptions {
   errMsg: string;
 }
 
+export interface SettingOptions {
+  success: Function;
+  fail: Function;
+  withSubscriptions?: boolean;
+}
+
 export interface copyFileToSandboxCacheRetOptions {
   internalCachePath: string
 }

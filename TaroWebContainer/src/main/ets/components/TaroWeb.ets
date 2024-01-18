@@ -26,6 +26,8 @@ import { AlbumBackward } from '../interfaces/Media'
 import webView from '@ohos.web.webview';
 import { NativeApiImplInstance } from '../inject_adapter/NativeApi';
 import { ChannelInstance, MethodChannelInstance } from '../inject_adapter/Channel';
+import { ChannelInstance, MethodChannelInstance } from '../inject_adapter/Channel';
+import { NativeApiImplInstance } from '../inject_adapter/NativeApi';
 
 const TARO_WEB_TAG = 'TaroWeb';
 
@@ -51,7 +53,7 @@ export class TaroWebController {
     try {
       this.webController.loadUrl(url);
       this.webController.accessBackward();
-    } catch(err) {
+    } catch (err) {
       const error: BusinessError = err as BusinessError;
       wbLogger.error(TARO_WEB_TAG, `fail loadUrl, error code: ${error.code}`);
     }
@@ -114,6 +116,10 @@ export struct TaroWeb {
 
   aboutToAppear() {
     webView.WebviewController.setWebDebuggingAccess(this.enableWebDebug);
+  scriptProxy: ESObject;
+
+  aboutToAppear() {
+    webView.WebviewController.setWebDebuggingAccess(true);
     // this.scriptProxy = this.apiAdapter.getAdapterProxy();
     this.taroWebController.hasBindedTaroWeb = true
     this.taroWebController.addRequestHandler(this.handleInternalResource);
@@ -159,6 +165,7 @@ export struct TaroWeb {
       return NativeApiImplInstance.getUserInfoBridgeAsync(options)
     })
 
+
     MethodChannelInstance.registerMethod('NativeApi$saveImageToPhotosAlbumBridgeAsync', (options: ESObject) => {
       return NativeApiImplInstance.saveImageToPhotosAlbumBridgeAsync(options)
     })
@@ -167,6 +174,9 @@ export struct TaroWeb {
       return NativeApiImplInstance.getVideoInfoBridgeAsync(options)
     })
 
+    MethodChannelInstance.registerMethod('NativeApi$getVideoInfoBridgeAsync', (options: ESObject) => {
+      return NativeApiImplInstance.getVideoInfoBridgeAsync(options)
+    })
     MethodChannelInstance.registerMethod('NativeApi$getImageInfoBridgeAsync', (options: ESObject) => {
       return NativeApiImplInstance.getImageInfoBridgeAsync(options)
     })
@@ -189,7 +199,13 @@ export struct TaroWeb {
 
     MethodChannelInstance.registerMethod('NativeApi$getFileSystemManagerBridgeSync', (options: ESObject) => {
       return NativeApiImplInstance.getFileSystemManagerBridgeSync(options)
+    MethodChannelInstance.registerMethod('NativeApi$loginBridgeAsync', (options: ESObject) => {
+      return NativeApiImplInstance.loginBridgeAsync(options)
     })
+
+    MethodChannelInstance.registerMethod('NativeApi$getUserInfoBridgeAsync', (options: ESObject) => {
+      return NativeApiImplInstance.getUserInfoBridgeAsync(options)
+      })
 
     MethodChannelInstance.registerMethod('NativeApi$setKeepScreenOnBridgeAsync', (options: ESObject) => {
       return NativeApiImplInstance.setKeepScreenOnBridgeAsync(options)
@@ -233,7 +249,6 @@ export struct TaroWeb {
     }
     return null;
   }
-
   useLocalCacheResource: InterceptRequestHandler = (request) => {
     const url = request.getRequestUrl();
     if (this.useCache && this.webUrlPrefix) {
@@ -242,7 +257,7 @@ export struct TaroWeb {
       if (localLastPath != '') {
         wbLogger.debug('TaroWeb', 'useLocalCacheResource path=%{public}s', path)
         // 走本地缓存
-        if(!path || !FileUtils.fileExist(localLastPath, path)) {
+        if (!path || !FileUtils.fileExist(localLastPath, path)) {
           return null;
         }
         return FileUtils.getFileOnResponseWeb(localLastPath, path)

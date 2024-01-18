@@ -191,13 +191,15 @@ export class NativeInject {
               options.success({ errMsg: '' });
             }).catch(() => {
               options.fail({ errMsg: 'invalid appid or path scheme' } as ErrorMsg);
+              options.success({ errMsg: '' })
+            }).catch(() => {
+              options.fail({ errMsg: 'invalid appid or path scheme' } as ErrorMsg)
             })
           } catch (paramError) {
             wbLogger.warn(NATIVE_TAG, `navigateToMiniProgram failed: ${JSON.stringify(paramError)}`);
             options.fail({
               errMsg: `code: ${(paramError as BusinessError).code}, message ${(paramError as BusinessError).message}`
-            } as ErrorMsg
-            );
+            } as ErrorMsg)
           }
       },
       setNavigationStyle: (style, textStyle, backgroundColor) => {
@@ -208,6 +210,9 @@ export class NativeInject {
         this.setStatusBarFrontColor(this.navigationBarData.barFrontColor);
       },
       openSetting:  async (options: SettingOptions) => {
+        const apiName: string = 'openSetting';
+        // 接口返回
+      openSetting: async (options) => {
         const apiName: string = 'openSetting';
         // 接口返回
           try {
@@ -257,7 +262,7 @@ export class NativeInject {
                 authSetting: bundleUsedScope.allScope,
                 subscriptionsSetting: subscriptionsSetting,
                 errMsg: `${apiName}:ok`
-              });
+              })
             }
             options.success({ authSetting: bundleUsedScope.allScope, errMsg: `${apiName}:ok` });
           } catch (paramError) {
@@ -266,6 +271,12 @@ export class NativeInject {
                 errMsg: `${apiName}:fail error code: ${(paramError as BusinessError).code} ${(paramError as BusinessError).message}`
               } as ErrorMsg
             );
+            options.success({ authSetting: bundleUsedScope.allScope, errMsg: `${apiName}:ok` })
+          } catch (paramError) {
+            wbLogger.warn(NATIVE_TAG, `openSetting: ${JSON.stringify(paramError)}`);
+            options.fail({
+              errMsg: `${apiName}:fail error code: ${(paramError as BusinessError).code} ${(paramError as BusinessError).message}`
+            } as ErrorMsg)
           }
       },
       getSetting: async (options: SettingOptions) => {
@@ -316,7 +327,8 @@ export class NativeInject {
                 authSetting: bundleUsedScope.allScope,
                 subscriptionsSetting: subscriptionsSetting,
                 errMsg: `${apiName}:ok`
-              });
+              })
+
             }
             options.success({ authSetting: bundleUsedScope.allScope, errMsg: `${apiName}:ok` });
           } catch (paramError) {
@@ -324,6 +336,11 @@ export class NativeInject {
                 errMsg: `${apiName}:fail error code: ${(paramError as BusinessError).code} ${(paramError as BusinessError).message}`
               } as ErrorMsg
             );
+            options.success({ authSetting: bundleUsedScope.allScope, errMsg: `${apiName}:ok` })
+          } catch (paramError) {
+            options.fail({
+              errMsg: `${apiName}:fail error code: ${(paramError as BusinessError).code} ${(paramError as BusinessError).message}`
+            } as ErrorMsg)
           }
       },
       getUpdateManager: () => {

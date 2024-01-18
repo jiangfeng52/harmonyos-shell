@@ -36,6 +36,9 @@ import { AlbumBackward, ChooseAlbumResult, MediaItemData, chooseAlbumOptions } f
 import { ChannelInstance, MethodChannelInstance } from '../inject_adapter/Channel';
 import { BusinessError } from '@ohos.base';
 
+import { NativeApiImplInstance } from '../inject_adapter/NativeApi';
+
+
 const CONTAINER_TAG = 'TaroWebContainer';
 
 /**
@@ -235,6 +238,7 @@ export struct TaroWebContainer {
     nativeInject.setChooseAlbumCallback(this.chooseAlbumCallback);
     this.adapter.mergeInjectObj(nativeInject.buildInjectObj());
     this.injectObj && this.adapter.mergeInjectObj(this.injectObj);
+
 
     MethodChannelInstance.registerMethod('NativeApi$navigateToMiniProgramBridgeAsync', (options: ESObject)=>{
       wbLogger.debug('JsBridgeNative', `NativeApi$navigateToMiniProgram`)
