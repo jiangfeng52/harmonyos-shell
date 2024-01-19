@@ -72,3 +72,34 @@ struct TaroMpharmonySample {
    - 增加TaroWeb组件
    - 增加NavigationBar导航栏
    - 增加BaseCapsule组件以及BaseDeveloper组件
+  
+export const NativeApiUpdate: ESObject = {
+  getWindowInfoBridgeSync: as['getWindowInfo'],
+  getSystemSettingBridgeSync: as['getSystemSetting'],
+  makePhoneCallBridgeAsync: (options: ESObject) => {
+    // as.makePhoneCall(options)
+    as.makePhoneCall({
+      ...options,
+      success:(args:ESObject)=>{
+        console.log('[advancedAPI 5]')
+        options.success(args)
+      },
+      fail:(args:ESObject)=>{
+        console.log('[advancedAPI 5]')
+        options.fail(args)
+      }
+    })
+  },
+
+  onUserCaptureScreenBridgeAsync: (options: ESObject) => {
+    as.onUserCaptureScreen(options)
+  }
+}
+
+import { MethodChannelInstance } from '../inject_adapter/Channel';
+import { NativeApiUpdate } from '../inject_adapter/NativeApi'
+MethodChannelInstance.registerMethods(NativeApiUpdate)
+
+if (methodName.startsWith('on')) {
+
+
