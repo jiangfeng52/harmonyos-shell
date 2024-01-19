@@ -50,9 +50,8 @@ class MethodChannel {
       const method = object[methodName]
       if (typeof method === 'function') {
         // 注册
-        this.registerMethod(methodName, (arg: any)=>{
-          method.apply(object, arg)
-        })
+        let allName:string = 'NativeApi$' + methodName
+        this.registerMethod(allName, object[methodName])
       }
     }
   }
@@ -64,7 +63,7 @@ class MethodChannel {
   }
 
   call(object): any{
-    const {call, isListener, arg, stubId} = object
+    const {call, isListener, arg, stubId, callbackArg} = object
     const fun = this.methodPools.get(call)
     if(!fun) {
       return undefined;
@@ -89,11 +88,14 @@ class MethodChannel {
       return fun.call(null, argProxy)
     }
 
+    callbackArg.forEach((callback)=>{
+      arg[callback]=()=>{}
+    })
     // arg为对象
     const argProxy = new Proxy(arg??{}, {
       get(target, prop, receiver) {
         let value = target[prop]
-        if (value){
+        if (typeof value != 'function'){
           return value
         }
         return function (...args) {

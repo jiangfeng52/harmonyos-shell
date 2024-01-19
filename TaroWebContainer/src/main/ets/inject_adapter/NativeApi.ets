@@ -1,5 +1,5 @@
 import { wbLogger } from '../utils/Logger'
-import { MethodChannelInstance } from './Channel'
+import { as } from '@ohos/advanced-api';
 
 interface WindowInfo {
   pixelRatio?: number,
@@ -27,9 +27,9 @@ interface WindowResizeResult {
 }
 
 interface OpenSystemBluetoothSetting {
-  success?: (res: string)=>void,
-  fail?:(res: string)=>void,
-  complete?:(res: string)=>void
+  success?: (res: string) => void,
+  fail?: (res: string) => void,
+  complete?: (res: string) => void
 }
 
 interface NativeApi {
@@ -54,11 +54,10 @@ interface NativeApi {
    *
    * @param listener
    */
-  onWindowResizeBridgeAsync(listener: (res: WindowResizeResult)=>void)
+  onWindowResizeBridgeAsync(listener: (res: WindowResizeResult) => void)
 }
 
 class NativeApiImpl implements NativeApi {
-
   getWindowInfoBridgeSync(): WindowInfo {
     return {
       pixelRatio: 1,
@@ -80,7 +79,7 @@ class NativeApiImpl implements NativeApi {
       }
     })
 
-    setTimeout(()=>{
+    setTimeout(() => {
       listener({
         size: {
           windowWidth: 720,
@@ -92,3 +91,15 @@ class NativeApiImpl implements NativeApi {
 }
 
 export const NativeApiImplInstance: NativeApiImpl = new NativeApiImpl()
+
+export const NativeApiUpdate: ESObject = {
+  getWindowInfoBridgeSync: as['getWindowInfo'],
+  getSystemSettingBridgeSync: as['getSystemSetting'],
+  makePhoneCallBridgeAsync: (options: ESObject) => {
+    as.makePhoneCall(options)
+  },
+  onUserCaptureScreenBridgeAsync: (options: ESObject) => {
+    as.onUserCaptureScreen(options)
+  }
+}
+

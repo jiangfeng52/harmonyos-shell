@@ -232,21 +232,21 @@ export struct TaroWeb {
       .zoomAccess(false)
       .horizontalScrollBarAccess(false)
       .onPageBegin(() => {
-        // try {
-        //   this.taroWebController.webController.runJavaScript(
-        //     this.apiAdapter.getRunJavaScript(),
-        //     (error, result) => {
-        //       if (error) {
-        //         wbLogger.error(TARO_WEB_TAG, `Run JavaScript error: ${JSON.stringify(error)}`)
-        //         return;
-        //       }
-        //       if (result) {
-        //         wbLogger.info(TARO_WEB_TAG, `The asFinish() return value is: ${result}`)
-        //       }
-        //     });
-        // } catch (error) {
-        //   wbLogger.error(TARO_WEB_TAG, `runJavaScript error: ${(error as BusinessError).message}`);
-        // }
+        try {
+          this.taroWebController.webController.runJavaScript(
+            this.apiAdapter.getRunJavaScript(),
+            (error, result) => {
+              if (error) {
+                wbLogger.error(TARO_WEB_TAG, `Run JavaScript error: ${JSON.stringify(error)}`)
+                return;
+              }
+              if (result) {
+                wbLogger.info(TARO_WEB_TAG, `The asFinish() return value is: ${result}`)
+              }
+            });
+        } catch (error) {
+          wbLogger.error(TARO_WEB_TAG, `runJavaScript error: ${(error as BusinessError).message}`);
+        }
       })
       .onInterceptRequest((event) => { // 当web组件加载url之前触发该回调，用于拦截url并返回响应数据。
         const request = event?.request;

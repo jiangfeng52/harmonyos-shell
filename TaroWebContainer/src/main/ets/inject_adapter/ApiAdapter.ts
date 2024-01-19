@@ -221,101 +221,143 @@ export class ApiAdapter {
 
   getRunJavaScript(): string {
     let result: string = `
-        window.addEventListener('unhandledrejection', (event) => {
-           console.info('[ADSAPI] unhandledrejection: ', event);
-        })
-        if(typeof(adapterInited) === 'undefined'){
-            var asCallbackMap = new Map();
-            var asAPIMap = new Map();
-            var navigationHeight = ${this.navigationBarHeight};
-            var customLaunchOptions = '${this.launchOptions}';
-            var asCallbackId = 0;
-            var receiveTask = (callbackId,resObject) =>{
-                if(asCallbackMap.get(callbackId)){
-                   asCallbackMap.get(callbackId).apply(null,resObject);
-                }
-                return true
-            }
-            var temp_uni = {}
-            native = new Proxy({}, {
-                get(target,property){
-                    if(asAPIMap.has(property)){
-                        return asAPIMap.get(property)
-                    }
-                    return temp_uni[property]
-                }
-            })
+              function isFunctionOrObjectWithFunction(object) {
+                  if (typeof object === 'function') {
+                      // 如果是函数，直接返回 true
+                      return true;
+                  }
 
-            var getCallbackParam = (args) =>{
-                const callbackObj = []
-                args.forEach((arg,index)=>{
-                    if(typeof(arg) === 'object') {
-                        callbackObj[index] = {}
-                        for(let name in arg){
-                            if(typeof(arg[name])==='function'){
-                               asCallbackMap.set(asCallbackId,arg[name]);
-                               callbackObj[index][name] = asCallbackId++;
-                            }
-                        }
-                    } else if (typeof(arg) === 'function') {
-                        let tempId = null;
-                        for(let prop of asCallbackMap){
-                            if(prop[1] === arg){
-                                tempId = prop[0];
-                                break;
-                            }
-                        }
-                        if (tempId !== null) {
-                            callbackObj[index] = arg.name ? tempId + '_'+arg.name : tempId;
-                        } else {
-                            asCallbackMap.set(asCallbackId,arg);
-                            callbackObj[index] = arg.name ? (asCallbackId++)+'_'+arg.name : asCallbackId++;
-                        }
+                  if (typeof object !== 'object' || object === null) {
+                      return false;
+                  }
 
-                    }
-                })
-                const argsStr = JSON.stringify(args);
-                const callbackString = JSON.stringify(callbackObj);
-                return [callbackString, argsStr]
-            }
+                  // 如果是对象，遍历对象的每个属性，检查属性是否是函数
+                  for (const key in object) {
+                      if (object.hasOwnProperty(key) && typeof object[key] === 'function') {
+                          return true;
+                      }
+                  }
+                  return false
+              }
 
-            var setAsAPIFunction = (method) =>{
-                return (...args) => {
-                    const callbackParam = getCallbackParam(args)
-                    const result = as[method](callbackParam[0], callbackParam[1])
-                    if(result){
-                        const resultObj = JSON.parse(result)
-                        const resultObjT = JSON.parse(result)
-                        const asObjectId = resultObj.asObjectId
-                        const proxy = new Proxy(resultObjT,{
-                            get:(target,property)=>{
-                                const type = resultObj[property]
-                                if(type ==='function'){
-                                    return (...args1) => {
-                                        const callbackParam = getCallbackParam(args1)
-                                        return as.sendToAs(asObjectId,'get_function',property,callbackParam[0], callbackParam[1])
+              function isOnMehtod(methodName){
+                  if (methodName.startsWith('on')) {
+                      return true // 以on开头的方法调用
+                  }
+                  return false
+              }
+
+              function getAllFunName(object) {
+                  var funcNames = Object.getOwnPropertyNames(object).filter(name => typeof object[name] === 'function');
+                  return funcNames
+              }
+
+              // 通信Channel层
+              window.Channel = {
+                  jsCallListeners: {},
+                  // listenerMap: {}, 弱引用自动取消
+                  registerJsCall(channelType, fun) {
+                      this.jsCallListeners[channelType] = fun
+                  },
+
+                  /**
+                   * methodCall的对象结构为：{call: string, argsJson: string, stubId: number}
+                   */
+                  nativeCall: function(channelType, object){
+                      // 最终调用原生Channel的通信方法
+                      object["callbackArg"] = getAllFunName(object["arg"])
+                      var objectJson = JSON.stringify(object)
+                      // @ts-ignore
+                      var resultJson = window.JSBridge && window.JSBridge.nativeMethod(channelType, objectJson)
+                      return resultJson && JSON.parse(resultJson)
+                  },
+
+                  /**
+                   * 给原生暴露的通信方法，原生调用"window.Channel.jsCall(objectId, 'xxx', 'xxxx')"
+                   */
+                  jsCall: function(channelType, objectJson){
+                      // window.apiStubPool.onTransact(objectId, callName, argsJson)
+                      var fun = this.jsCallListeners[channelType]
+                      fun && fun(JSON.parse(objectJson))
+                  }
+              }
+
+              window.MethodChannel = {
+                  ChannelType: 'MethodChannel',
+
+                  init: function (){
+                      window.Channel.registerJsCall(this.ChannelType, function (object){
+                          window.MethodChannel.__ArgsMethodStub(object)
+                      })
+                  },
+
+                  createNativeApiProxy: function (nativeApi){
+                    return new Proxy(nativeApi, {
+                        get(target, prop, receiver) {
+                            if(typeof target[prop] === 'function') {
+                                const isSync = prop.toString().endsWith("BridgeSync")
+                                const isAsync = prop.toString().endsWith("BridgeAsync")
+                                if(isSync || isAsync) { // 走代理
+                                    const className = target.constructor.name;
+                                    return function (...args) {
+                                        const firstArg = args.length >= 1 ? args[0] : ''
+                                        // 约定异步回调的方式，一次性回调，监听回调
+                                        let isListener = isOnMehtod(prop.toString())
+                                        let hasFun = isFunctionOrObjectWithFunction(firstArg)
+
+                                        // 方法调用转换为数据
+                                        var methodCall = {
+                                            isSync: isSync,
+                                            call: className+'$'+prop.toString(),
+                                            isListener: isListener,
+                                            arg: firstArg,
+                                            stubId: hasFun ? window.MethodChannel.__registerArgStub(firstArg, isListener) : -1
+                                        }
+                                        return window.Channel.nativeCall(window.MethodChannel.ChannelType, methodCall)
                                     }
-                                } else {
-                                    return as.sendToAs(asObjectId,'get_value',property)
                                 }
-                            },
-                            set:(target,property,value)=>{
-                                as.sendToAs(asObjectId,'set',property,value)
-                                return true
                             }
-                        })
-                        return proxy
-                    } else if (typeof(result) === 'boolean'){
-                        return result
-                    }
-                }
-            }
-            var adapterInited = true;
-        }
+
+                            // 直接返回
+                            return target[prop];
+                        }
+                    });
+                  },
+
+                  _NextId: 0,// 初始ID值
+                  _argsStubMap: {},
+                  _listenerMap: {}, // TODO 弱引用自动取消
+                  __registerArgStub: function (arg, isListener) {
+                      var objectId = this._NextId++
+                      if (isListener) {
+                          this._listenerMap[objectId] = arg
+                      } else {
+                          this._argsStubMap[objectId] = arg
+                      }
+                      return objectId
+                  },
+                  __ArgsMethodStub: function (object){
+                      const {call, args, stubId, isListener} = object
+
+                      if(isListener) {
+                          const listener = this._listenerMap[stubId]
+                          listener && listener(...args)
+
+                          return
+                      }
+
+                      const argsStub = this._argsStubMap[stubId];
+                      if(!argsStub) {
+                          return ;
+                      }
+                      // 只回调一次，可能会有问题，需测试
+                      delete this._argsStubMap[stubId]
+
+                      argsStub[call].call(argsStub, ...args)
+                  }
+              }
+              window.MethodChannel.init()
         `
-    this.getMethodList().forEach(method => {
-      result = result + this.createJavaScriptString(method)
-    })
     return result
   }
 
