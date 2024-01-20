@@ -139,10 +139,6 @@ export struct TaroWeb {
       return NativeApiImplInstance.getAppAuthorizeSettingBridgeSync(options)
     })
 
-    MethodChannelInstance.registerMethod('NativeApi$loginBridgeAsync', (options: ESObject) => {
-      return NativeApiImplInstance.loginBridgeAsync(options)
-    })
-
     MethodChannelInstance.registerMethod('NativeApi$requestBridgeAsync', (options: ESObject) => {
       return NativeApiImplInstance.requestBridgeAsync(options)
     })
@@ -155,8 +151,8 @@ export struct TaroWeb {
       return NativeApiImplInstance.uploadFileBridgeAsync(options)
     })
 
-    MethodChannelInstance.registerMethod('NativeApi$getUserInfoBridgeAsync', (options: ESObject) => {
-      return NativeApiImplInstance.getUserInfoBridgeAsync(options)
+    MethodChannelInstance.registerMethod('NativeApi$getUserInfoBridgeSync', (options: ESObject) => {
+      return NativeApiImplInstance.getUserInfoBridgeSync(options)
     })
 
     MethodChannelInstance.registerMethod('NativeApi$saveImageToPhotosAlbumBridgeAsync', (options: ESObject) => {
@@ -171,24 +167,12 @@ export struct TaroWeb {
       return NativeApiImplInstance.getImageInfoBridgeAsync(options)
     })
 
-    MethodChannelInstance.registerMethod('NativeApi$compressVideoBridgeAsync', (options: ESObject) => {
-      return NativeApiImplInstance.compressVideoBridgeAsync(options)
-    })
-
-    MethodChannelInstance.registerMethod('NativeApi$createInnerAudioContextBridgeAsync', (options: ESObject) => {
-      return NativeApiImplInstance.createInnerAudioContextBridgeAsync(options)
-    })
-
     MethodChannelInstance.registerMethod('NativeApi$getLocationBridgeAsync', (options: ESObject) => {
       return NativeApiImplInstance.getLocationBridgeAsync(options)
     })
 
     MethodChannelInstance.registerMethod('NativeApi$openDocumentBridgeAsync', (options: ESObject) => {
       return NativeApiImplInstance.openDocumentBridgeAsync(options)
-    })
-
-    MethodChannelInstance.registerMethod('NativeApi$getFileSystemManagerBridgeSync', (options: ESObject) => {
-      return NativeApiImplInstance.getFileSystemManagerBridgeSync(options)
     })
 
     MethodChannelInstance.registerMethod('NativeApi$setKeepScreenOnBridgeAsync', (options: ESObject) => {
@@ -199,12 +183,62 @@ export struct TaroWeb {
       return NativeApiImplInstance.onUserCaptureScreenBridgeSync(options)
     })
 
-    MethodChannelInstance.registerMethod('NativeApi$hideKeyboardBridgeAsync', (options: ESObject) => {
+    MethodChannelInstance.registerMethod('NativeApi$hideKeyboardBridgeSync', (options: ESObject) => {
       return NativeApiImplInstance.hideKeyboardBridgeAsync(options)
     })
 
     MethodChannelInstance.registerMethod('NativeApi$makePhoneCallBridgeAsync', (options: ESObject) => {
       return NativeApiImplInstance.makePhoneCallBridgeAsync(options)
+    })
+
+    //NativeFileSystemManager
+    MethodChannelInstance.registerMethod('NativeApi$saveFileBridgeAsync', (options: ESObject) => {
+      return NativeApiImplInstance.saveFileBridgeAsync(options)
+    })
+
+    MethodChannelInstance.registerMethod('NativeApi$accessBridgeAsync', (options: ESObject) => {
+      return NativeApiImplInstance.accessBridgeAsync(options)
+    })
+
+    MethodChannelInstance.registerMethod('NativeApi$getFileInfoBridgeAsync', (options: ESObject) => {
+      return NativeApiImplInstance.getFileInfoBridgeAsync(options)
+    })
+
+    MethodChannelInstance.registerMethod('NativeApi$readFileBridgeAsync', (options: ESObject) => {
+      return NativeApiImplInstance.readFileBridgeAsync(options)
+    })
+
+    MethodChannelInstance.registerMethod('NativeApi$readFileSyncBridgeSync', (options: ESObject) => {
+      return NativeApiImplInstance.readFileSyncBridgeSync(options)
+    })
+
+    //NativeAContextApi
+    MethodChannelInstance.registerMethod('NativeApi$createInnerAudioContextBridgeSync', (options: ESObject) => {
+      return NativeApiImplInstance.createInnerAudioContextBridgeSync(options)
+    })
+
+    MethodChannelInstance.registerMethod('NativeApi$stopBridgeSync', (options: ESObject) => {
+      return NativeApiImplInstance.stopBridgeSync()
+    })
+
+    MethodChannelInstance.registerMethod('NativeApi$playBridgeSync', (options: ESObject) => {
+      return NativeApiImplInstance.playBridgeSync()
+    })
+
+    MethodChannelInstance.registerMethod('NativeApi$onPlayBridgeSync', (options: ESObject) => {
+      return NativeApiImplInstance.onPlayBridgeSync(options)
+    })
+
+    MethodChannelInstance.registerMethod('NativeApi$onStopBridgeSync', (options: ESObject) => {
+      return NativeApiImplInstance.onStopBridgeSync(options)
+    })
+
+    MethodChannelInstance.registerMethod('NativeApi$onErrorBridgeSync', (options: ESObject) => {
+      return NativeApiImplInstance.onErrorBridgeSync(options)
+    })
+
+    MethodChannelInstance.registerMethod('NativeApi$onEndedBridgeSync', (options: ESObject) => {
+      return NativeApiImplInstance.onEndedBridgeSync(options)
     })
   }
 
@@ -268,7 +302,7 @@ export struct TaroWeb {
       .javaScriptProxy({
         object: {
           nativeMethod: (channelType: string, objectJson: string) => {
-            wbLogger.debug('nativeObj', `channelType ${channelType} objectJson(${objectJson})`)
+            wbLogger.debug('nativeApi', `channelType ${channelType} objectJson(${objectJson})`)
             return ChannelInstance.call(channelType, objectJson) as object
           },
         },
