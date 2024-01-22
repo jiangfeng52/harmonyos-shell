@@ -73,33 +73,24 @@ struct TaroMpharmonySample {
    - 增加NavigationBar导航栏
    - 增加BaseCapsule组件以及BaseDeveloper组件
   
-export const NativeApiUpdate: ESObject = {
-  getWindowInfoBridgeSync: as['getWindowInfo'],
-  getSystemSettingBridgeSync: as['getSystemSetting'],
-  makePhoneCallBridgeAsync: (options: ESObject) => {
-    // as.makePhoneCall(options)
-    as.makePhoneCall({
-      ...options,
-      success:(args:ESObject)=>{
-        console.log('[advancedAPI 5]')
-        options.success(args)
-      },
-      fail:(args:ESObject)=>{
-        console.log('[advancedAPI 5]')
-        options.fail(args)
-      }
-    })
-  },
 
-  onUserCaptureScreenBridgeAsync: (options: ESObject) => {
-    as.onUserCaptureScreen(options)
-  }
+
+function getAllFunName(object){
+    var funcNames = Object.getOwnPropertyNames(object).filter(name => typeof object[name] === 'function');
+    return funcNames
 }
 
-import { MethodChannelInstance } from '../inject_adapter/Channel';
-import { NativeApiUpdate } from '../inject_adapter/NativeApi'
-MethodChannelInstance.registerMethods(NativeApiUpdate)
+var allFunNames = getAllFunName(object["arg"])
+object["callbackArg"] = allFunNames
 
-if (methodName.startsWith('on')) {
+    const {call, isListener, arg, stubId, callbackArg} = object
+    
+ callbackArg.forEach((callback)=>{
+      arg[callback]=()=>{}
+    })
+    
+            if (typeof value != 'function'){
 
+as.makePhoneCall(options)
 
+as.startWifi(options)
