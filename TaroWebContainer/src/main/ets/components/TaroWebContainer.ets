@@ -18,21 +18,23 @@ import window from '@ohos.window';
 import common from '@ohos.app.ability.common';
 import bundleManager from '@ohos.bundle.bundleManager';
 import  AdvancedAPI from '../utils/advancedapi.min';
-import { NavigationBar } from './navigationbar';
-import { TaroWeb } from './taroweb';
+import { NavigationBar, NavigationBarData } from './NavigationBar';
+import { TaroWeb, TaroWebController } from './TaroWeb';
+import { Album } from './Album/Album';
 import { ApiAdapter } from '../inject_adapter/ApiAdapter'
 import { NativeInject  } from '../inject_adapter/NativeInject';
 import { LaunchOptions } from '../interfaces/LaunchOptions';
-import { InjectObject, MenuButtonOptions } from '../interfaces/InjectObject';
+import { InjectObject, MenuButtonOptions, CapsuleController } from '../interfaces/InjectObject';
 import { setFullScreen, setSystemBarProperties, getWindowWidth, getSystemBarHeight } from '../utils/WindowUtil';
 import { GlobalThis } from '../utils/GlobalThis';
 import { getBundleInfoPermissions } from '../utils/PermissionMapScopeUtil';
 import { HostPageState } from '../interfaces/HostPageState';
 import { RouterUtils } from '../utils/RouterUtils';
-import { TaroWebController } from './TaroWeb';
-import { NavigationBarData } from './NavigationBar';
 import router from '@ohos.router';
 import { wbLogger } from '../utils/Logger';
+import { AlbumBackward, ChooseAlbumResult, MediaItemData, chooseAlbumOptions } from '../interfaces/Media'
+import { ChannelInstance, MethodChannelInstance } from '../inject_adapter/Channel';
+import { BusinessError } from '@ohos.base';
 
 const CONTAINER_TAG = 'TaroWebContainer';
 
@@ -60,6 +62,20 @@ export struct TaroWebContainer {
   // 系统状态状态栏高度
   @State systemBarHeight: number = 0;
 
+  // 显示图库
+  @State showAlbum: boolean = false;
+  // 退出图库返回选择的媒体数据
+  private mediaResolve?: (res: ChooseAlbumResult) => void;
+  // 退出图库取消选择
+  private mediaReject?: () => void;
+  // 是否处在图库的详情页面
+  @State isAlbumOnDetail: boolean = false;
+  // 图库初始配置
+  albumOptions?: chooseAlbumOptions;
+  // 图库媒体数据数据列表
+  mediaItems: MediaItemData[] = [];
+  @State previewOneImage: boolean = false;
+
   // 路由控制器
   @Link taroWebController: TaroWebController;
 
@@ -77,6 +93,8 @@ export struct TaroWebContainer {
   private appearDone: boolean = false
   // 备份初始indexUrl
   private originIndexUrl: string = '';
+  // 开启Web组件调试功能
+  enableWebDebug: boolean = true;
 
   capsuleOptions: MenuButtonOptions = { width: 50, height: this.navigationBarData.titleHeight, marginRight: 16 };
 
@@ -100,6 +118,60 @@ export struct TaroWebContainer {
     }
   }
 
+  capsuleController: CapsuleController = {
+    changeCapsuleState: (visible: boolean) => {
+      this.showCapsule = visible;
+    },
+    getCapsuleState: () => {
+      return this.showCapsule;
+    }
+  }
+
+  setSystemBarFrontColor = (color: string) => {
+    const context = getContext(this) as common.UIAbilityContext;
+    window.getLastWindow(context).then((windowClass) => {
+      setSystemBarProperties(windowClass, color);
+    });
+  }
+  
+  chooseAlbumCallback = (options: chooseAlbumOptions, mediaItems: MediaItemData[], previewOneMode?: boolean) => {
+    const mediaPromise = new Promise<ChooseAlbumResult>((resolve, reject) => {
+      this.mediaResolve = resolve;
+      this.mediaReject = reject;
+    })
+    this.albumOptions = options;
+    this.mediaItems = mediaItems;
+    this.previewOneImage = previewOneMode === undefined ? false : previewOneMode;
+    this.isAlbumOnDetail = false
+    this.showAlbum = true;
+    this.setSystemBarFrontColor('#ffffff');
+    return mediaPromise;
+  }
+
+  onExitAlbumHandler = (success: boolean, res: ChooseAlbumResult) => {
+    if (success) {
+      this.mediaResolve?.(res)
+    } else {
+      this.mediaReject?.()
+    }
+    this.setSystemBarFrontColor(this.navigationBarData.barFrontColor);
+    this.showAlbum = false;
+  }
+
+  albumBackward: AlbumBackward = {
+    accessBackward: () => { return this.showAlbum; },
+    backward: () => {
+      if (this.isAlbumOnDetail) {
+        this.isAlbumOnDetail = false;
+        return;
+      } else {
+        this.setSystemBarFrontColor(this.navigationBarData.barFrontColor);
+        this.showAlbum = false;
+        this.mediaReject?.()
+      }
+    },
+  }
+
   build() {
     Stack({ alignContent: Alignment.TopEnd }) {
       TaroWeb({
@@ -109,7 +181,8 @@ export struct TaroWebContainer {
         apiAdapter: this.adapter,
         taroWebController: this.taroWebController,
         onTitleReceive: this.onTitleReceive,
-        onRefreshAccessedHistory: this.onRefreshAccessedHistory
+        onRefreshAccessedHistory: this.onRefreshAccessedHistory,
+        enableWebDebug: this.enableWebDebug,
       })
       NavigationBar({
         navigationBarData: this.navigationBarData,
@@ -130,6 +203,18 @@ export struct TaroWebContainer {
             RouterUtils.pushUrlWithLog(this.capsulePage)
           })
       }
+      if (this.showAlbum) {
+        Album({
+          mediaItemList: this.mediaItems,
+          onExitAlbumHandler: this.onExitAlbumHandler,
+          showDetail: this.isAlbumOnDetail,
+          options: this.albumOptions,
+          avoidAreaHeight: this.systemBarHeight,
+          previewOneMode: this.previewOneImage,
+        })
+          .width('100%')
+          .height('100%')
+      }
     }.layoutWeight(1)
   }
 
@@ -145,9 +230,69 @@ export struct TaroWebContainer {
     // 创建高阶API适配器，合并注入的对象
     this.adapter = new ApiAdapter();
     this.adapter.setWebController(this.taroWebController.webController)
-    const nativeInject = new NativeInject(this.navigationBarData, this.capsuleOptions);
+    const nativeInject = new NativeInject(this.navigationBarData, this.capsuleOptions, this.capsuleController);
+    this.taroWebController.setAlbumBackward(this.albumBackward);
+    nativeInject.setChooseAlbumCallback(this.chooseAlbumCallback);
     this.adapter.mergeInjectObj(nativeInject.buildInjectObj());
     this.injectObj && this.adapter.mergeInjectObj(this.injectObj);
+
+    MethodChannelInstance.registerMethod('NativeApi$navigateToMiniProgramBridgeAsync', (options: ESObject)=>{
+      wbLogger.debug('JsBridgeNative', `NativeApi$navigateToMiniProgram`)
+      return nativeInject.buildInjectObj().navigateToMiniProgram(options)
+    })
+
+    MethodChannelInstance.registerMethod('NativeApi$setNavigationBarColorBridgeSync', (options: ESObject)=>{
+      wbLogger.debug('JsBridgeNative', `NativeApi$setNavigationBarColor`)
+      return nativeInject.buildInjectObj().setNavigationBarColor(options)
+    })
+
+    MethodChannelInstance.registerMethod('NativeApi$getMenuButtonBoundingClientRectBridgeSync', (options: ESObject)=>{
+      wbLogger.debug('JsBridgeNative', `NativeApi$getMenuButtonBoundingClientRect`)
+      return nativeInject.buildInjectObj().getMenuButtonBoundingClientRect()
+    })
+
+    MethodChannelInstance.registerMethod('NativeApi$saveDataUrlToFileBridgeAsync', (options: ESObject)=>{
+      wbLogger.debug('JsBridgeNative', `NativeApi$getMenuButtonBoundingClientRect`)
+      return nativeInject.buildInjectObj().saveDataUrlToFile(options)
+    })
+
+    MethodChannelInstance.registerMethod('NativeApi$copyFileToSandboxCacheBridgeSync', (options: ESObject)=>{
+      wbLogger.debug('JsBridgeNative', `NativeApi$copyFileToSandboxCache`)
+      return nativeInject.buildInjectObj().copyFileToSandboxCache(options)
+    })
+
+    MethodChannelInstance.registerMethod('NativeApi$chooseMediaAssetsBridgeAsync', (options: ESObject)=>{
+      wbLogger.debug('JsBridgeNative', `NativeApi$chooseMediaAssets`)
+      return nativeInject.buildInjectObj().chooseMediaAssets(options)
+    })
+
+    MethodChannelInstance.registerMethod('NativeApi$openSettingBridgeAsync', (options: ESObject)=>{
+      wbLogger.debug('JsBridgeNative', `NativeApi$openSetting`)
+      return nativeInject.buildInjectObj().openSetting(options)
+    })
+
+    MethodChannelInstance.registerMethod('NativeApi$getSettingBridgeAsync', (options: ESObject)=>{
+      wbLogger.debug('JsBridgeNative', `NativeApi$getSetting`)
+      return nativeInject.buildInjectObj().getSetting(options)
+    })
+
+
+    ChannelInstance.setRunJavascriptFun((jsCode: string)=>{
+      try {
+        this.taroWebController.webController.runJavaScript(jsCode, (error, result) => {
+          if (error) {
+            wbLogger.error(CONTAINER_TAG, `Run JavaScript error: ${JSON.stringify(error)}`)
+            return;
+          }
+          // if (result) {
+          //   wbLogger.info(TARO_WEB_TAG, `The asFinish() return value is: ${result}`)
+          // }
+        });
+      } catch (error) {
+        wbLogger.error(CONTAINER_TAG, `runJavaScript error: ${(error as BusinessError).message}`);
+      }
+    })
+
 
     // 注入对象的内部依赖更新
     // nativeInject.setNaviController(this.navigationBarData);

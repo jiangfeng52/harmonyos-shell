@@ -60,20 +60,24 @@ export struct NavigationBar {
               })
               .id('backBtn')
           }
-          Text(this.navigationBarData.title)
-            .fontSize(20)
-            .margin({ left: this.navigationBarData.canBackward ? 0 : DEFAULT_TITLE_LEFT })
-            .align(Alignment.Start)
-            .maxLines(1)
-            .textOverflow({ overflow: TextOverflow.Ellipsis })
-            .width('60%')
-          if (this.navigationBarData.loading) {
-            LoadingProgress()
-              .width(25)
-              .height(25)
-              .margin({ left: 5 })
-              .foregroundColor(this.navigationBarData.barFrontColor)
+          Row() {
+            Text(this.navigationBarData.title)
+              .fontSize(20)
+              .margin({ left: this.navigationBarData.canBackward ? 0 : DEFAULT_TITLE_LEFT })
+              .align(Alignment.Start)
+              .maxLines(1)
+              .textOverflow({ overflow: TextOverflow.Ellipsis })
+            if (this.navigationBarData.loading) {
+              LoadingProgress()
+                .width(25)
+                .height(25)
+                .margin({ left: 5 })
+                .foregroundColor(this.navigationBarData.barFrontColor)
+            }
           }
+          .width('60%')
+          .height(25)
+
           Blank()
         }
         .height(this.navigationBarData.titleHeight + this.navigationBarData.paddingBottom + this.navigationBarData.systemBarHeight)

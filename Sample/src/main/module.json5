@@ -5,7 +5,7 @@
     "description": "$string:module_desc",
     "mainElement": "EntryAbility",
     "deviceTypes": [
-      "default",
+      "phone",
       "tablet"
     ],
     "dependencies": [
@@ -20,9 +20,6 @@
           ],
           "when": "inuse"
         }
-      },
-      {
-        "name": "ohos.permission.NOTIFICATION_CONTROLLER"
       },
       {
         "name": "ohos.permission.READ_CALENDAR",
@@ -44,15 +41,6 @@
         "name": "ohos.permission.SET_WIFI_INFO"
       },
       {
-        "name": "ohos.permission.MANAGE_WIFI_CONNECTION"
-      },
-      {
-        "name": "ohos.permission.GET_WIFI_INFO_INTERNAL"
-      },
-      {
-        "name": "ohos.permission.SET_WIFI_CONFIG"
-      },
-      {
         "name": "ohos.permission.WRITE_CONTACTS",
         "reason": "$string:contacts_reason",
         "usedScene": {
@@ -64,9 +52,6 @@
       },
       {
         "name": "ohos.permission.VIBRATE"
-      },
-      {
-        "name": "ohos.permission.START_ABILITIES_FROM_BACKGROUND"
       },
       {
         "name": "ohos.permission.READ_MEDIA",
@@ -145,9 +130,6 @@
       },
       {
         "name": "ohos.permission.ACCESS_BIOMETRIC"
-      },
-      {
-        "name": "ohos.permission.CONNECT_IME_ABILITY"
       },
       {
         "name": "ohos.permission.MICROPHONE",

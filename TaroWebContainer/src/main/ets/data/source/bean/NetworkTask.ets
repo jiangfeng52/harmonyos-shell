@@ -1,6 +1,4 @@
-
-
-export enum NetworkTaskStaus {
+export enum NetworkTaskStatus {
   ACTIVE, // 请求中...
   READY, // 请求成功...
   FAILED // 请求失败...
@@ -8,9 +6,9 @@ export enum NetworkTaskStaus {
 
 export class NetworkTask<T> {
   data: T | null;
-  taskStatus: NetworkTaskStaus;
+  taskStatus: NetworkTaskStatus;
 
-  constructor(data: T | null, taskStatus: NetworkTaskStaus) {
+  constructor(data: T | null, taskStatus: NetworkTaskStatus) {
     this.data = data;
     this.taskStatus = taskStatus;
   }

@@ -2,7 +2,6 @@ import UIAbility from '@ohos.app.ability.UIAbility';
 import window from '@ohos.window';
 import Want from '@ohos.app.ability.Want';
 import { wbLogger } from '@ohos/web-container';
-import { LocalUpdateManagerInstance } from '@ohos/web-container';
 
 const ABILITY_TAG = 'EntryAbility';
 const storage = new LocalStorage();
@@ -11,7 +10,6 @@ export default class EntryAbility extends UIAbility {
   onCreate(want: Want) {
     wbLogger.info(ABILITY_TAG, '%{public}s', 'Ability onCreate');
     storage.setOrCreate('want', want);
-    LocalUpdateManagerInstance.updateMiniOnLaunch(this.context)
   }
 
   onDestroy() {

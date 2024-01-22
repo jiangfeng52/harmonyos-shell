@@ -18,6 +18,7 @@
  */
 
 // ------------------------ common -----------------------------
+
 export interface ErrorMsg {
   errMsg: string
 }
@@ -66,6 +67,8 @@ interface NavigateToMiniProgramOptions {
   appId: string;
   path: string;
   extraData: NavigateToMiniProgramOptionsExtraData;
+  success: Function;
+  fail: Function;
 }
 
 // ------------------- Settings -------------------
@@ -141,6 +144,12 @@ export interface OpenSettingRetOptions {
   errMsg: string;
 }
 
+export interface SettingOptions {
+  success: Function;
+  fail: Function;
+  withSubscriptions?: boolean;
+}
+
 export interface GetSettingRetOptions {
   authSetting: AuthSetting;
   subscriptionsSetting?: SubscriptionsSetting;
@@ -165,20 +174,54 @@ export interface SubscribeMessageOptions {
   errMsg: string;
 }
 
+export interface SaveDataUrlOptions {
+  data: string;
+  url: string;
+  filePath?: string;
+  success: Function;
+  fail: Function;
+}
+
+export interface CapsuleState {
+  visible: boolean;
+}
+
+export interface CapsuleController {
+  changeCapsuleState: (visible: boolean) => void;
+  getCapsuleState: () => boolean;
+}
+
 export interface InnerInjectObj {
   setNavigationBarColor: (options: NavigationBarOptions) => void;
   showNavigationBarLoading: () => void;
   hideNavigationBarLoading: () => void;
   getMenuButtonBoundingClientRect: () => MenuButtonBoundingClientResult;
-  navigateToMiniProgram: (options: NavigateToMiniProgramOptions) => Promise<ErrorMsg>;
+  navigateToMiniProgram: (options: NavigateToMiniProgramOptions) => void;
   setNavigationStyle: (style: string, textStyle: string, backgroundColor: string) => void;
-  openSetting: (options: OpenSettingOptions) => Promise<OpenSettingRetOptions>;
-  getSetting: (options: OpenSettingOptions) => Promise<GetSettingRetOptions>;
+  openSetting: (options: SettingOptions) => void;
+  getSetting: (options: SettingOptions) => void;
   copyFileToSandboxCache: (src: string) => copyFileToSandboxCacheRetOptions;
   getUpdateManager: () => ESObject;
   requestSubscribeMessage: (options: RequestSubscribeMessageOptions) => Promise<SubscribeMessageOptions>;
+  saveDataUrlToFile: (options: SaveDataUrlOptions) => void;
+  setCapsuleState: (visible: boolean) => void;
+  getCapsuleState: () => CapsuleState;
+  chooseMediaAssets: (options: ChooseMediaOptions) => void;
 }
 
 export interface InjectObject {
   [propName: string]: <T extends Object>(options?: any) => void | Promise<T> | Object;
 }
+
+export interface ChooseMediaOptions {
+  count?: number;
+  mediaType?: string[];
+  sizeType?: string[];
+  sourceType?: string;
+  maxDuration?: number;
+  camera?: string;
+  apiName: string;
+  success: Function;
+  fail: Function;
+}
+

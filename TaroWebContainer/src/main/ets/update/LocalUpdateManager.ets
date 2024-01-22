@@ -1,25 +1,36 @@
+import { LocalVersionInfo } from '../data/source/bean/LocalVersionInfo';
 import { MiniConfig } from '../data/source/bean/MiniConfig';
 import { MiniConfigRepository } from '../data/source/MiniConfigRepository';
 import { MiniRepository } from '../data/source/MiniRepository';
 import { UpdateManager } from './UpdateManager';
+import AppContext from '@ohos.app.ability.common'
+
 
 class LocalUpdateManager extends UpdateManager {
   private miniConfigRepository: MiniConfigRepository;
   private miniRepository: MiniRepository;
+  private localVersionInfo: LocalVersionInfo
 
   constructor() {
     super()
     this.miniConfigRepository = new MiniConfigRepository();
     this.miniRepository = new MiniRepository();
+    this.localVersionInfo = new LocalVersionInfo()
+
   }
 
-  async updateMiniOnLaunch(context: Context){
-    this.reset()
+  getLastVersionPath() {
+    return this.localVersionInfo.path
+  }
+
+  async updateMiniOnLaunch(context: AppContext.UIAbilityContext) {
+    this.reset(context)
 
     // 获取本地最新的版本号
-    this.miniRepository.getLastMiniVersion(context)
+    let lastVersionInfo = this.miniRepository.getLastMiniVersion(context)
+    this.localVersionInfo = lastVersionInfo
 
-    const miniConfig = await this.miniConfigRepository.fetchMinfiConfig()
+    const miniConfig = await this.miniConfigRepository.fetchMiniConfig(this.localVersionInfo.localVersion)
     // 通知注册的监听者
     this.notifyCheckForUpdate(miniConfig.hasUpdate)
 

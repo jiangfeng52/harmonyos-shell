@@ -12,37 +12,54 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import uri from '@ohos.uri'
+import uri from '@ohos.uri';
 import window from '@ohos.window';
-import common from '@ohos.app.ability.common'
-import { BusinessError } from '@ohos.base'
-import Want from '@ohos.app.ability.Want'
+import common from '@ohos.app.ability.common';
+import { BusinessError } from '@ohos.base';
+import Want from '@ohos.app.ability.Want';
 import bundleManager from '@ohos.bundle.bundleManager';
 import fs from '@ohos.file.fs';
-import { InnerInjectObj, MenuButtonOptions, ErrorMsg, PermissionInfo , RequestSubscribeMessageOptions ,SubscribeMessageOptions ,SubscriptionsSetting } from '../interfaces/InjectObject'
+
+import {
+  CapsuleController,
+  ErrorMsg,
+  InnerInjectObj,
+  MenuButtonOptions,
+  PermissionInfo,
+  RequestSubscribeMessageOptions,
+  SaveDataUrlOptions,
+  SubscribeMessageOptions,
+  SubscriptionsSetting,
+  ChooseMediaOptions,
+  SettingOptions,
+} from '../interfaces/InjectObject';
 import {
   getBundleUsedPermission,
   getBundleUserPermissions,
   getBundleWxScopeList,
-  openPermissionsInSystemSettings
+  openPermissionsInSystemSettings,
 } from '../utils/PermissionMapScopeUtil';
 import {
-  addNotificationManagerSlot ,
+  addNotificationManagerSlot,
+  cancelMessage,
+  CancelMessageOptions,
   enableNotification,
+  getMassageList,
   NotificationBasicContent,
   NotificationContent,
-  SendMessageOptions,
-  getMassageList,
   NotificationRequest,
   sendMessage,
-  CancelMessageOptions,
-  cancelMessage
-} from '../utils/SubscribeMessageUtil'
+  SendMessageOptions
+} from '../utils/SubscribeMessageUtil';
 import { NavigationBarData } from '../components/NavigationBar';
 import { setSystemBarProperties } from '../utils/WindowUtil';
 import { wbLogger } from '../utils/Logger';
-import { switchHapSandBoxToInternal } from '../utils/InternalPath'
+import { switchHapSandBoxToInternal, switchInternalToHapSandBox } from '../utils/InternalPath';
 import { LocalUpdateManagerInstance } from '../update/LocalUpdateManager';
+import util from '@ohos.util';
+import { selectMediaAssets } from '../utils/MediaUtil';
+import { MediaItemData, ChooseAlbumResult, chooseAlbumOptions } from '../interfaces/Media';
+
 
 const NATIVE_TAG = 'NativeInject';
 
@@ -61,13 +78,17 @@ export class NativeInject {
   private permissionInfo: bundleManager.ReqPermissionDetail[];
   // 胶囊的尺寸
   private capsuleOptions: MenuButtonOptions;
+  // 胶囊显示控制
+  private capsuleController: CapsuleController;
+  private chooseAlbumCallback?: (options: chooseAlbumOptions, mediaItems: MediaItemData[]) => Promise<ChooseAlbumResult>;
 
-  constructor(navigationBarData: NavigationBarData, capsuleOptions: MenuButtonOptions) {
+  constructor(navigationBarData: NavigationBarData, capsuleOptions: MenuButtonOptions, capsuleController: CapsuleController) {
     this.navigationBarData = navigationBarData;
     this.systemBarHeight = 0;
     this.windowWidth = 0;
     this.permissionInfo = [];
     this.capsuleOptions = capsuleOptions
+    this.capsuleController = capsuleController
   }
 
   private setStatusBarFrontColor(barFrontColor: string) {
@@ -75,6 +96,10 @@ export class NativeInject {
     window.getLastWindow(context).then((windowClass) => {
       setSystemBarProperties(windowClass, barFrontColor);
     });
+  }
+
+  public setChooseAlbumCallback(cb: (options: chooseAlbumOptions, mediaItems: MediaItemData[]) => Promise<ChooseAlbumResult>) {
+    this.chooseAlbumCallback = cb;
   }
 
   public setSystemBarHeight(systemBarHeight: number) {
@@ -97,7 +122,7 @@ export class NativeInject {
         const sandboxPath = `${context.cacheDir}/${Date.now()}_${fileName}`;
         const fd = fs.openSync(src, fs.OpenMode.READ_ONLY).fd;
         fs.copyFileSync(fd, sandboxPath);
-        return { internalCachePath: switchHapSandBoxToInternal(sandboxPath)}
+        return { internalCachePath: switchHapSandBoxToInternal(sandboxPath) }
       },
       setNavigationBarColor: (options) => {
         wbLogger.info(NATIVE_TAG, `setNavigationBarColor: ${JSON.stringify(options || {})}`)
@@ -133,12 +158,10 @@ export class NativeInject {
           height: this.capsuleOptions.height,
         }
       },
-      navigateToMiniProgram: (options) => {
+      navigateToMiniProgram: async (options) => {
         // options.path 格式:
         // - EntryAbility:///pages/api/framework/index?paramA=good
         // - /pages/api/framework/index?paramA=good
-        return new Promise((resolve, reject) => {
-          resolve({errMsg: ''});
           wbLogger.info(NATIVE_TAG, 'navigateToMiniProgram options:' + JSON.stringify(options));
           const entryAbility = 'EntryAbility';
           let abilityName = entryAbility;
@@ -165,18 +188,17 @@ export class NativeInject {
           try {
             const context = getContext(this) as common.UIAbilityContext;
             context.startAbility(wantInfo).then(() => {
-              resolve({ errMsg: '' });
+              options.success({ errMsg: '' });
             }).catch(() => {
-              reject({ errMsg: 'invalid appid or path scheme' }  as ErrorMsg);
+              options.fail({ errMsg: 'invalid appid or path scheme' } as ErrorMsg);
             })
           } catch (paramError) {
             wbLogger.warn(NATIVE_TAG, `navigateToMiniProgram failed: ${JSON.stringify(paramError)}`);
-            reject({
+            options.fail({
               errMsg: `code: ${(paramError as BusinessError).code}, message ${(paramError as BusinessError).message}`
             } as ErrorMsg
             );
           }
-        })
       },
       setNavigationStyle: (style, textStyle, backgroundColor) => {
         this.navigationBarData.visible = style !== 'custom';
@@ -185,10 +207,9 @@ export class NativeInject {
         this.navigationBarData.animationDuration = 0;
         this.setStatusBarFrontColor(this.navigationBarData.barFrontColor);
       },
-      openSetting: (options) => {
+      openSetting:  async (options: SettingOptions) => {
         const apiName: string = 'openSetting';
-         // 接口返回
-        return new Promise(async (resolve, reject) => {
+        // 接口返回
           try {
             const curPermissions: Array<PermissionInfo> = getBundleUserPermissions(this.permissionInfo);
             const bundleScope = await getBundleWxScopeList(curPermissions);
@@ -196,123 +217,126 @@ export class NativeInject {
             // 打开应用的权限列表
             openPermissionsInSystemSettings();
             if (options.withSubscriptions) {
-              let NotificationBasicContent:NotificationBasicContent = {
-                title:'设置',
-                text:'获取中',
-                additionalText:"",
+              let NotificationBasicContent: NotificationBasicContent = {
+                title: '设置',
+                text: '获取中',
+                additionalText: "",
               }
-              let NotificationContent:NotificationContent = {
-                contentType:'NOTIFICATION_CONTENT_BASIC_TEXT',
-                normal:NotificationBasicContent
+              let NotificationContent: NotificationContent = {
+                contentType: 'NOTIFICATION_CONTENT_BASIC_TEXT',
+                normal: NotificationBasicContent
               }
-              let notificationRequests:NotificationRequest = {
-                id:1222287986,
-                slotType:'OTHER_TYPES',
-                content:NotificationContent,
-                path:''
+              let notificationRequests: NotificationRequest = {
+                id: 1222287986,
+                slotType: 'OTHER_TYPES',
+                content: NotificationContent,
+                path: ''
               }
-              let sendMessageOption:SendMessageOptions = {
-                notificationRequest:notificationRequests
+              let sendMessageOption: SendMessageOptions = {
+                notificationRequest: notificationRequests
               }
-              let subscriptionsSetting:SubscriptionsSetting = {
-                mainSwitch:false,
-                itemSettings:[]
+              let subscriptionsSetting: SubscriptionsSetting = {
+                mainSwitch: false,
+                itemSettings: []
               }
-              await sendMessage(sendMessageOption).then( async (res) => {
-                let cancelMessageOptions:CancelMessageOptions = {
-                  id:1222287986
+              await sendMessage(sendMessageOption).then(async (res) => {
+                let cancelMessageOptions: CancelMessageOptions = {
+                  id: 1222287986
                 }
                 await cancelMessage(cancelMessageOptions).then((res) => {
                   subscriptionsSetting.mainSwitch = true
-                }).catch((err:Error) => {
+                }).catch((err: Error) => {
                   subscriptionsSetting.mainSwitch = false
                 })
-              }).catch((err:Error) => {
-                console.log('requestSubscribeMessage',JSON.stringify(err))
+              }).catch((err: Error) => {
+                console.log('requestSubscribeMessage', JSON.stringify(err))
               })
               const subscribeCode = await getMassageList()
               subscriptionsSetting.itemSettings = subscribeCode.massageList
-              return resolve({ authSetting: bundleUsedScope.allScope,subscriptionsSetting:subscriptionsSetting,  errMsg: `${apiName}:ok` });
+              options.success({
+                authSetting: bundleUsedScope.allScope,
+                subscriptionsSetting: subscriptionsSetting,
+                errMsg: `${apiName}:ok`
+              });
             }
-            return resolve({ authSetting: bundleUsedScope.allScope, errMsg: `${apiName}:ok` });
+            options.success({ authSetting: bundleUsedScope.allScope, errMsg: `${apiName}:ok` });
           } catch (paramError) {
             wbLogger.warn(NATIVE_TAG, `openSetting: ${JSON.stringify(paramError)}`);
-            return reject(
-              {
+            options.fail({
                 errMsg: `${apiName}:fail error code: ${(paramError as BusinessError).code} ${(paramError as BusinessError).message}`
               } as ErrorMsg
             );
           }
-        })
       },
-      getSetting: (options) => {
+      getSetting: async (options: SettingOptions) => {
         const apiName: string = 'getSetting';
         // 接口返回
-        return new Promise(async (resolve, reject) => {
           try {
             const curPermissions: Array<PermissionInfo> = getBundleUserPermissions(this.permissionInfo);
             const bundleScope = await getBundleWxScopeList(curPermissions);
             const bundleUsedScope = getBundleUsedPermission(bundleScope.allScope, bundleScope.bundleScope);
             if (options.withSubscriptions) {
-              let NotificationBasicContent:NotificationBasicContent = {
-                title:'设置',
-                text:'获取中',
-                additionalText:"",
+              let NotificationBasicContent: NotificationBasicContent = {
+                title: '设置',
+                text: '获取中',
+                additionalText: "",
               }
-              let NotificationContent:NotificationContent = {
-                contentType:'NOTIFICATION_CONTENT_BASIC_TEXT',
-                normal:NotificationBasicContent
+              let NotificationContent: NotificationContent = {
+                contentType: 'NOTIFICATION_CONTENT_BASIC_TEXT',
+                normal: NotificationBasicContent
               }
-              let notificationRequests:NotificationRequest = {
-                id:1222287986,
-                slotType:'OTHER_TYPES',
-                content:NotificationContent,
-                path:''
+              let notificationRequests: NotificationRequest = {
+                id: 1222287986,
+                slotType: 'OTHER_TYPES',
+                content: NotificationContent,
+                path: ''
               }
-              let sendMessageOption:SendMessageOptions = {
-                notificationRequest:notificationRequests
+              let sendMessageOption: SendMessageOptions = {
+                notificationRequest: notificationRequests
               }
-              let subscriptionsSetting:SubscriptionsSetting = {
-                mainSwitch:false,
-                itemSettings:[]
+              let subscriptionsSetting: SubscriptionsSetting = {
+                mainSwitch: false,
+                itemSettings: []
               }
-              await sendMessage(sendMessageOption).then( async (res) => {
-                let cancelMessageOptions:CancelMessageOptions = {
-                  id:1222287986
+              await sendMessage(sendMessageOption).then(async (res) => {
+                let cancelMessageOptions: CancelMessageOptions = {
+                  id: 1222287986
                 }
                 await cancelMessage(cancelMessageOptions).then((res) => {
                   subscriptionsSetting.mainSwitch = true
-                }).catch((err:Error) => {
+                }).catch((err: Error) => {
                   subscriptionsSetting.mainSwitch = false
                 })
-              }).catch((err:Error) => {
-                console.log('requestSubscribeMessage',JSON.stringify(err))
+              }).catch((err: Error) => {
+                console.log('requestSubscribeMessage', JSON.stringify(err))
               })
               const subscribeCode = await getMassageList()
               subscriptionsSetting.itemSettings = subscribeCode.massageList
-              return resolve({ authSetting: bundleUsedScope.allScope,subscriptionsSetting:subscriptionsSetting,  errMsg: `${apiName}:ok` });
+              options.success({
+                authSetting: bundleUsedScope.allScope,
+                subscriptionsSetting: subscriptionsSetting,
+                errMsg: `${apiName}:ok`
+              });
             }
-            return resolve({ authSetting: bundleUsedScope.allScope, errMsg: `${apiName}:ok` });
+            options.success({ authSetting: bundleUsedScope.allScope, errMsg: `${apiName}:ok` });
           } catch (paramError) {
-            return reject(
-              {
+            options.fail({
                 errMsg: `${apiName}:fail error code: ${(paramError as BusinessError).code} ${(paramError as BusinessError).message}`
               } as ErrorMsg
             );
           }
-        })
       },
       getUpdateManager: () => {
         return LocalUpdateManagerInstance;
       },
-      requestSubscribeMessage: async (options:RequestSubscribeMessageOptions) => {
+      requestSubscribeMessage: async (options: RequestSubscribeMessageOptions) => {
         const apiName: string = 'requestSubscribeMessage';
         return new Promise(async (resolve) => {
           try {
             const enableCode = await enableNotification();
             if (enableCode.errMsg === 'success') {
               const addSlotCode = await addNotificationManagerSlot(options)
-              console.log('requestSubscribeMessage',JSON.stringify(addSlotCode))
+              console.log('requestSubscribeMessage', JSON.stringify(addSlotCode))
               if (addSlotCode.errMsg == 'success') {
                 return resolve(addSlotCode);
               } else {
@@ -322,13 +346,48 @@ export class NativeInject {
               return resolve(enableCode);
             }
           } catch (paramError) {
-            let enableCode:SubscribeMessageOptions = {
-              errCode:(paramError as BusinessError).code,
-              errMsg:`${apiName}:fail error ${(paramError as BusinessError).message}`
+            let enableCode: SubscribeMessageOptions = {
+              errCode: (paramError as BusinessError).code,
+              errMsg: `${apiName}:fail error ${(paramError as BusinessError).message}`
             }
             return resolve(enableCode);
           }
         })
+      },
+      saveDataUrlToFile: (options: SaveDataUrlOptions) => {
+        try {
+          let tmpFilePath = `internal://cache/${Date.now()}_${options.url.split('/').splice(-1, 1).toString()}`;
+          const data = options.data.split(',');
+          if (data.length !== 2) {
+            options.fail({ errMsg: 'Invalid data' })
+            return;
+          }
+          if (data[0].startsWith('data:text/html')) {
+            tmpFilePath += '.html';
+          }
+          const cachePath = switchInternalToHapSandBox(options.filePath || tmpFilePath);
+          const base64 = new util.Base64Helper();
+          const buf = base64.decodeSync(data[1]);
+          const file = fs.openSync(cachePath, fs.OpenMode.READ_WRITE | fs.OpenMode.CREATE);
+          fs.write(file.fd, buf.buffer).then(() => {
+            options.success({ tempFilePath: options.filePath || tmpFilePath });
+          }).catch((err: BusinessError) => {
+            options.fail({ errMsg: err.message });
+          }).finally(() => {
+            fs.closeSync(file.fd);
+          })
+        } catch (err) {
+          options.fail({ errMsg: 'error' });
+        }
+      },
+      setCapsuleState: (visible: boolean) => {
+        this.capsuleController.changeCapsuleState(visible);
+      },
+      getCapsuleState: () => {
+        return { visible: this.capsuleController.getCapsuleState() }
+      },
+      chooseMediaAssets: (options: ChooseMediaOptions) => {
+          selectMediaAssets(options, this.chooseAlbumCallback!)
       },
     };
   }

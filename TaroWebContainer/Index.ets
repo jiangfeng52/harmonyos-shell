@@ -6,6 +6,7 @@ export { HostPageState } from './src/main/ets/interfaces/HostPageState'
 export { TaroWebController, InterceptRequestHandler } from './src/main/ets/components/TaroWeb'
 export { Logger, wbLogger, LoggerLevel } from './src/main/ets/utils/Logger'
 export { LocalUpdateManagerInstance } from './src/main/ets/update/LocalUpdateManager'
+export { UpdateConfig } from './src/main/ets/data/source/bean/UpdateConfig'
 export { NotificationRequest, SendMessageOptions, NotificationContent, NotificationPictureContent, NotificationBasicContent,
   NotificationLongTextContent, NotificationMultiLineContent, CancelMessageOptions, sendMessage, cancelMessage
 } from './src/main/ets/utils/SubscribeMessageUtil'

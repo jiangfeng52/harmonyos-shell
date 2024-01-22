@@ -22,6 +22,10 @@ import webview from '@ohos.web.webview';
 import { wbLogger } from '../utils/Logger';
 import { FileUtils } from '../utils/FileUtils';
 import { LocalUpdateManagerInstance } from '../update/LocalUpdateManager';
+import { AlbumBackward } from '../interfaces/Media'
+import webView from '@ohos.web.webview';
+import { NativeApiImplInstance } from '../inject_adapter/NativeApi';
+import { ChannelInstance, MethodChannelInstance } from '../inject_adapter/Channel';
 
 const TARO_WEB_TAG = 'TaroWeb';
 
@@ -32,6 +36,7 @@ export class TaroWebController {
   public webController: webview.WebviewController;
   public hasBindedTaroWeb: boolean;
   public callbacks: InterceptRequestHandler[];
+  public albumBackward?: AlbumBackward;
 
   constructor() {
     this.webController = new webview.WebviewController();
@@ -52,7 +57,14 @@ export class TaroWebController {
     }
   }
 
+  setAlbumBackward(albumBackward: AlbumBackward) {
+    this.albumBackward = albumBackward;
+  }
+
   accessBackward(): boolean {
+    if (this.albumBackward?.accessBackward()) {
+      return this.albumBackward.accessBackward()
+    }
     if (!this.hasBindedTaroWeb) {
       return false;
     }
@@ -60,6 +72,10 @@ export class TaroWebController {
   }
 
   backward() {
+    if (this.albumBackward && this.albumBackward.accessBackward()) {
+      this.albumBackward.backward();
+      return;
+    }
     if (!this.hasBindedTaroWeb) {
       return;
     }
@@ -93,19 +109,136 @@ export struct TaroWeb {
   @Prop useCache: boolean;
   @ObjectLink taroWebController: TaroWebController;
   apiAdapter: ApiAdapter = new ApiAdapter();
-  scriptProxy: ESObject;
-  localLastPath: string = ''
+  scriptProxy: Object | undefined = undefined;
+  enableWebDebug: boolean = true;
 
   aboutToAppear() {
-    this.scriptProxy = this.apiAdapter.getAdapterProxy();
+    webView.WebviewController.setWebDebuggingAccess(this.enableWebDebug);
+    // this.scriptProxy = this.apiAdapter.getAdapterProxy();
     this.taroWebController.hasBindedTaroWeb = true
     this.taroWebController.addRequestHandler(this.handleInternalResource);
     this.taroWebController.addRequestHandler(this.useLocalCacheResource);
-    LocalUpdateManagerInstance.onUpdateReady((updatedPath: string)=>{
-      this.localLastPath = updatedPath
-      this.taroWebController.loadUrl(this.webUrl)
-      wbLogger.debug('TaroWeb', 'onUpdateReady updatedPath=%{public}s', updatedPath)
 
+    MethodChannelInstance.registerMethod('NativeApi$getWindowInfoBridgeSync', (options: ESObject) => {
+      return NativeApiImplInstance.getWindowInfoBridgeSync()
+    })
+
+    MethodChannelInstance.registerMethod('NativeApi$getSystemInfoSyncBridgeSync', (options: ESObject) => {
+      return NativeApiImplInstance.getSystemInfoSyncBridgeSync(options)
+    })
+
+    MethodChannelInstance.registerMethod('NativeApi$getSystemSettingBridgeSync', (options: ESObject) => {
+      return NativeApiImplInstance.getSystemSettingBridgeSync(options)
+    })
+
+    MethodChannelInstance.registerMethod('NativeApi$getAppBaseInfoBridgeSync', (options: ESObject) => {
+      return NativeApiImplInstance.getAppBaseInfoBridgeSync(options)
+    })
+
+    MethodChannelInstance.registerMethod('NativeApi$getAppAuthorizeSettingBridgeSync', (options: ESObject) => {
+      return NativeApiImplInstance.getAppAuthorizeSettingBridgeSync(options)
+    })
+
+    MethodChannelInstance.registerMethod('NativeApi$requestBridgeAsync', (options: ESObject) => {
+      return NativeApiImplInstance.requestBridgeAsync(options)
+    })
+
+    MethodChannelInstance.registerMethod('NativeApi$downloadFileBridgeAsync', (options: ESObject) => {
+      return NativeApiImplInstance.downloadFileBridgeAsync(options)
+    })
+
+    MethodChannelInstance.registerMethod('NativeApi$uploadFileBridgeAsync', (options: ESObject) => {
+      return NativeApiImplInstance.uploadFileBridgeAsync(options)
+    })
+
+    MethodChannelInstance.registerMethod('NativeApi$getUserInfoBridgeSync', (options: ESObject) => {
+      return NativeApiImplInstance.getUserInfoBridgeSync(options)
+    })
+
+    MethodChannelInstance.registerMethod('NativeApi$saveImageToPhotosAlbumBridgeAsync', (options: ESObject) => {
+      return NativeApiImplInstance.saveImageToPhotosAlbumBridgeAsync(options)
+    })
+
+    MethodChannelInstance.registerMethod('NativeApi$getVideoInfoBridgeAsync', (options: ESObject) => {
+      return NativeApiImplInstance.getVideoInfoBridgeAsync(options)
+    })
+
+    MethodChannelInstance.registerMethod('NativeApi$getImageInfoBridgeAsync', (options: ESObject) => {
+      return NativeApiImplInstance.getImageInfoBridgeAsync(options)
+    })
+
+    MethodChannelInstance.registerMethod('NativeApi$getLocationBridgeAsync', (options: ESObject) => {
+      return NativeApiImplInstance.getLocationBridgeAsync(options)
+    })
+
+    MethodChannelInstance.registerMethod('NativeApi$openDocumentBridgeAsync', (options: ESObject) => {
+      return NativeApiImplInstance.openDocumentBridgeAsync(options)
+    })
+
+    MethodChannelInstance.registerMethod('NativeApi$setKeepScreenOnBridgeAsync', (options: ESObject) => {
+      return NativeApiImplInstance.setKeepScreenOnBridgeAsync(options)
+    })
+
+    MethodChannelInstance.registerMethod('NativeApi$onUserCaptureScreenBridgeSync', (options: ESObject) => {
+      return NativeApiImplInstance.onUserCaptureScreenBridgeSync(options)
+    })
+
+    MethodChannelInstance.registerMethod('NativeApi$hideKeyboardBridgeSync', (options: ESObject) => {
+      return NativeApiImplInstance.hideKeyboardBridgeAsync(options)
+    })
+
+    MethodChannelInstance.registerMethod('NativeApi$makePhoneCallBridgeAsync', (options: ESObject) => {
+      return NativeApiImplInstance.makePhoneCallBridgeAsync(options)
+    })
+
+    //NativeFileSystemManager
+    MethodChannelInstance.registerMethod('NativeApi$saveFileBridgeAsync', (options: ESObject) => {
+      return NativeApiImplInstance.saveFileBridgeAsync(options)
+    })
+
+    MethodChannelInstance.registerMethod('NativeApi$accessBridgeAsync', (options: ESObject) => {
+      return NativeApiImplInstance.accessBridgeAsync(options)
+    })
+
+    MethodChannelInstance.registerMethod('NativeApi$getFileInfoBridgeAsync', (options: ESObject) => {
+      return NativeApiImplInstance.getFileInfoBridgeAsync(options)
+    })
+
+    MethodChannelInstance.registerMethod('NativeApi$readFileBridgeAsync', (options: ESObject) => {
+      return NativeApiImplInstance.readFileBridgeAsync(options)
+    })
+
+    MethodChannelInstance.registerMethod('NativeApi$readFileSyncBridgeSync', (options: ESObject) => {
+      return NativeApiImplInstance.readFileSyncBridgeSync(options)
+    })
+
+    //NativeAContextApi
+    MethodChannelInstance.registerMethod('NativeApi$createInnerAudioContextBridgeSync', (options: ESObject) => {
+      return NativeApiImplInstance.createInnerAudioContextBridgeSync(options)
+    })
+
+    MethodChannelInstance.registerMethod('NativeApi$stopBridgeSync', (options: ESObject) => {
+      return NativeApiImplInstance.stopBridgeSync()
+    })
+
+    MethodChannelInstance.registerMethod('NativeApi$playBridgeSync', (options: ESObject) => {
+      return NativeApiImplInstance.playBridgeSync()
+    })
+
+    MethodChannelInstance.registerMethod('NativeApi$onPlayBridgeSync', (options: ESObject) => {
+      return NativeApiImplInstance.onPlayBridgeSync(options)
+    })
+
+    MethodChannelInstance.registerMethod('NativeApi$onStopBridgeSync', (options: ESObject) => {
+      return NativeApiImplInstance.onStopBridgeSync(options)
+    })
+
+    MethodChannelInstance.registerMethod('NativeApi$onErrorBridgeSync', (options: ESObject) => {
+      return NativeApiImplInstance.onErrorBridgeSync(options)
+    })
+
+    MethodChannelInstance.registerMethod('NativeApi$onEndedBridgeSync', (options: ESObject) => {
+      return NativeApiImplInstance.onEndedBridgeSync(options)
     })
   }
 
@@ -139,14 +272,14 @@ export struct TaroWeb {
     const url = request.getRequestUrl();
     if (this.useCache && this.webUrlPrefix) {
       const path: string | undefined = url?.replace(this.webUrlPrefix, '');
-
-      if (this.localLastPath != '') {
+      const localLastPath = LocalUpdateManagerInstance.getLastVersionPath()
+      if (localLastPath != '') {
         wbLogger.debug('TaroWeb', 'useLocalCacheResource path=%{public}s', path)
         // 走本地缓存
-        if(!path || !FileUtils.fileExist(this.localLastPath, path)) {
+        if(!path || !FileUtils.fileExist(localLastPath, path)) {
           return null;
         }
-        return FileUtils.getFileOnResponseWeb(this.localLastPath, path)
+        return FileUtils.getFileOnResponseWeb(localLastPath, path)
       }
 
       // 走App内置的Raw缓存
@@ -167,9 +300,14 @@ export struct TaroWeb {
       .geolocationAccess(true)
       .javaScriptAccess(true)
       .javaScriptProxy({
-        object: this.scriptProxy,
-        name: 'as',
-        methodList: this.apiAdapter.getMethodList() || [],
+        object: {
+          nativeMethod: (channelType: string, objectJson: string) => {
+            wbLogger.debug('nativeApi', `channelType ${channelType} objectJson(${objectJson})`)
+            return ChannelInstance.call(channelType, objectJson) as object
+          },
+        },
+        name: 'JSBridge',
+        methodList: ['nativeMethod'],
         controller: this.taroWebController.webController,
       })
       .onConsole((event) => {
