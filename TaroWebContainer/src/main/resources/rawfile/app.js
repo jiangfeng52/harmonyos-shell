@@ -1,9 +1,31 @@
 // TODO-ly 此类都需要重写，因为此类是es5的js
 
-function isFunctionOrObjectWithFunction(object) {
+function isFunction(object) {
     if (typeof object === 'function') {
         // 如果是函数，直接返回 true
         return true;
+    }
+    return false;
+}
+
+function getAllFuns(object) {
+    if (typeof object !== 'object' || object === null) {
+        return [];
+    }
+
+    const funs = []
+    // 如果是对象，遍历对象的每个属性，检查属性是否是函数
+    for (const key in object) {
+        if (object.hasOwnProperty(key) && typeof object[key] === 'function') {
+            funs.push(key)
+        }
+    }
+    return funs
+}
+
+function isFunctionOrObjectWithFunction(object) {
+    if(isFunction(object)) {
+        return true
     }
 
     if (typeof object !== 'object' || object === null) {
@@ -65,94 +87,132 @@ window.MethodChannel = {
             window.MethodChannel.__ArgsMethodStub(object)
         })
     },
+    methodCallByNative: function (className, methodName, args, isAsync, autoRelease){
+        // console.debug('nativeapi', 'appjs createNativeApiProxy args JSON: ' + JSON.stringify(args))
+        // if (isAsync == undefined) {
+        //     return Func()
+        // }
+        // console.debug('nativeapi', 'appjs createNativeApiProxy args JSON: ' + JSON.stringify(args))
+        // console.debug('nativeapi', 'appjs createNativeApiProxy args: ' + args)
+
+        const firstArg = args.length >= 1 ? args[0] : ''
+        // 约定异步回调的方式，一次性回调，监听回调
+        let isListener = isOnMethod(methodName.toString())
+        let hasFun = isFunctionOrObjectWithFunction(firstArg)
+
+        let argTypeIsFun = isFunction(firstArg)
+
+        // 方法调用转换为数据
+        var methodCall = {
+            //修改了名称
+            isAsync: isAsync,
+            // 调用函数名
+            call: `${className ? className : ''}\$${methodName.toString()}`,
+            arg: {
+                isFun: argTypeIsFun,
+                properties: firstArg,
+                funs: getAllFuns(firstArg),
+                stubId: window.MethodChannel.__registerArgStub(firstArg, argTypeIsFun, autoRelease)
+            },
+        }
+        return window.Channel.nativeCall(window.MethodChannel.ChannelType, methodCall)
+    },
     //提交了一次到本地，只修改了app.js文件
     createNativeApiProxy: function (nativeApi) {
-        return new Proxy(nativeApi, {
-            get(target, prop, receiver) {
-                if (typeof target[prop] === 'function') {
-                    const Func = target[prop]
-                    // const isSync = prop.toString().endsWith("BridgeSync")
-                    // const isAsync = prop.toString().endsWith("BridgeAsync")
-                    // if(isSync || isAsync) { // 走代理
-                    const className = target.constructor.name;
-                    return function (...args) {
-                        const isAsync = args[1]?.isAsync
-                        const autoRelease = args[1]?.autoRelease
-
-                        console.debug('nativeapi', 'appjs createNativeApiProxy args JSON: ' + JSON.stringify(args))
-                        if (isAsync == undefined) {
-                            return Func()
-                        }
-                        console.debug('nativeapi', 'appjs createNativeApiProxy args JSON: ' + JSON.stringify(args))
-                        console.debug('nativeapi', 'appjs createNativeApiProxy args: ' + args)
-
-                        const firstArg = args.length >= 1 ? args[0] : ''
-                        // 约定异步回调的方式，一次性回调，监听回调
-                        let isListener = isOnMethod(prop.toString())
-                        let hasFun = isFunctionOrObjectWithFunction(firstArg)
-
-                        // 方法调用转换为数据
-                        var methodCall = {
-                            //修改了名称
-                            isAsync: isAsync,
-                            call: `${className ? className : ''}\$${prop.toString()}`,
-                            isListener: isListener,
-                            arg: firstArg,
-                            stubId: hasFun ? window.MethodChannel.__registerArgStub(firstArg, isListener) : -1,
-                            //增加了字段，channel端需要做适配
-                            autoRelease: autoRelease
-                        }
-                        return window.Channel.nativeCall(window.MethodChannel.ChannelType, methodCall)
-                    }
-                }
-                // }
-
-                // 直接返回
-                return target[prop];
-            }
-        });
+        return nativeApi
+        // return new Proxy(nativeApi, {
+        //     get(target, prop, receiver) {
+        //         // 确保函数上的装饰器生效
+        //         const originalValue = Reflect.get(target, prop, receiver);
+        //
+        //         if (typeof originalValue === 'function') {
+        //             // const isSync = prop.toString().endsWith("BridgeSync")
+        //             // const isAsync = prop.toString().endsWith("BridgeAsync")
+        //             // if(isSync || isAsync) { // 走代理
+        //             const className = target.constructor.name;
+        //             return function (...args) {
+        //                 const isAsync = args[1]?.isAsync
+        //                 const autoRelease = args[1]?.autoRelease ?? false
+        //
+        //                 console.debug('nativeapi', 'appjs createNativeApiProxy args JSON: ' + JSON.stringify(args))
+        //                 if (isAsync == undefined) {
+        //                     return Func()
+        //                 }
+        //                 console.debug('nativeapi', 'appjs createNativeApiProxy args JSON: ' + JSON.stringify(args))
+        //                 console.debug('nativeapi', 'appjs createNativeApiProxy args: ' + args)
+        //
+        //                 const firstArg = args.length >= 1 ? args[0] : ''
+        //                 // 约定异步回调的方式，一次性回调，监听回调
+        //                 let isListener = isOnMethod(prop.toString())
+        //                 let hasFun = isFunctionOrObjectWithFunction(firstArg)
+        //
+        //                 let argTypeIsFun = isFunction(firstArg)
+        //
+        //                 // 方法调用转换为数据
+        //                 var methodCall = {
+        //                     //修改了名称
+        //                     isAsync: isAsync,
+        //                     // 调用函数名
+        //                     call: `${className ? className : ''}\$${prop.toString()}`,
+        //                     arg: {
+        //                         isFun: argTypeIsFun,
+        //                         properties: firstArg,
+        //                         funs: getAllFuns(firstArg),
+        //                         stubId: window.MethodChannel.__registerArgStub(firstArg, argTypeIsFun, autoRelease)
+        //                     },
+        //                 }
+        //                 return window.Channel.nativeCall(window.MethodChannel.ChannelType, methodCall)
+        //             }
+        //         }
+        //         // }
+        //
+        //         // 直接返回
+        //         return originalValue;
+        //     }
+        // });
     },
 
     _NextId: 0, // 初始ID值
-    _argsStubMap: {},
-    _listenerMap: {}, // TODO 弱引用自动取消
-    __registerArgStub: function (arg, isListener) {
+    _stubMap: {},
+    __registerArgStub: function (argObject, isFun, autoRelease) {
+        const hasFun = isFunctionOrObjectWithFunction(argObject)
+        if(!hasFun) {
+            return -1
+        }
         var objectId = this._NextId++
-        if (isListener) {
-            this._listenerMap[objectId] = arg
-        } else {
-            this._argsStubMap[objectId] = arg
+        this._stubMap[objectId] = {
+            object: argObject,
+            isFun: isFun,
+            autoRelease: autoRelease
         }
         return objectId
     },
-    __ArgsMethodStub: function (object) {
-        const {call, args, stubId, isListener, autoRelease} = object
-        if (isListener) {
-            const listener = this._listenerMap[stubId]
-            listener && listener(...args)
+    __ArgsMethodStub: function (nativeArg) {
+        const {call, args, stubId} = nativeArg
 
-            return
-        }
-
-        const argsStub = this._argsStubMap[stubId];
-        console.debug('nativeapi', 'appjs the __registerArgStub object JSON: ' + JSON.stringify(object))
-        if (!argsStub) {
+        const stub = this._stubMap[stubId];
+        console.debug('nativeapi', 'appjs the __registerArgStub nativeArg JSON: ' + JSON.stringify(nativeArg))
+        if (!stub) {
             console.debug('nativeapi', 'appjs the __registerArgStub argsStub hash been deleted: ')
             return;
         }
-        if (!autoRelease) {
-            if (call == 'complete') {
-                delete this._argsStubMap[stubId]
-            }
-        } else {
-            delete this._argsStubMap[stubId]
+        const {object, isFun, autoRelease} = stub
+        if(autoRelease) {
+            delete this._stubMap[stubId]
+        }
+        else if (call == 'complete') {
+            delete this._stubMap[stubId]
         }
 
-        if (args[0] === null) {
-            argsStub[call].call(argsStub)
+        if(isFun) {
+            object && object(...args)
             return
         }
-        argsStub[call].call(argsStub, ...args)
+        if(args) {
+            object[call].call(object, ...args)
+        } else {
+            object[call].call(object)
+        }
     }
 }
 window.MethodChannel.init()

@@ -64,51 +64,44 @@ class MethodChannel {
   }
 
   call(object): any{
-    const {call, isListener, arg, stubId, autoRelease} = object
+    const {call, arg} = object
     const fun = this.methodPools.get(call)
     if(!fun) {
       return undefined;
     }
 
+    const {isFun, properties, funs, stubId} = arg
+
+    let argProxy;
     if (stubId == -1) { // 没有回调函数
-      return fun.call(null, arg)
+      argProxy = properties;
     }
-
-    if(isListener) { // arg为函数
-      const argProxy = new Proxy(function (){}, {
-        apply(target, thisArg: any, argArray: any[]){
-          const object = {
-            call: '',
-            args: argArray,
-            stubId: stubId,
-            isListener: true,
-            autoRelease: autoRelease
-          }
-          ChannelInstance.jsCall(MethodChannelInstance.ChannelType, object)
+    else if(isFun) { // arg为函数
+      argProxy = function (...args){
+        const object = {
+          call: '',
+          args: args,
+          stubId: stubId
         }
-      });
-      return fun.call(null, argProxy)
+        ChannelInstance.jsCall(MethodChannelInstance.ChannelType, object)
+      }
     }
-
-    // arg为对象
-    const argProxy = new Proxy(arg??{}, {
-      get(target, prop, receiver) {
-        let value = target[prop]
-        if (value){
-          return value
-        }
-        return function (...args) {
+    else {
+      let argObject = properties ?? {};
+      // 补充方法的声明
+      for(const value of funs) {
+        argObject[value] = function (...args){
           const object = {
-            call: prop.toString(),
+            call: value,
             args: args,
-            stubId: stubId,
-            isListener: false,
-            autoRelease: autoRelease
+            stubId: stubId
           }
           ChannelInstance.jsCall(MethodChannelInstance.ChannelType, object)
         }
       }
-    });
+      // arg为对象
+      argProxy = argObject;
+    }
     return fun.call(null, argProxy)
   }
 }

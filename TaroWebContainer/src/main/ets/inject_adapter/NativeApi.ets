@@ -277,9 +277,10 @@ class NativeApiImpl implements NativeApi {
     return as.hideKeyboard(options)
   }
 
-  makePhoneCallBridgeAsync(options: ESObject): void {
+  makePhoneCall(options: ESObject): void {
     wbLogger.debug('JsBridgeNative', `NativeApi$getImageInfo`)
-    return as.makePhoneCall(options.phoneNumber, createCallback(options))
+    // return as.makePhoneCall(options.phoneNumber, createCallback(options))
+    as.makePhoneCall(options)
   }
 
   openSystemBluetoothSettingBridgeAsync(options: OpenSystemBluetoothSetting) {

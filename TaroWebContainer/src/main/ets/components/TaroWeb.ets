@@ -151,9 +151,9 @@ export struct TaroWeb {
       return NativeApiImplInstance.uploadFileBridgeAsync(options)
     })
 
-    MethodChannelInstance.registerMethod('NativeApi$getUserInfoBridgeSync', (options: ESObject) => {
-      return NativeApiImplInstance.getUserInfoBridgeSync(options)
-    })
+    // MethodChannelInstance.registerMethod('NativeApi$getUserInfoBridgeSync', (options: ESObject) => {
+    //   return NativeApiImplInstance.getUserInfoBridgeSync(options)
+    // })
 
     MethodChannelInstance.registerMethod('NativeApi$saveImageToPhotosAlbumBridgeAsync', (options: ESObject) => {
       return NativeApiImplInstance.saveImageToPhotosAlbumBridgeAsync(options)
@@ -187,59 +187,59 @@ export struct TaroWeb {
       return NativeApiImplInstance.hideKeyboardBridgeAsync(options)
     })
 
-    MethodChannelInstance.registerMethod('NativeApi$makePhoneCallBridgeAsync', (options: ESObject) => {
-      return NativeApiImplInstance.makePhoneCallBridgeAsync(options)
+    MethodChannelInstance.registerMethod('NativeApi$makePhoneCall', (options: ESObject) => {
+      return NativeApiImplInstance.makePhoneCall(options)
     })
 
     //NativeFileSystemManager
-    MethodChannelInstance.registerMethod('NativeApi$saveFileBridgeAsync', (options: ESObject) => {
-      return NativeApiImplInstance.saveFileBridgeAsync(options)
-    })
+    // MethodChannelInstance.registerMethod('NativeApi$saveFileBridgeAsync', (options: ESObject) => {
+    //   return NativeApiImplInstance.saveFileBridgeAsync(options)
+    // })
+    //
+    // MethodChannelInstance.registerMethod('NativeApi$accessBridgeAsync', (options: ESObject) => {
+    //   return NativeApiImplInstance.accessBridgeAsync(options)
+    // })
+    //
+    // MethodChannelInstance.registerMethod('NativeApi$getFileInfoBridgeAsync', (options: ESObject) => {
+    //   return NativeApiImplInstance.getFileInfoBridgeAsync(options)
+    // })
+    //
+    // MethodChannelInstance.registerMethod('NativeApi$readFileBridgeAsync', (options: ESObject) => {
+    //   return NativeApiImplInstance.readFileBridgeAsync(options)
+    // })
+    //
+    // MethodChannelInstance.registerMethod('NativeApi$readFileSyncBridgeSync', (options: ESObject) => {
+    //   return NativeApiImplInstance.readFileSyncBridgeSync(options)
+    // })
 
-    MethodChannelInstance.registerMethod('NativeApi$accessBridgeAsync', (options: ESObject) => {
-      return NativeApiImplInstance.accessBridgeAsync(options)
-    })
-
-    MethodChannelInstance.registerMethod('NativeApi$getFileInfoBridgeAsync', (options: ESObject) => {
-      return NativeApiImplInstance.getFileInfoBridgeAsync(options)
-    })
-
-    MethodChannelInstance.registerMethod('NativeApi$readFileBridgeAsync', (options: ESObject) => {
-      return NativeApiImplInstance.readFileBridgeAsync(options)
-    })
-
-    MethodChannelInstance.registerMethod('NativeApi$readFileSyncBridgeSync', (options: ESObject) => {
-      return NativeApiImplInstance.readFileSyncBridgeSync(options)
-    })
-
-    //NativeAContextApi
-    MethodChannelInstance.registerMethod('NativeApi$createInnerAudioContextBridgeSync', (options: ESObject) => {
-      return NativeApiImplInstance.createInnerAudioContextBridgeSync(options)
-    })
-
-    MethodChannelInstance.registerMethod('NativeApi$stopBridgeSync', (options: ESObject) => {
-      return NativeApiImplInstance.stopBridgeSync()
-    })
-
-    MethodChannelInstance.registerMethod('NativeApi$playBridgeSync', (options: ESObject) => {
-      return NativeApiImplInstance.playBridgeSync()
-    })
-
-    MethodChannelInstance.registerMethod('NativeApi$onPlayBridgeSync', (options: ESObject) => {
-      return NativeApiImplInstance.onPlayBridgeSync(options)
-    })
-
-    MethodChannelInstance.registerMethod('NativeApi$onStopBridgeSync', (options: ESObject) => {
-      return NativeApiImplInstance.onStopBridgeSync(options)
-    })
-
-    MethodChannelInstance.registerMethod('NativeApi$onErrorBridgeSync', (options: ESObject) => {
-      return NativeApiImplInstance.onErrorBridgeSync(options)
-    })
-
-    MethodChannelInstance.registerMethod('NativeApi$onEndedBridgeSync', (options: ESObject) => {
-      return NativeApiImplInstance.onEndedBridgeSync(options)
-    })
+    // //NativeAContextApi
+    // MethodChannelInstance.registerMethod('NativeApi$createInnerAudioContextBridgeSync', (options: ESObject) => {
+    //   return NativeApiImplInstance.createInnerAudioContextBridgeSync(options)
+    // })
+    //
+    // MethodChannelInstance.registerMethod('NativeApi$stopBridgeSync', (options: ESObject) => {
+    //   return NativeApiImplInstance.stopBridgeSync()
+    // })
+    //
+    // MethodChannelInstance.registerMethod('NativeApi$playBridgeSync', (options: ESObject) => {
+    //   return NativeApiImplInstance.playBridgeSync()
+    // })
+    //
+    // MethodChannelInstance.registerMethod('NativeApi$onPlayBridgeSync', (options: ESObject) => {
+    //   return NativeApiImplInstance.onPlayBridgeSync(options)
+    // })
+    //
+    // MethodChannelInstance.registerMethod('NativeApi$onStopBridgeSync', (options: ESObject) => {
+    //   return NativeApiImplInstance.onStopBridgeSync(options)
+    // })
+    //
+    // MethodChannelInstance.registerMethod('NativeApi$onErrorBridgeSync', (options: ESObject) => {
+    //   return NativeApiImplInstance.onErrorBridgeSync(options)
+    // })
+    //
+    // MethodChannelInstance.registerMethod('NativeApi$onEndedBridgeSync', (options: ESObject) => {
+    //   return NativeApiImplInstance.onEndedBridgeSync(options)
+    // })
   }
 
   aboutToDisappear() {
