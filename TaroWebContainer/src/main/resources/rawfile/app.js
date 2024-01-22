@@ -12,7 +12,6 @@ function isFunctionOrObjectWithFunction(object) {
 
     // 如果是对象，遍历对象的每个属性，检查属性是否是函数
     for (const key in object) {
-        console.debug('nativeapi', 'isFunctionOrObjectWithFunction the key: ' + key)
         if (object.hasOwnProperty(key) && typeof object[key] === 'function') {
             return true;
         }
@@ -77,12 +76,17 @@ window.MethodChannel = {
                     // if(isSync || isAsync) { // 走代理
                     const className = target.constructor.name;
                     return function (...args) {
-                        const isAsync = args[0]?.isAsync
-                        const autoRelease = args[0]?.autoRelease
-                        if (isAsync == 'undefined') {
+                        const isAsync = args[1]?.isAsync
+                        const autoRelease = args[1]?.autoRelease
+
+                        console.debug('nativeapi', 'appjs createNativeApiProxy args JSON: ' + JSON.stringify(args))
+                        if (isAsync == undefined) {
                             return Func()
                         }
-                        const firstArg = args.length > 1 ? args[1] : ''
+                        console.debug('nativeapi', 'appjs createNativeApiProxy args JSON: ' + JSON.stringify(args))
+                        console.debug('nativeapi', 'appjs createNativeApiProxy args: ' + args)
+
+                        const firstArg = args.length >= 1 ? args[0] : ''
                         // 约定异步回调的方式，一次性回调，监听回调
                         let isListener = isOnMethod(prop.toString())
                         let hasFun = isFunctionOrObjectWithFunction(firstArg)
@@ -94,7 +98,6 @@ window.MethodChannel = {
                             call: `${className ? className : ''}\$${prop.toString()}`,
                             isListener: isListener,
                             arg: firstArg,
-                            //增加一个入参
                             stubId: hasFun ? window.MethodChannel.__registerArgStub(firstArg, isListener) : -1,
                             //增加了字段，channel端需要做适配
                             autoRelease: autoRelease
@@ -123,7 +126,7 @@ window.MethodChannel = {
         return objectId
     },
     __ArgsMethodStub: function (object) {
-        const {call, args, stubId, isListener} = object
+        const {call, args, stubId, isListener, autoRelease} = object
         if (isListener) {
             const listener = this._listenerMap[stubId]
             listener && listener(...args)
@@ -137,8 +140,14 @@ window.MethodChannel = {
             console.debug('nativeapi', 'appjs the __registerArgStub argsStub hash been deleted: ')
             return;
         }
-        // 只回调一次，可能会有问题，需测试
-        delete this._argsStubMap[stubId]
+        if (!autoRelease) {
+            if (call == 'complete') {
+                delete this._argsStubMap[stubId]
+            }
+        } else {
+            delete this._argsStubMap[stubId]
+        }
+
         if (args[0] === null) {
             argsStub[call].call(argsStub)
             return

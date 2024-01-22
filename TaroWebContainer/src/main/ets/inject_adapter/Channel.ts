@@ -64,7 +64,7 @@ class MethodChannel {
   }
 
   call(object): any{
-    const {call, isListener, arg, stubId} = object
+    const {call, isListener, arg, stubId, autoRelease} = object
     const fun = this.methodPools.get(call)
     if(!fun) {
       return undefined;
@@ -81,7 +81,8 @@ class MethodChannel {
             call: '',
             args: argArray,
             stubId: stubId,
-            isListener: true
+            isListener: true,
+            autoRelease: autoRelease
           }
           ChannelInstance.jsCall(MethodChannelInstance.ChannelType, object)
         }
@@ -101,7 +102,8 @@ class MethodChannel {
             call: prop.toString(),
             args: args,
             stubId: stubId,
-            isListener: false
+            isListener: false,
+            autoRelease: autoRelease
           }
           ChannelInstance.jsCall(MethodChannelInstance.ChannelType, object)
         }
