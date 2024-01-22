@@ -97,8 +97,8 @@ window.MethodChannel = {
 
         const firstArg = args.length >= 1 ? args[0] : ''
         // 约定异步回调的方式，一次性回调，监听回调
-        let isListener = isOnMethod(methodName.toString())
-        let hasFun = isFunctionOrObjectWithFunction(firstArg)
+        // let isListener = isOnMethod(methodName.toString())
+        // let hasFun = isFunctionOrObjectWithFunction(firstArg)
 
         let argTypeIsFun = isFunction(firstArg)
 
@@ -111,7 +111,7 @@ window.MethodChannel = {
             arg: {
                 isFun: argTypeIsFun,
                 properties: firstArg,
-                funs: getAllFuns(firstArg),
+                funs: getAllFuns(firstArg), // ['success', 'fail']
                 stubId: window.MethodChannel.__registerArgStub(firstArg, argTypeIsFun, autoRelease)
             },
         }
