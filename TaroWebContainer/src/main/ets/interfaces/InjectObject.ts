@@ -219,7 +219,7 @@ export interface ChooseMediaOptions {
 }
 
 export interface ExitMiniProgramOptions {
-  success: () => {}
-  fail: () => {}
-  complete: () => {}
+  success: Function;
+  fail: Function;
+  complete: Function;
 }
