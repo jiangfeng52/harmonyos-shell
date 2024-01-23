@@ -236,42 +236,42 @@ export struct TaroWebContainer {
     this.adapter.mergeInjectObj(nativeInject.buildInjectObj());
     this.injectObj && this.adapter.mergeInjectObj(this.injectObj);
 
-    MethodChannelInstance.registerMethod('NativeApi$navigateToMiniProgramBridgeAsync', (options: ESObject)=>{
+    MethodChannelInstance.registerMethod('NativeApi$navigateToMiniProgram', (options: ESObject)=>{
       wbLogger.debug('JsBridgeNative', `NativeApi$navigateToMiniProgram`)
       return nativeInject.buildInjectObj().navigateToMiniProgram(options)
     })
 
-    MethodChannelInstance.registerMethod('NativeApi$setNavigationBarColorBridgeSync', (options: ESObject)=>{
+    MethodChannelInstance.registerMethod('NativeApi$setNavigationBarColor', (options: ESObject)=>{
       wbLogger.debug('JsBridgeNative', `NativeApi$setNavigationBarColor`)
       return nativeInject.buildInjectObj().setNavigationBarColor(options)
     })
 
-    MethodChannelInstance.registerMethod('NativeApi$getMenuButtonBoundingClientRectBridgeSync', (options: ESObject)=>{
+    MethodChannelInstance.registerMethod('NativeApi$getMenuButtonBoundingClientRect', (options: ESObject)=>{
       wbLogger.debug('JsBridgeNative', `NativeApi$getMenuButtonBoundingClientRect`)
       return nativeInject.buildInjectObj().getMenuButtonBoundingClientRect()
     })
 
-    MethodChannelInstance.registerMethod('NativeApi$saveDataUrlToFileBridgeAsync', (options: ESObject)=>{
+    MethodChannelInstance.registerMethod('NativeApi$saveDataUrlToFile', (options: ESObject)=>{
       wbLogger.debug('JsBridgeNative', `NativeApi$getMenuButtonBoundingClientRect`)
       return nativeInject.buildInjectObj().saveDataUrlToFile(options)
     })
 
-    MethodChannelInstance.registerMethod('NativeApi$copyFileToSandboxCacheBridgeSync', (options: ESObject)=>{
+    MethodChannelInstance.registerMethod('NativeApi$copyFileToSandboxCache', (options: ESObject)=>{
       wbLogger.debug('JsBridgeNative', `NativeApi$copyFileToSandboxCache`)
       return nativeInject.buildInjectObj().copyFileToSandboxCache(options)
     })
 
-    MethodChannelInstance.registerMethod('NativeApi$chooseMediaAssetsBridgeAsync', (options: ESObject)=>{
+    MethodChannelInstance.registerMethod('NativeApi$chooseMediaAssets', (options: ESObject)=>{
       wbLogger.debug('JsBridgeNative', `NativeApi$chooseMediaAssets`)
       return nativeInject.buildInjectObj().chooseMediaAssets(options)
     })
 
-    MethodChannelInstance.registerMethod('NativeApi$openSettingBridgeAsync', (options: ESObject)=>{
+    MethodChannelInstance.registerMethod('NativeApi$openSetting', (options: ESObject)=>{
       wbLogger.debug('JsBridgeNative', `NativeApi$openSetting`)
       return nativeInject.buildInjectObj().openSetting(options)
     })
 
-    MethodChannelInstance.registerMethod('NativeApi$getSettingBridgeAsync', (options: ESObject)=>{
+    MethodChannelInstance.registerMethod('NativeApi$getSetting', (options: ESObject)=>{
       wbLogger.debug('JsBridgeNative', `NativeApi$getSetting`)
       return nativeInject.buildInjectObj().getSetting(options)
     })

@@ -70,23 +70,21 @@ class MethodChannel {
       return undefined;
     }
 
-    const {isFun, properties, funs, stubId} = arg
+    const {isFun, properties, funs, stubId, taskId} = arg
 
     let argProxy;
     if (stubId == -1) { // 没有回调函数
       argProxy = properties;
-    }
-    else if(isFun) { // arg为函数
+    } else if(isFun) { // arg为函数
       argProxy = function (...args){
         const object = {
           call: '',
           args: args,
-          stubId: stubId
+          stubId: stubId,
         }
         ChannelInstance.jsCall(MethodChannelInstance.ChannelType, object)
       }
-    }
-    else {
+    } else {
       let argObject = properties ?? {};
       // 补充方法的声明
       for(const value of funs) {

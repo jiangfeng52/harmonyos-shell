@@ -98,22 +98,6 @@ interface SystemInfoSync {
 
 }
 
-interface Result {
-  method: string
-  arguments: Array<string>
-  ignoreComplete: boolean
-  ifKeepAlive: boolean
-}
-
-const createCallback = (options: ESObject) => {
-  return (result: Result) => {
-    if (result.method === 'success') {
-      options.success(result.arguments)
-    } else if (result.method === 'fail') {
-      options.fail(result.arguments)
-    }
-  }
-}
 
 interface NativeApi {
 
@@ -122,188 +106,322 @@ interface NativeApi {
    *
    * @returns 返回值对象里无方法
    */
-  getWindowInfoBridgeSync(): WindowInfo
+  getWindowInfo(): WindowInfo
 
-  getSystemInfoSyncBridgeSync(options: ESObject): SystemInfoSync
+  getSystemInfoSync(options: ESObject): SystemInfoSync
 
-  getSystemSettingBridgeSync(options: ESObject): SettingInfo
+  getSystemSetting(options: ESObject): SettingInfo
 
-  getAppBaseInfoBridgeSync(options: ESObject): AppBaseInfo
+  getAppBaseInfo(options: ESObject): AppBaseInfo
 
-  getAppAuthorizeSettingBridgeSync(options: ESObject): AppAuthorizeSetting
+  getAppAuthorizeSetting(options: ESObject): AppAuthorizeSetting
 
-  requestBridgeAsync(options: ESObject): ESObject
+  request(options: ESObject): ESObject
 
-  downloadFileBridgeAsync(options: ESObject): ESObject
+  downloadFile(options: ESObject): ESObject
 
-  uploadFileBridgeAsync(options: ESObject): ESObject
+  uploadFile(options: ESObject): ESObject
 
-  saveImageToPhotosAlbumBridgeAsync(options: ESObject): ESObject
+  saveImageToPhotosAlbum(options: ESObject): ESObject
 
-  getVideoInfoBridgeAsync(options: ESObject): void
+  getVideoInfo(options: ESObject): void
 
-  getImageInfoBridgeAsync(options: ESObject): void
+  getImageInfo(options: ESObject): void
 
-  compressVideoBridgeAsync(options: ESObject): void
+  getLocation(options: ESObject): void
 
-  createInnerAudioContextBridgeAsync(options: ESObject): void
+  openDocument(options: ESObject): void
 
-  getLocationBridgeAsync(options: ESObject): void
+  getUserInfo(options: ESObject): void
 
-  openDocumentBridgeAsync(options: ESObject): void
+  onUserCaptureScreen(options: ESObject): void
 
-  loginBridgeAsync(options: ESObject): void
+  hideKeyboard(options: ESObject): void
 
-  getUserInfoBridgeAsync(options: ESObject): void
+  access(options: ESObject): ESObject
 
-  onUserCaptureScreenBridgeSync(options: ESObject): void
+  saveFile(options: ESObject): ESObject
 
-  hideKeyboardBridgeAsync(options: ESObject): void
+  getFileInfo(options: ESObject): ESObject
 
-  /**
-   * 类型2：异步调用，res无方法
-   * 打开系统蓝牙设置
-   *
-   * @param options
-   */
-  openSystemBluetoothSettingBridgeAsync(options: OpenSystemBluetoothSetting): void
+  readFile(options: ESObject): ESObject
 
-  /**
-   * 类型3：持续监听，res无方法
-   *
-   * @param listener
-   */
-  onWindowResizeBridgeAsync(listener: (res: WindowResizeResult) => void): void
+  readFileSync(options: ESObject): ESObject
+
+  createInnerAudioContext(options: ESObject): void
+
+  stop(options: ESObject): void
+
+  play(options: ESObject): void
+
+  onPlay(options: ESObject): ESObject
+
+  onStop(options: ESObject): ESObject
+
+  onError(options: ESObject): ESObject
+
+  onEnded(options: ESObject): ESObject
+
+  abort(options: ESObject): ESObject
+
+  offHeadersReceived(options: ESObject): ESObject
+
+  offProgressUpdate(options: ESObject): ESObject
+
+  onHeadersReceived(options: ESObject): ESObject
+
+  onProgressUpdate(options: ESObject): ESObject
 }
 
 class NativeApiImpl implements NativeApi {
-  getWindowInfoBridgeSync(): WindowInfo {
-    wbLogger.debug('JsBridgeNative', `NativeApi$getWindowInfo`)
+  private static fileManager: ESObject
+  private networkTaskMap: Map<number, ESObject>
+  private networkTaskID: number
+  private contextMap: Map<number, ESObject>
+  private contextID: number
+
+  constructor() {
+    this.networkTaskMap = new Map()
+    this.networkTaskID = 0
+    this.contextMap = new Map()
+    this.contextID = 0
+  }
+  private static getFileManager(): ESObject {
+    if (!NativeApiImpl.fileManager) {
+      NativeApiImpl.fileManager = as.getFileSystemManager()
+    }
+    return NativeApiImpl.fileManager
+  }
+
+  getWindowInfo(): WindowInfo {
+    wbLogger.debug('JsBridgeNativeApi', `NativeApi$getWindowInfo`)
     return as.getWindowInfo()
   }
 
-  getSystemInfoSyncBridgeSync(options: ESObject): SystemInfoSync {
-    wbLogger.debug('JsBridgeNative', `NativeApi$getSystemInfoSync`)
+  getSystemInfoSync(options: ESObject): SystemInfoSync {
+    wbLogger.debug('JsBridgeNativeApi', `NativeApi$getSystemInfoSync`)
     return as.getSystemInfoSync()
   }
 
-  getSystemSettingBridgeSync(options: ESObject): SettingInfo {
-    wbLogger.debug('JsBridgeNative', `NativeApi$getSystemSetting`)
+  getSystemSetting(options: ESObject): SettingInfo {
+    wbLogger.debug('JsBridgeNativeApi', `NativeApi$getSystemSetting`)
     return as.getSystemSetting()
   }
 
-  getAppBaseInfoBridgeSync(options: ESObject): AppBaseInfo {
-    wbLogger.debug('JsBridgeNative', `NativeApi$getAppBaseInfo`)
+  getAppBaseInfo(options: ESObject): AppBaseInfo {
+    wbLogger.debug('JsBridgeNativeApi', `NativeApi$getAppBaseInfo`)
     return as.getAppBaseInfo()
   }
 
-  getAppAuthorizeSettingBridgeSync(options: ESObject): AppAuthorizeSetting {
-    wbLogger.debug('JsBridgeNative', `NativeApi$getAppAuthorizeSetting`)
+  getAppAuthorizeSetting(options: ESObject): AppAuthorizeSetting {
+    wbLogger.debug('JsBridgeNativeApi', `NativeApi$getAppAuthorizeSetting`)
     return as.getAppAuthorizeSetting()
   }
 
-  requestBridgeAsync(options: ESObject): ESObject {
-    wbLogger.debug('JsBridgeNative', `NativeApi$request`)
-    return as.request(options)
-  }
-
-  downloadFileBridgeAsync(options: ESObject): ESObject {
-    wbLogger.debug('JsBridgeNative', `NativeApi$downloadFile`)
+  downloadFile(options: ESObject): ESObject {
+    wbLogger.debug('JsBridgeNativeApi', `NativeApi$downloadFile`)
     return as.downloadFile(options)
   }
 
-  uploadFileBridgeAsync(options: ESObject): ESObject {
-    wbLogger.debug('JsBridgeNative', `NativeApi$uploadFile`)
-    return as.uploadFile(options)
-  }
-
-  saveImageToPhotosAlbumBridgeAsync(options: ESObject): ESObject {
-    wbLogger.debug('JsBridgeNative', `NativeApi$saveImageToPhotosAlbum`)
+  saveImageToPhotosAlbum(options: ESObject): ESObject {
+    wbLogger.debug('JsBridgeNativeApi', `NativeApi$saveImageToPhotosAlbum`)
     return as.saveImageToPhotosAlbum(options)
   }
 
-  getVideoInfoBridgeAsync(options: ESObject): void {
-    wbLogger.debug('JsBridgeNative', `NativeApi$getImageInfo`)
+  getVideoInfo(options: ESObject): void {
+    wbLogger.debug('JsBridgeNativeApi', `NativeApi$getVideoInfo`)
+    return as.getVideoInfo(options)
+  }
+
+  getImageInfo(options: ESObject): void {
+    wbLogger.debug('JsBridgeNativeApi', `NativeApi$getImageInfo`)
     return as.getImageInfo(options)
   }
 
-  getImageInfoBridgeAsync(options: ESObject): void {
-    wbLogger.debug('JsBridgeNative', `NativeApi$getImageInfo`)
-    return as.getImageInfo(options)
-  }
-
-  compressVideoBridgeAsync(options: ESObject): void {
-    wbLogger.debug('JsBridgeNative', `NativeApi$compressVideo`)
-    return as.compressVideo(options)
-  }
-
-  createInnerAudioContextBridgeAsync(options: ESObject): void {
-    wbLogger.debug('JsBridgeNative', `NativeApi$createInnerAudioContext`)
-    return as.createInnerAudioContext(options)
-  }
-
-  getLocationBridgeAsync(options: ESObject): void {
-    wbLogger.debug('JsBridgeNative', `NativeApi$getLocation`)
+  getLocation(options: ESObject): void {
+    wbLogger.debug('JsBridgeNativeApi', `NativeApi$getLocation`)
     return as.getLocation(options)
   }
 
-  openDocumentBridgeAsync(options: ESObject): void {
-    wbLogger.debug('JsBridgeNative', `NativeApi$openDocument`)
+  openDocument(options: ESObject): void {
+    wbLogger.debug('JsBridgeNativeApi', `NativeApi$openDocument`)
     return as.openDocument(options)
   }
 
-  loginBridgeAsync(options: ESObject): void {
-    wbLogger.debug('JsBridgeNative', `NativeApi$login`)
-    return as.login(options)
-  }
-
-  getUserInfoBridgeAsync(options: ESObject): void {
-    wbLogger.debug('JsBridgeNative', `NativeApi$getUserInfo`)
+  getUserInfo(options: ESObject): void {
+    wbLogger.debug('JsBridgeNativeApi', `NativeApi$getUserInfo`)
     return as.getUserInfo(options)
   }
 
-  setKeepScreenOnBridgeAsync(options: ESObject): void {
-    wbLogger.debug('JsBridgeNative', `NativeApi$getImageInfo`)
+  setKeepScreenOn(options: ESObject): void {
+    wbLogger.debug('JsBridgeNativeApi', `NativeApi$setKeepScreenOn`)
     return as.setKeepScreenOn(options)
   }
 
-  onUserCaptureScreenBridgeSync(options: ESObject): void {
-    wbLogger.debug('JsBridgeNative', `NativeApi$onUserCaptureScreen`)
+  //回调监听
+  onUserCaptureScreen(options: ESObject): void {
+    wbLogger.debug('JsBridgeNativeApi', `NativeApi$onUserCaptureScreen`)
     return as.onUserCaptureScreen(options)
   }
 
-  hideKeyboardBridgeAsync(options: ESObject): void {
-    wbLogger.debug('JsBridgeNative', `NativeApi$hideKeyboard`)
+  hideKeyboard(options: ESObject): void {
+    wbLogger.debug('JsBridgeNativeApi', `NativeApi$hideKeyboard`)
     return as.hideKeyboard(options)
   }
 
   makePhoneCall(options: ESObject): void {
-    wbLogger.debug('JsBridgeNative', `NativeApi$getImageInfo`)
-    // return as.makePhoneCall(options.phoneNumber, createCallback(options))
-    as.makePhoneCall(options)
+    wbLogger.debug('JsBridgeNativeApi', `NativeApi$makePhoneCall`)
+    return as.makePhoneCall(options)
   }
 
-  openSystemBluetoothSettingBridgeAsync(options: OpenSystemBluetoothSetting) {
-    wbLogger.debug('JsBridgeNative', `openSystemBluetoothSetting， options.success=${options.success}`)
-    options && options.success && options.success('has opened')
+
+  // NativeRequest
+  request(options: ESObject): ESObject {
+    wbLogger.debug('JsBridgeNativeApi', `NativeApi$request`)
+    const networkTask: ESObject = as.request(options)
+    this.networkTaskMap.set(this.networkTaskID, networkTask)
+    return this.networkTaskID ++
   }
 
-  onWindowResizeBridgeAsync(listener: (res: WindowResizeResult) => void) {
-    listener({
-      size: {
-        windowWidth: 340,
-        windowHeight: 720
-      }
-    })
+  // NativeFileSystemManager
+  saveFile(options: ESObject): ESObject {
+    wbLogger.debug('JsBridgeNativeApi', `NativeApi$access`)
+    return as.saveFile(options)
+  }
 
-    setTimeout(() => {
-      listener({
-        size: {
-          windowWidth: 720,
-          windowHeight: 1280
-        }
-      })
-    }, 1000)
+  access(options: ESObject): ESObject {
+    wbLogger.debug('JsBridgeNativeApi', `NativeApi$access`)
+    return NativeApiImpl.getFileManager().access(options)
+  }
+
+  getFileInfo(options: ESObject): ESObject {
+    wbLogger.debug('JsBridgeNativeApi', `NativeApi$getFileInfo`)
+    return NativeApiImpl.getFileManager().getFileInfo(options)
+  }
+
+  readFile(options: ESObject): ESObject {
+    wbLogger.debug('JsBridgeNativeApi', `NativeApi$readFile`)
+    return NativeApiImpl.getFileManager().readFile(options)
+  }
+
+  readFileSync(options: ESObject): ESObject {
+    wbLogger.debug('JsBridgeNativeApi', `NativeApi$readFileSync`)
+    return NativeApiImpl.getFileManager().readFileSync(options)
+  }
+
+  //NativeAContextApi
+  createInnerAudioContext(options: ESObject): ESObject {
+    wbLogger.debug('JsBridgeNativeApi', `NativeApi$createInnerAudioContext`)
+    const innerAudioContext: ESObject = as.createInnerAudioContext()
+    this.contextMap.set(this.contextID, innerAudioContext)
+    return this.contextID ++
+  }
+
+  stop(options: ESObject): void {
+    wbLogger.debug('JsBridgeNativeApi', `NativeApi$stop`)
+    if (!this.contextMap.has(options.contextId)){
+      wbLogger.error('JsBridgeNativeApi', 'the context has not been init')
+      return
+    }
+    this.contextMap.get(options.contextId).stop()
+  }
+
+  play(options: ESObject): void {
+    wbLogger.debug('JsBridgeNativeApi', `NativeApi$play`)
+    if (!this.contextMap.has(options.contextId)){
+      wbLogger.error('JsBridgeNativeApi', 'the context has not been init')
+      return
+    }
+    this.contextMap.get(options.contextId).play()
+  }
+
+  onPlay(options: ESObject): ESObject {
+    wbLogger.debug('JsBridgeNativeApi', `NativeApi$onPlay`)
+    if (!this.contextMap.has(options.contextId)){
+      wbLogger.error('JsBridgeNativeApi', 'the context has not been init')
+      return
+    }
+    this.contextMap.get(options.contextId).onPlay(options.listener)
+  }
+
+  onStop(options: ESObject): ESObject {
+    wbLogger.debug('JsBridgeNativeApi', `NativeApi$onStop`)
+    if (!this.contextMap.has(options.contextId)){
+      wbLogger.error('JsBridgeNativeApi', 'the context has not been init')
+      return
+    }
+    this.contextMap.get(options.contextId).onStop(options.listener)
+  }
+
+  onError(options: ESObject): ESObject {
+    wbLogger.debug('JsBridgeNativeApi', `NativeApi$onError`)
+    if (!this.contextMap.has(options.contextId)){
+      wbLogger.error('JsBridgeNativeApi', 'the context has not been init')
+      return
+    }
+    this.contextMap.get(options.contextId).onError(options.listener)
+  }
+
+  onEnded(options: ESObject): ESObject {
+    wbLogger.debug('JsBridgeNativeApi', `NativeApi$onEnded`)
+    if (!this.contextMap.has(options.contextId)){
+      wbLogger.error('JsBridgeNativeApi', 'the context has not been init')
+      return
+    }
+    this.contextMap.get(options.contextId).onEnded(options.listener)
+  }
+
+  // NativeUploadFile
+  uploadFile(options: ESObject): ESObject {
+    wbLogger.debug('JsBridgeNativeApi', `NativeApi$uploadFile`)
+    const networkTask: ESObject = as.uploadFile(options)
+    this.networkTaskMap.set(this.networkTaskID, networkTask)
+    return this.networkTaskID ++
+  }
+
+  abort(options: ESObject): ESObject {
+    wbLogger.debug('JsBridgeNativeApi', `NativeApi$abort`)
+    if (!this.networkTaskMap.has(options.taskId)){
+      wbLogger.error('JsBridgeNativeApi', 'the Task has not been init')
+      return
+    }
+    this.networkTaskMap.get(options.taskId).abort()
+  }
+
+  offHeadersReceived(options: ESObject): ESObject{
+    wbLogger.debug('JsBridgeNativeApi', `NativeApi$offHeadersReceived`)
+    if (!this.networkTaskMap.has(options.taskId)){
+      wbLogger.error('JsBridgeNativeApi', 'the Task has not been init')
+      return
+    }
+    this.networkTaskMap.get(options.taskId).offHeadersReceived(options.listener)
+  }
+
+  offProgressUpdate(options: ESObject): ESObject{
+    wbLogger.debug('JsBridgeNativeApi', `NativeApi$offProgressUpdate`)
+    if (!this.networkTaskMap.has(options.taskId)){
+      wbLogger.error('JsBridgeNativeApi', 'the Task has not been init')
+      return
+    }
+    this.networkTaskMap.get(options.taskId).offProgressUpdate(options.listener)
+  }
+
+  onHeadersReceived(options: ESObject): ESObject{
+    wbLogger.debug('JsBridgeNativeApi', `NativeApi$onHeadersReceived`)
+    if (!this.networkTaskMap.has(options.taskId)){
+      wbLogger.error('JsBridgeNativeApi', 'the Task has not been init')
+      return
+    }
+    this.networkTaskMap.get(options.taskId).onHeadersReceived(options.listener)
+  }
+
+  onProgressUpdate(options: ESObject): ESObject{
+    wbLogger.debug('JsBridgeNativeApi', `NativeApi$onProgressUpdate`)
+    if (!this.networkTaskMap.has(options.taskId)){
+      wbLogger.error('JsBridgeNativeApi', 'the Task has not been init')
+      return
+    }
+    this.networkTaskMap.get(options.taskId).onProgressUpdate(options.listener)
   }
 }
 

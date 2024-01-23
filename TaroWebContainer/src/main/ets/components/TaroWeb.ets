@@ -119,127 +119,148 @@ export struct TaroWeb {
     this.taroWebController.addRequestHandler(this.handleInternalResource);
     this.taroWebController.addRequestHandler(this.useLocalCacheResource);
 
-    MethodChannelInstance.registerMethod('NativeApi$getWindowInfoBridgeSync', (options: ESObject) => {
-      return NativeApiImplInstance.getWindowInfoBridgeSync()
+    MethodChannelInstance.registerMethod('NativeApi$getWindowInfo', (options: ESObject) => {
+      return NativeApiImplInstance.getWindowInfo()
     })
 
-    MethodChannelInstance.registerMethod('NativeApi$getSystemInfoSyncBridgeSync', (options: ESObject) => {
-      return NativeApiImplInstance.getSystemInfoSyncBridgeSync(options)
+    MethodChannelInstance.registerMethod('NativeApi$getSystemInfoSync', (options: ESObject) => {
+      return NativeApiImplInstance.getSystemInfoSync(options)
     })
 
-    MethodChannelInstance.registerMethod('NativeApi$getSystemSettingBridgeSync', (options: ESObject) => {
-      return NativeApiImplInstance.getSystemSettingBridgeSync(options)
+    MethodChannelInstance.registerMethod('NativeApi$getSystemSetting', (options: ESObject) => {
+      return NativeApiImplInstance.getSystemSetting(options)
     })
 
-    MethodChannelInstance.registerMethod('NativeApi$getAppBaseInfoBridgeSync', (options: ESObject) => {
-      return NativeApiImplInstance.getAppBaseInfoBridgeSync(options)
+    MethodChannelInstance.registerMethod('NativeApi$getAppBaseInfo', (options: ESObject) => {
+      return NativeApiImplInstance.getAppBaseInfo(options)
     })
 
-    MethodChannelInstance.registerMethod('NativeApi$getAppAuthorizeSettingBridgeSync', (options: ESObject) => {
-      return NativeApiImplInstance.getAppAuthorizeSettingBridgeSync(options)
+    MethodChannelInstance.registerMethod('NativeApi$getAppAuthorizeSetting', (options: ESObject) => {
+      return NativeApiImplInstance.getAppAuthorizeSetting(options)
     })
 
-    MethodChannelInstance.registerMethod('NativeApi$requestBridgeAsync', (options: ESObject) => {
-      return NativeApiImplInstance.requestBridgeAsync(options)
+    MethodChannelInstance.registerMethod('NativeApi$request', (options: ESObject) => {
+      return NativeApiImplInstance.request(options)
     })
 
-    MethodChannelInstance.registerMethod('NativeApi$downloadFileBridgeAsync', (options: ESObject) => {
-      return NativeApiImplInstance.downloadFileBridgeAsync(options)
+    MethodChannelInstance.registerMethod('NativeApi$downloadFile', (options: ESObject) => {
+      return NativeApiImplInstance.downloadFile(options)
     })
 
-    MethodChannelInstance.registerMethod('NativeApi$uploadFileBridgeAsync', (options: ESObject) => {
-      return NativeApiImplInstance.uploadFileBridgeAsync(options)
+    MethodChannelInstance.registerMethod('NativeApi$getUserInfo', (options: ESObject) => {
+      return NativeApiImplInstance.getUserInfo(options)
     })
 
-    // MethodChannelInstance.registerMethod('NativeApi$getUserInfoBridgeSync', (options: ESObject) => {
-    //   return NativeApiImplInstance.getUserInfoBridgeSync(options)
-    // })
-
-    MethodChannelInstance.registerMethod('NativeApi$saveImageToPhotosAlbumBridgeAsync', (options: ESObject) => {
-      return NativeApiImplInstance.saveImageToPhotosAlbumBridgeAsync(options)
+    MethodChannelInstance.registerMethod('NativeApi$saveImageToPhotosAlbum', (options: ESObject) => {
+      return NativeApiImplInstance.saveImageToPhotosAlbum(options)
     })
 
-    MethodChannelInstance.registerMethod('NativeApi$getVideoInfoBridgeAsync', (options: ESObject) => {
-      return NativeApiImplInstance.getVideoInfoBridgeAsync(options)
+    MethodChannelInstance.registerMethod('NativeApi$getVideoInfo', (options: ESObject) => {
+      return NativeApiImplInstance.getVideoInfo(options)
     })
 
-    MethodChannelInstance.registerMethod('NativeApi$getImageInfoBridgeAsync', (options: ESObject) => {
-      return NativeApiImplInstance.getImageInfoBridgeAsync(options)
+    MethodChannelInstance.registerMethod('NativeApi$getImageInfo', (options: ESObject) => {
+      return NativeApiImplInstance.getImageInfo(options)
     })
 
-    MethodChannelInstance.registerMethod('NativeApi$getLocationBridgeAsync', (options: ESObject) => {
-      return NativeApiImplInstance.getLocationBridgeAsync(options)
+    MethodChannelInstance.registerMethod('NativeApi$getLocation', (options: ESObject) => {
+      return NativeApiImplInstance.getLocation(options)
     })
 
-    MethodChannelInstance.registerMethod('NativeApi$openDocumentBridgeAsync', (options: ESObject) => {
-      return NativeApiImplInstance.openDocumentBridgeAsync(options)
+    MethodChannelInstance.registerMethod('NativeApi$openDocument', (options: ESObject) => {
+      return NativeApiImplInstance.openDocument(options)
     })
 
-    MethodChannelInstance.registerMethod('NativeApi$setKeepScreenOnBridgeAsync', (options: ESObject) => {
-      return NativeApiImplInstance.setKeepScreenOnBridgeAsync(options)
+    MethodChannelInstance.registerMethod('NativeApi$setKeepScreenOn', (options: ESObject) => {
+      return NativeApiImplInstance.setKeepScreenOn(options)
     })
 
-    MethodChannelInstance.registerMethod('NativeApi$onUserCaptureScreenBridgeSync', (options: ESObject) => {
-      return NativeApiImplInstance.onUserCaptureScreenBridgeSync(options)
+    MethodChannelInstance.registerMethod('NativeApi$onUserCaptureScreen', (options: ESObject) => {
+      return NativeApiImplInstance.onUserCaptureScreen(options)
     })
 
-    MethodChannelInstance.registerMethod('NativeApi$hideKeyboardBridgeSync', (options: ESObject) => {
-      return NativeApiImplInstance.hideKeyboardBridgeAsync(options)
+    MethodChannelInstance.registerMethod('NativeApi$hideKeyboard', (options: ESObject) => {
+      return NativeApiImplInstance.hideKeyboard(options)
     })
 
     MethodChannelInstance.registerMethod('NativeApi$makePhoneCall', (options: ESObject) => {
       return NativeApiImplInstance.makePhoneCall(options)
     })
 
-    //NativeFileSystemManager
-    // MethodChannelInstance.registerMethod('NativeApi$saveFileBridgeAsync', (options: ESObject) => {
-    //   return NativeApiImplInstance.saveFileBridgeAsync(options)
-    // })
-    //
-    // MethodChannelInstance.registerMethod('NativeApi$accessBridgeAsync', (options: ESObject) => {
-    //   return NativeApiImplInstance.accessBridgeAsync(options)
-    // })
-    //
-    // MethodChannelInstance.registerMethod('NativeApi$getFileInfoBridgeAsync', (options: ESObject) => {
-    //   return NativeApiImplInstance.getFileInfoBridgeAsync(options)
-    // })
-    //
-    // MethodChannelInstance.registerMethod('NativeApi$readFileBridgeAsync', (options: ESObject) => {
-    //   return NativeApiImplInstance.readFileBridgeAsync(options)
-    // })
-    //
-    // MethodChannelInstance.registerMethod('NativeApi$readFileSyncBridgeSync', (options: ESObject) => {
-    //   return NativeApiImplInstance.readFileSyncBridgeSync(options)
-    // })
+    // NativeFileSystemManager
+    MethodChannelInstance.registerMethod('NativeApi$saveFile', (options: ESObject) => {
+      return NativeApiImplInstance.saveFile(options)
+    })
 
-    // //NativeAContextApi
-    // MethodChannelInstance.registerMethod('NativeApi$createInnerAudioContextBridgeSync', (options: ESObject) => {
-    //   return NativeApiImplInstance.createInnerAudioContextBridgeSync(options)
-    // })
-    //
-    // MethodChannelInstance.registerMethod('NativeApi$stopBridgeSync', (options: ESObject) => {
-    //   return NativeApiImplInstance.stopBridgeSync()
-    // })
-    //
-    // MethodChannelInstance.registerMethod('NativeApi$playBridgeSync', (options: ESObject) => {
-    //   return NativeApiImplInstance.playBridgeSync()
-    // })
-    //
-    // MethodChannelInstance.registerMethod('NativeApi$onPlayBridgeSync', (options: ESObject) => {
-    //   return NativeApiImplInstance.onPlayBridgeSync(options)
-    // })
-    //
-    // MethodChannelInstance.registerMethod('NativeApi$onStopBridgeSync', (options: ESObject) => {
-    //   return NativeApiImplInstance.onStopBridgeSync(options)
-    // })
-    //
-    // MethodChannelInstance.registerMethod('NativeApi$onErrorBridgeSync', (options: ESObject) => {
-    //   return NativeApiImplInstance.onErrorBridgeSync(options)
-    // })
-    //
-    // MethodChannelInstance.registerMethod('NativeApi$onEndedBridgeSync', (options: ESObject) => {
-    //   return NativeApiImplInstance.onEndedBridgeSync(options)
-    // })
+    MethodChannelInstance.registerMethod('NativeApi$access', (options: ESObject) => {
+      return NativeApiImplInstance.access(options)
+    })
+
+    MethodChannelInstance.registerMethod('NativeApi$getFileInfo', (options: ESObject) => {
+      return NativeApiImplInstance.getFileInfo(options)
+    })
+
+    MethodChannelInstance.registerMethod('NativeApi$readFile', (options: ESObject) => {
+      return NativeApiImplInstance.readFile(options)
+    })
+
+    MethodChannelInstance.registerMethod('NativeApi$readFileSync', (options: ESObject) => {
+      return NativeApiImplInstance.readFileSync(options)
+    })
+
+    //NativeAContextApi
+    MethodChannelInstance.registerMethod('NativeApi$createInnerAudioContext', (options: ESObject) => {
+      return NativeApiImplInstance.createInnerAudioContext(options)
+    })
+
+    MethodChannelInstance.registerMethod('NativeApi$stop', (options: ESObject) => {
+      return NativeApiImplInstance.stop()
+    })
+
+    MethodChannelInstance.registerMethod('NativeApi$play', (options: ESObject) => {
+      return NativeApiImplInstance.play()
+    })
+
+    MethodChannelInstance.registerMethod('NativeApi$onPlay', (options: ESObject) => {
+      return NativeApiImplInstance.onPlay(options)
+    })
+
+    MethodChannelInstance.registerMethod('NativeApi$onStop', (options: ESObject) => {
+      return NativeApiImplInstance.onStop(options)
+    })
+
+    MethodChannelInstance.registerMethod('NativeApi$onError', (options: ESObject) => {
+      return NativeApiImplInstance.onError(options)
+    })
+
+    MethodChannelInstance.registerMethod('NativeApi$onEnded', (options: ESObject) => {
+      return NativeApiImplInstance.onEnded(options)
+    })
+
+    // NativeUploadFile
+    MethodChannelInstance.registerMethod('NativeApi$uploadFile', (options: ESObject) => {
+      return NativeApiImplInstance.uploadFile(options)
+    })
+
+    MethodChannelInstance.registerMethod('NativeApi$abort', (options: ESObject) => {
+      return NativeApiImplInstance.abort(options)
+    })
+
+    MethodChannelInstance.registerMethod('NativeApi$offHeadersReceived', (options: ESObject) => {
+      return NativeApiImplInstance.offHeadersReceived(options)
+    })
+
+    MethodChannelInstance.registerMethod('NativeApi$offProgressUpdate', (options: ESObject) => {
+      return NativeApiImplInstance.offProgressUpdate(options)
+    })
+
+    MethodChannelInstance.registerMethod('NativeApi$onHeadersReceived', (options: ESObject) => {
+      return NativeApiImplInstance.onHeadersReceived(options)
+    })
+
+    MethodChannelInstance.registerMethod('NativeApi$onProgressUpdate', (options: ESObject) => {
+      return NativeApiImplInstance.onProgressUpdate(options)
+    })
   }
 
   aboutToDisappear() {
