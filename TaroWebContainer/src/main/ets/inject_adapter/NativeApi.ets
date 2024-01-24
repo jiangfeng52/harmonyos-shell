@@ -2,6 +2,7 @@ import { wbLogger } from '../utils/Logger'
 import { MethodChannelInstance } from './Channel'
 import { as } from '../utils/advancedapi.min';
 import { Key } from '@ohos.multimodalInput.keyEvent';
+import buffer from '@ohos.buffer';
 
 interface WindowInfo {
   pixelRatio?: number,
@@ -301,12 +302,42 @@ class NativeApiImpl implements NativeApi {
 
   readFile(options: ESObject): ESObject {
     wbLogger.debug('JsBridgeNativeApi', `NativeApi$readFile`)
-    return NativeApiImpl.getFileManager().readFile(options)
+    options = options || {}
+    return NativeApiImpl.getFileManager().readFile({
+      filePath: options.filePath,
+      encoding: options.encoding,
+      position: options.position,
+      length: options.length,
+      success: (res: ESObject) => {
+        const result: ESObject = {
+          result: res.data,
+          bufBase64: (res?.data instanceof ArrayBuffer) ? buffer.from(res.data).toString('base64') : undefined,
+        }
+        options.success && options.success(result)
+      },
+      fail: options.fail,
+    })
   }
 
   readFileSync(options: ESObject): ESObject {
     wbLogger.debug('JsBridgeNativeApi', `NativeApi$readFileSync`)
-    return NativeApiImpl.getFileManager().readFileSync(options)
+    options = options || {}
+    try {
+      const data: Object = NativeApiImpl.getFileManager().readFileSync(
+        options.filePath,
+        options.encoding,
+        options.position,
+        options.length
+      )
+      return {
+        result: data,
+        bufBase64: (data instanceof ArrayBuffer) ? buffer.from(data).toString('base64') : undefined,
+      }
+    } catch (err) {
+      return {
+        error: `${err}` || `readFileSync:fail`
+      }
+    }
   }
 
   //NativeAContextApi
@@ -317,7 +348,7 @@ class NativeApiImpl implements NativeApi {
     return this.contextID ++
   }
 
-  stop(options: ESObject): void {
+  stop(options?: ESObject): void {
     wbLogger.debug('JsBridgeNativeApi', `NativeApi$stop`)
     if (!this.contextMap.has(options.contextId)){
       wbLogger.error('JsBridgeNativeApi', 'the context has not been init')
@@ -326,7 +357,7 @@ class NativeApiImpl implements NativeApi {
     this.contextMap.get(options.contextId).stop()
   }
 
-  play(options: ESObject): void {
+  play(options?: ESObject): void {
     wbLogger.debug('JsBridgeNativeApi', `NativeApi$play`)
     if (!this.contextMap.has(options.contextId)){
       wbLogger.error('JsBridgeNativeApi', 'the context has not been init')
