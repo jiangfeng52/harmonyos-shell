@@ -324,7 +324,7 @@ class NativeApiImpl implements NativeApi {
     wbLogger.debug('JsBridgeNativeApi', `NativeApi$request`)
     const networkTask: ESObject = as.request(options)
     this.networkTaskMap.set(this.networkTaskID, networkTask)
-    return this.networkTaskID++
+    return this.networkTaskID ++
   }
 
   // NativeFileSystemManager
@@ -345,12 +345,42 @@ class NativeApiImpl implements NativeApi {
 
   readFile(options: ESObject): ESObject {
     wbLogger.debug('JsBridgeNativeApi', `NativeApi$readFile`)
-    return NativeApiImpl.getFileManager().readFile(options)
+    options = options || {}
+    return NativeApiImpl.getFileManager().readFile({
+      filePath: options.filePath,
+      encoding: options.encoding,
+      position: options.position,
+      length: options.length,
+      success: (res: ESObject) => {
+        const result: ESObject = {
+          result: res.data,
+          bufBase64: (res?.data instanceof ArrayBuffer) ? buffer.from(res.data).toString('base64') : undefined,
+        }
+        options.success && options.success(result)
+      },
+      fail: options.fail,
+    })
   }
 
   readFileSync(options: ESObject): ESObject {
     wbLogger.debug('JsBridgeNativeApi', `NativeApi$readFileSync`)
-    return NativeApiImpl.getFileManager().readFileSync(options)
+    options = options || {}
+    try {
+      const data: Object = NativeApiImpl.getFileManager().readFileSync(
+        options.filePath,
+        options.encoding,
+        options.position,
+        options.length
+      )
+      return {
+        result: data,
+        bufBase64: (data instanceof ArrayBuffer) ? buffer.from(data).toString('base64') : undefined,
+      }
+    } catch (err) {
+      return {
+        error: `${err}` || `readFileSync:fail`
+      }
+    }
   }
 
   // NativeUploadFile
@@ -358,7 +388,7 @@ class NativeApiImpl implements NativeApi {
     wbLogger.debug('JsBridgeNativeApi', `NativeApi$uploadFile`)
     const networkTask: ESObject = as.uploadFile(options)
     this.networkTaskMap.set(this.networkTaskID, networkTask)
-    return this.networkTaskID++
+    return this.networkTaskID ++
   }
 
   abort(options: ESObject): ESObject {
