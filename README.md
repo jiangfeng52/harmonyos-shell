@@ -44,6 +44,9 @@ struct TaroMpharmonySample {
 
 
 ### 版本修订记录
+2024//01/22
+- 修改 @ohos/web-container 名称为 `@hybrid`/web-container, 与发布版本 [@hybrid/web-container](https://ohpm.openharmony.cn/#/cn/detail/@hybrid%2Fweb-container) 保持一致
+
 2023//12/26
 - 增加相册组件，支持chooseImage/chooseMedia接口
 
