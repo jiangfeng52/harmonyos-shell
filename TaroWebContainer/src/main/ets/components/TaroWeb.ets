@@ -213,28 +213,28 @@ export struct TaroWeb {
       return NativeApiImplInstance.createInnerAudioContext(options)
     })
 
-    MethodChannelInstance.registerMethod('NativeApi$stop', (options: ESObject) => {
-      return NativeApiImplInstance.stop()
+    MethodChannelInstance.registerMethod('NativeApi$innerAudioStop', (options: ESObject) => {
+      return NativeApiImplInstance.innerAudioStop(options)
     })
 
-    MethodChannelInstance.registerMethod('NativeApi$play', (options: ESObject) => {
-      return NativeApiImplInstance.play()
+    MethodChannelInstance.registerMethod('NativeApi$innerAudioPlay', (options: ESObject) => {
+      return NativeApiImplInstance.innerAudioPlay(options)
     })
 
-    MethodChannelInstance.registerMethod('NativeApi$onPlay', (options: ESObject) => {
-      return NativeApiImplInstance.onPlay(options)
+    MethodChannelInstance.registerMethod('NativeApi$innerAudioOnPlay', (options: ESObject) => {
+      return NativeApiImplInstance.innerAudioOnPlay(options)
     })
 
-    MethodChannelInstance.registerMethod('NativeApi$onStop', (options: ESObject) => {
-      return NativeApiImplInstance.onStop(options)
+    MethodChannelInstance.registerMethod('NativeApi$innerAudioOnStop', (options: ESObject) => {
+      return NativeApiImplInstance.innerAudioOnStop(options)
     })
 
-    MethodChannelInstance.registerMethod('NativeApi$onError', (options: ESObject) => {
-      return NativeApiImplInstance.onError(options)
+    MethodChannelInstance.registerMethod('NativeApi$innerAudioOnError', (options: ESObject) => {
+      return NativeApiImplInstance.innerAudioOnError(options)
     })
 
-    MethodChannelInstance.registerMethod('NativeApi$onEnded', (options: ESObject) => {
-      return NativeApiImplInstance.onEnded(options)
+    MethodChannelInstance.registerMethod('NativeApi$innerAudioOnEnded', (options: ESObject) => {
+      return NativeApiImplInstance.innerAudioOnEnded(options)
     })
 
     // NativeUploadFile
@@ -260,6 +260,94 @@ export struct TaroWeb {
 
     MethodChannelInstance.registerMethod('NativeApi$onProgressUpdate', (options: ESObject) => {
       return NativeApiImplInstance.onProgressUpdate(options)
+    })
+
+    MethodChannelInstance.registerMethod('NativeApi$getAudioContextVolume', (options: ESObject) => {
+      return NativeApiImplInstance.getAudioContextVolume(options)
+    })
+
+    MethodChannelInstance.registerMethod('NativeApi$setAudioContextVolume', (options: ESObject) => {
+      return NativeApiImplInstance.setAudioContextVolume(options)
+    })
+
+    MethodChannelInstance.registerMethod('NativeApi$getAudioContextStartTime', (options: ESObject) => {
+      return NativeApiImplInstance.getAudioContextStartTime(options)
+    })
+
+    MethodChannelInstance.registerMethod('NativeApi$setAudioContextStartTime', (options: ESObject) => {
+      return NativeApiImplInstance.setAudioContextStartTime(options)
+    })
+
+    MethodChannelInstance.registerMethod('NativeApi$getAudioContextPlaybackRate', (options: ESObject) => {
+      return NativeApiImplInstance.getAudioContextPlaybackRate(options)
+    })
+
+    MethodChannelInstance.registerMethod('NativeApi$setAudioContextPlaybackRate', (options: ESObject) => {
+      return NativeApiImplInstance.setAudioContextPlaybackRate(options)
+    })
+
+    MethodChannelInstance.registerMethod('NativeApi$getAudioContextPaused', (options: ESObject) => {
+      return NativeApiImplInstance.getAudioContextPaused(options)
+    })
+
+    MethodChannelInstance.registerMethod('NativeApi$setAudioContextPaused', (options: ESObject) => {
+      return NativeApiImplInstance.setAudioContextPaused(options)
+    })
+
+    MethodChannelInstance.registerMethod('NativeApi$getAudioContextObeyMuteSwitch', (options: ESObject) => {
+      return NativeApiImplInstance.getAudioContextObeyMuteSwitch(options)
+    })
+
+    MethodChannelInstance.registerMethod('NativeApi$setAudioContextObeyMuteSwitch', (options: ESObject) => {
+      return NativeApiImplInstance.setAudioContextObeyMuteSwitch(options)
+    })
+
+    MethodChannelInstance.registerMethod('NativeApi$getAudioContextLoop', (options: ESObject) => {
+      return NativeApiImplInstance.getAudioContextLoop(options)
+    })
+
+    MethodChannelInstance.registerMethod('NativeApi$setAudioContextLoop', (options: ESObject) => {
+      return NativeApiImplInstance.setAudioContextLoop(options)
+    })
+
+    MethodChannelInstance.registerMethod('NativeApi$getAudioContextDuration', (options: ESObject) => {
+      return NativeApiImplInstance.getAudioContextDuration(options)
+    })
+
+    MethodChannelInstance.registerMethod('NativeApi$setAudioContextDuration', (options: ESObject) => {
+      return NativeApiImplInstance.setAudioContextDuration(options)
+    })
+
+    MethodChannelInstance.registerMethod('NativeApi$getAudioContextCurrentTime', (options: ESObject) => {
+      return NativeApiImplInstance.getAudioContextCurrentTime(options)
+    })
+
+    MethodChannelInstance.registerMethod('NativeApi$setAudioContextCurrentTime', (options: ESObject) => {
+      return NativeApiImplInstance.setAudioContextCurrentTime(options)
+    })
+
+    MethodChannelInstance.registerMethod('NativeApi$getAudioContextBuffered', (options: ESObject) => {
+      return NativeApiImplInstance.getAudioContextBuffered(options)
+    })
+
+    MethodChannelInstance.registerMethod('NativeApi$setAudioContextBuffered', (options: ESObject) => {
+      return NativeApiImplInstance.setAudioContextBuffered(options)
+    })
+
+    MethodChannelInstance.registerMethod('NativeApi$getAudioContextAutoplay', (options: ESObject) => {
+      return NativeApiImplInstance.getAudioContextAutoplay(options)
+    })
+
+    MethodChannelInstance.registerMethod('NativeApi$setAudioContextAutoplay', (options: ESObject) => {
+      return NativeApiImplInstance.setAudioContextAutoplay(options)
+    })
+
+    MethodChannelInstance.registerMethod('NativeApi$getAudioContextSrc', (options: ESObject) => {
+      return NativeApiImplInstance.getAudioContextSrc(options)
+    })
+
+    MethodChannelInstance.registerMethod('NativeApi$setAudioContextSrc', (options: ESObject) => {
+      return NativeApiImplInstance.setAudioContextSrc(options)
     })
   }
 
