@@ -1,7 +1,7 @@
+import buffer from '@ohos.buffer';
 import { wbLogger } from '../utils/Logger'
-import { MethodChannelInstance } from './Channel'
 import { as } from '../utils/advancedapi.min';
-import { Key } from '@ohos.multimodalInput.keyEvent';
+
 
 interface WindowInfo {
   pixelRatio?: number,

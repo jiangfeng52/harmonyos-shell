@@ -28,7 +28,7 @@ class Channel {
   }
 
   jsCall(channelType: string, object: object){
-    let jsCode = `window.Channel.jsCall('${channelType}', '${JSON.stringify(object)}')`
+    let jsCode = `window.Channel.jsCall('${channelType}', ${JSON.stringify(object)})`
     this.runJavascriptFun && this.runJavascriptFun(jsCode)
   }
 }
