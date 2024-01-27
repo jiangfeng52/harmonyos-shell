@@ -82,8 +82,18 @@ window.MethodChannel = {
     methodCallByNative: function (className, methodName, args, isAsync, autoRelease){
 
         const firstArg = args.length >= 1 ? args[0] : ''
+        const objectId = args.length >= 2 ? args[1] : undefined
 
         let argTypeIsFun = isFunction(firstArg)
+
+        let stubId = window.MethodChannel.__registerArgStub(firstArg, argTypeIsFun, autoRelease)
+        if (argTypeIsFun) {
+            if (this._listenerMap.has(firstArg)) {
+                stubId = this._listenerMap.get(firstArg)
+            } else {
+                this._listenerMap.set(firstArg, stubId)
+            }
+        }
 
         // 方法调用转换为数据
         var methodCall = {
@@ -95,7 +105,8 @@ window.MethodChannel = {
                 isFun: argTypeIsFun,
                 properties: firstArg,
                 funs: getAllFuns(firstArg), // ['success', 'fail']
-                stubId: window.MethodChannel.__registerArgStub(firstArg, argTypeIsFun, autoRelease)
+                stubId: stubId,
+                objectId: objectId,
             },
         }
         return window.Channel.nativeCall(window.MethodChannel.ChannelType, methodCall)
@@ -107,6 +118,7 @@ window.MethodChannel = {
 
     _NextId: 0, // 初始ID值
     _stubMap: {},
+    _listenerMap: new Map(),
     __registerArgStub: function (argObject, isFun, autoRelease) {
         const hasFun = isFunctionOrObjectWithFunction(argObject)
         if(!hasFun) {
