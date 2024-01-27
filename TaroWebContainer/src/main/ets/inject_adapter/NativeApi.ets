@@ -150,71 +150,71 @@ interface NativeApi {
 
   createInnerAudioContext(options: ESObject): void
 
-  innerAudioStop(options: ESObject): void
+  innerAudioStop(options: ESObject, objectId: number): void
 
-  innerAudioPlay(options: ESObject): void
+  innerAudioPlay(options: ESObject, objectId: number): void
 
-  innerAudioOnPlay(options: ESObject): ESObject
+  innerAudioOnPlay(options: ESObject, objectId: number): ESObject
 
-  innerAudioOnStop(options: ESObject): ESObject
+  innerAudioOnStop(options: ESObject, objectId: number): ESObject
 
-  innerAudioOnError(options: ESObject): ESObject
+  innerAudioOnError(options: ESObject, objectId: number): ESObject
 
-  innerAudioOnEnded(options: ESObject): ESObject
+  innerAudioOnEnded(options: ESObject, objectId: number): ESObject
 
-  abort(options: ESObject): ESObject
+  abort(options: ESObject, objectId: number): ESObject
 
-  offHeadersReceived(options: ESObject): ESObject
+  offHeadersReceived(options: ESObject, objectId: number): ESObject
 
-  offProgressUpdate(options: ESObject): ESObject
+  offProgressUpdate(options: ESObject, objectId: number): ESObject
 
-  onHeadersReceived(options: ESObject): ESObject
+  onHeadersReceived(options: ESObject, objectId: number): ESObject
 
-  onProgressUpdate(options: ESObject): ESObject
+  onProgressUpdate(options: ESObject, objectId: number): ESObject
 
-  getAudioContextVolume(options: ESObject): ESObject
+  getAudioContextVolume(options: ESObject, objectId: number): ESObject
 
-  setAudioContextVolume(options: ESObject): ESObject
+  setAudioContextVolume(options: ESObject, objectId: number): ESObject
 
-  getAudioContextStartTime(options: ESObject): ESObject
+  getAudioContextStartTime(options: ESObject, objectId: number): ESObject
 
-  setAudioContextStartTime(options: ESObject): ESObject
+  setAudioContextStartTime(options: ESObject, objectId: number): ESObject
 
-  getAudioContextPlaybackRate(options: ESObject): ESObject
+  getAudioContextPlaybackRate(options: ESObject, objectId: number): ESObject
 
-  setAudioContextPlaybackRate(options: ESObject): ESObject
+  setAudioContextPlaybackRate(options: ESObject, objectId: number): ESObject
 
-  getAudioContextPaused(options: ESObject): ESObject
+  getAudioContextPaused(options: ESObject, objectId: number): ESObject
 
-  setAudioContextPaused(options: ESObject): ESObject
+  setAudioContextPaused(options: ESObject, objectId: number): ESObject
 
-  getAudioContextObeyMuteSwitch(options: ESObject): ESObject
+  getAudioContextObeyMuteSwitch(options: ESObject, objectId: number): ESObject
 
-  setAudioContextObeyMuteSwitch(options: ESObject): ESObject
+  setAudioContextObeyMuteSwitch(options: ESObject, objectId: number): ESObject
 
-  getAudioContextLoop(options: ESObject): ESObject
+  getAudioContextLoop(options: ESObject, objectId: number): ESObject
 
-  setAudioContextLoop(options: ESObject): ESObject
+  setAudioContextLoop(options: ESObject, objectId: number): ESObject
 
-  getAudioContextDuration(options: ESObject): ESObject
+  getAudioContextDuration(options: ESObject, objectId: number): ESObject
 
-  setAudioContextDuration(options: ESObject): ESObject
+  setAudioContextDuration(options: ESObject, objectId: number): ESObject
 
-  getAudioContextCurrentTime(options: ESObject): ESObject
+  getAudioContextCurrentTime(options: ESObject, objectId: number): ESObject
 
-  setAudioContextCurrentTime(options: ESObject): ESObject
+  setAudioContextCurrentTime(options: ESObject, objectId: number): ESObject
 
-  getAudioContextBuffered(options: ESObject): ESObject
+  getAudioContextBuffered(options: ESObject, objectId: number): ESObject
 
-  setAudioContextBuffered(options: ESObject): ESObject
+  setAudioContextBuffered(options: ESObject, objectId: number): ESObject
 
-  getAudioContextAutoplay(options: ESObject): ESObject
+  getAudioContextAutoplay(options: ESObject, objectId: number): ESObject
 
-  setAudioContextAutoplay(options: ESObject): ESObject
+  setAudioContextAutoplay(options: ESObject, objectId: number): ESObject
 
-  getAudioContextSrc(options: ESObject): ESObject
+  getAudioContextSrc(options: ESObject, objectId: number): ESObject
 
-  setAudioContextSrc(options: ESObject): ESObject
+  setAudioContextSrc(options: ESObject, objectId: number): ESObject
 }
 
 class NativeApiImpl implements NativeApi {
@@ -391,49 +391,49 @@ class NativeApiImpl implements NativeApi {
     return this.networkTaskID ++
   }
 
-  abort(options: ESObject): ESObject {
+  abort(options: ESObject, objectId: number): ESObject {
     wbLogger.debug('JsBridgeNativeApi', `NativeApi$abort`)
-    if (!this.networkTaskMap.has(options.taskId)) {
+    if (!this.networkTaskMap.has(objectId)) {
       wbLogger.error('JsBridgeNativeApi', 'the Task has not been init')
       return
     }
-    this.networkTaskMap.get(options.taskId).abort()
+    this.networkTaskMap.get(objectId).abort()
   }
 
-  offHeadersReceived(options: ESObject): ESObject {
+  offHeadersReceived(options: ESObject, objectId: number): ESObject {
     wbLogger.debug('JsBridgeNativeApi', `NativeApi$offHeadersReceived`)
-    if (!this.networkTaskMap.has(options.taskId)) {
+    if (!this.networkTaskMap.has(objectId)) {
       wbLogger.error('JsBridgeNativeApi', 'the Task has not been init')
       return
     }
-    this.networkTaskMap.get(options.taskId).offHeadersReceived(options.listener)
+    this.networkTaskMap.get(objectId).offHeadersReceived(options)
   }
 
-  offProgressUpdate(options: ESObject): ESObject {
+  offProgressUpdate(options: ESObject, objectId: number): ESObject {
     wbLogger.debug('JsBridgeNativeApi', `NativeApi$offProgressUpdate`)
-    if (!this.networkTaskMap.has(options.taskId)) {
+    if (!this.networkTaskMap.has(objectId)) {
       wbLogger.error('JsBridgeNativeApi', 'the Task has not been init')
       return
     }
-    this.networkTaskMap.get(options.taskId).offProgressUpdate(options.listener)
+    this.networkTaskMap.get(objectId).offProgressUpdate(options)
   }
 
-  onHeadersReceived(options: ESObject): ESObject {
+  onHeadersReceived(options: ESObject, objectId: number): ESObject {
     wbLogger.debug('JsBridgeNativeApi', `NativeApi$onHeadersReceived`)
-    if (!this.networkTaskMap.has(options.taskId)) {
+    if (!this.networkTaskMap.has(objectId)) {
       wbLogger.error('JsBridgeNativeApi', 'the Task has not been init')
       return
     }
-    this.networkTaskMap.get(options.taskId).onHeadersReceived(options.listener)
+    this.networkTaskMap.get(objectId).onHeadersReceived(options)
   }
 
-  onProgressUpdate(options: ESObject): ESObject {
+  onProgressUpdate(options: ESObject, objectId: number): ESObject {
     wbLogger.debug('JsBridgeNativeApi', `NativeApi$onProgressUpdate`)
-    if (!this.networkTaskMap.has(options.taskId)) {
+    if (!this.networkTaskMap.has(objectId)) {
       wbLogger.error('JsBridgeNativeApi', 'the Task has not been init')
       return
     }
-    this.networkTaskMap.get(options.taskId).onProgressUpdate(options.listener)
+    this.networkTaskMap.get(objectId).onProgressUpdate(options)
   }
 
   //NativeAContextApi
@@ -444,256 +444,256 @@ class NativeApiImpl implements NativeApi {
     return this.innerAudioContextId++
   }
 
-  innerAudioStop(options: ESObject): void {
+  innerAudioStop(options: ESObject, objectId: number): void {
     wbLogger.debug('JsBridgeNativeApi', `NativeApi$stop`)
-    if (!this.innerAudioContextMap.has(options.contextId)) {
+    if (!this.innerAudioContextMap.has(objectId)) {
       wbLogger.error('JsBridgeNativeApi', 'the context has not been init')
       return
     }
-    this.innerAudioContextMap.get(options.contextId).stop()
+    this.innerAudioContextMap.get(objectId).stop()
   }
 
-  innerAudioPlay(options: ESObject): void {
+  innerAudioPlay(options: ESObject, objectId: number): void {
     wbLogger.debug('JsBridgeNativeApi', `NativeApi$play`)
-    if (!this.innerAudioContextMap.has(options.contextId)) {
+    if (!this.innerAudioContextMap.has(objectId)) {
       wbLogger.error('JsBridgeNativeApi', 'the context has not been init')
       return
     }
-    this.innerAudioContextMap.get(options.contextId).play()
+    this.innerAudioContextMap.get(objectId).play()
   }
 
-  innerAudioOnPlay(options: ESObject): ESObject {
+  innerAudioOnPlay(options: ESObject, objectId: number): ESObject {
     wbLogger.debug('JsBridgeNativeApi', `NativeApi$onPlay`)
-    if (!this.innerAudioContextMap.has(options.contextId)) {
+    if (!this.innerAudioContextMap.has(objectId)) {
       wbLogger.error('JsBridgeNativeApi', 'the context has not been init')
       return
     }
-    this.innerAudioContextMap.get(options.contextId).onPlay(options.listener)
+    this.innerAudioContextMap.get(objectId).onPlay(options)
   }
 
-  innerAudioOnStop(options: ESObject): ESObject {
+  innerAudioOnStop(options: ESObject, objectId: number): ESObject {
     wbLogger.debug('JsBridgeNativeApi', `NativeApi$onStop`)
-    if (!this.innerAudioContextMap.has(options.contextId)) {
+    if (!this.innerAudioContextMap.has(objectId)) {
       wbLogger.error('JsBridgeNativeApi', 'the context has not been init')
       return
     }
-    this.innerAudioContextMap.get(options.contextId).onStop(options.listener)
+    this.innerAudioContextMap.get(objectId).onStop(options)
   }
 
-  innerAudioOnError(options: ESObject): ESObject {
+  innerAudioOnError(options: ESObject, objectId: number): ESObject {
     wbLogger.debug('JsBridgeNativeApi', `NativeApi$onError`)
-    if (!this.innerAudioContextMap.has(options.contextId)) {
+    if (!this.innerAudioContextMap.has(objectId)) {
       wbLogger.error('JsBridgeNativeApi', 'the context has not been init')
       return
     }
-    this.innerAudioContextMap.get(options.contextId).onError(options.listener)
+    this.innerAudioContextMap.get(objectId).onError(options)
   }
 
-  innerAudioOnEnded(options: ESObject): ESObject {
+  innerAudioOnEnded(options: ESObject, objectId: number): ESObject {
     wbLogger.debug('JsBridgeNativeApi', `NativeApi$onEnded`)
-    if (!this.innerAudioContextMap.has(options.contextId)) {
+    if (!this.innerAudioContextMap.has(objectId)) {
       wbLogger.error('JsBridgeNativeApi', 'the context has not been init')
       return
     }
-    this.innerAudioContextMap.get(options.contextId).onEnded(options.listener)
+    this.innerAudioContextMap.get(objectId).onEnded(options)
   }
 
-  getAudioContextVolume(options: ESObject): ESObject {
+  getAudioContextVolume(options: ESObject, objectId: number): ESObject {
     wbLogger.debug('JsBridgeNativeApi', `NativeApi$getAudioContextVolume`)
-    if (!this.innerAudioContextMap.has(options.contextId)) {
+    if (!this.innerAudioContextMap.has(objectId)) {
       wbLogger.error('JsBridgeNativeApi', 'the AudioContext has not been init')
       return
     }
-    return this.innerAudioContextMap.get(options.contextId).volume
+    return this.innerAudioContextMap.get(objectId).volume
   }
 
-  setAudioContextVolume(options: ESObject): ESObject {
+  setAudioContextVolume(options: ESObject, objectId: number): ESObject {
     wbLogger.debug('JsBridgeNativeApi', `NativeApi$setAudioContextVolume`)
-    if (!this.innerAudioContextMap.has(options.contextId)) {
+    if (!this.innerAudioContextMap.has(objectId)) {
       wbLogger.error('JsBridgeNativeApi', 'the AudioContext has not been init')
       return
     }
-    this.innerAudioContextMap.get(options.contextId).volume = options.listener
+    this.innerAudioContextMap.get(objectId).volume = options
   }
 
-  getAudioContextStartTime(options: ESObject): ESObject {
+  getAudioContextStartTime(options: ESObject, objectId: number): ESObject {
     wbLogger.debug('JsBridgeNativeApi', `NativeApi$getAudioContextStartTime`)
-    if (!this.innerAudioContextMap.has(options.contextId)) {
+    if (!this.innerAudioContextMap.has(objectId)) {
       wbLogger.error('JsBridgeNativeApi', 'the AudioContext has not been init')
       return
     }
-    return this.innerAudioContextMap.get(options.contextId).startTime
+    return this.innerAudioContextMap.get(objectId).startTime
   }
 
-  setAudioContextStartTime(options: ESObject): ESObject {
+  setAudioContextStartTime(options: ESObject, objectId: number): ESObject {
     wbLogger.debug('JsBridgeNativeApi', `NativeApi$setAudioContextStartTime`)
-    if (!this.innerAudioContextMap.has(options.contextId)) {
+    if (!this.innerAudioContextMap.has(objectId)) {
       wbLogger.error('JsBridgeNativeApi', 'the AudioContext has not been init')
       return
     }
-    this.innerAudioContextMap.get(options.contextId).startTime = options.listener
+    this.innerAudioContextMap.get(objectId).startTime = options
   }
 
-  getAudioContextPlaybackRate(options: ESObject): ESObject {
+  getAudioContextPlaybackRate(options: ESObject, objectId: number): ESObject {
     wbLogger.debug('JsBridgeNativeApi', `NativeApi$getAudioContextPlaybackRate`)
-    if (!this.innerAudioContextMap.has(options.contextId)) {
+    if (!this.innerAudioContextMap.has(objectId)) {
       wbLogger.error('JsBridgeNativeApi', 'the AudioContext has not been init')
       return
     }
-    return this.innerAudioContextMap.get(options.contextId).playbackRate
+    return this.innerAudioContextMap.get(objectId).playbackRate
   }
 
-  setAudioContextPlaybackRate(options: ESObject): ESObject {
+  setAudioContextPlaybackRate(options: ESObject, objectId: number): ESObject {
     wbLogger.debug('JsBridgeNativeApi', `NativeApi$setAudioContextPlaybackRate`)
-    if (!this.innerAudioContextMap.has(options.contextId)) {
+    if (!this.innerAudioContextMap.has(objectId)) {
       wbLogger.error('JsBridgeNativeApi', 'the AudioContext has not been init')
       return
     }
-    this.innerAudioContextMap.get(options.contextId).playbackRate = options.listener
+    this.innerAudioContextMap.get(objectId).playbackRate = options
   }
 
-  getAudioContextPaused(options: ESObject): ESObject {
+  getAudioContextPaused(options: ESObject, objectId: number): ESObject {
     wbLogger.debug('JsBridgeNativeApi', `NativeApi$getAudioContextPausede`)
-    if (!this.innerAudioContextMap.has(options.contextId)) {
+    if (!this.innerAudioContextMap.has(objectId)) {
       wbLogger.error('JsBridgeNativeApi', 'the AudioContext has not been init')
       return
     }
-    return this.innerAudioContextMap.get(options.contextId).paused
+    return this.innerAudioContextMap.get(objectId).paused
   }
 
-  setAudioContextPaused(options: ESObject): ESObject {
+  setAudioContextPaused(options: ESObject, objectId: number): ESObject {
     wbLogger.debug('JsBridgeNativeApi', `NativeApi$setAudioContextPaused`)
-    if (!this.innerAudioContextMap.has(options.contextId)) {
+    if (!this.innerAudioContextMap.has(objectId)) {
       wbLogger.error('JsBridgeNativeApi', 'the AudioContext has not been init')
       return
     }
-    this.innerAudioContextMap.get(options.contextId).paused = options.listener
+    this.innerAudioContextMap.get(objectId).paused = options
   }
 
-  getAudioContextObeyMuteSwitch(options: ESObject): ESObject {
+  getAudioContextObeyMuteSwitch(options: ESObject, objectId: number): ESObject {
     wbLogger.debug('JsBridgeNativeApi', `NativeApi$getAudioContextObeyMuteSwitch`)
-    if (!this.innerAudioContextMap.has(options.contextId)) {
+    if (!this.innerAudioContextMap.has(objectId)) {
       wbLogger.error('JsBridgeNativeApi', 'the AudioContext has not been init')
       return
     }
-    return this.innerAudioContextMap.get(options.contextId).obeyMuteSwitch
+    return this.innerAudioContextMap.get(objectId).obeyMuteSwitch
   }
 
-  setAudioContextObeyMuteSwitch(options: ESObject): ESObject {
+  setAudioContextObeyMuteSwitch(options: ESObject, objectId: number): ESObject {
     wbLogger.debug('JsBridgeNativeApi', `NativeApi$setAudioContextObeyMuteSwitch`)
-    if (!this.innerAudioContextMap.has(options.contextId)) {
+    if (!this.innerAudioContextMap.has(objectId)) {
       wbLogger.error('JsBridgeNativeApi', 'the AudioContext has not been init')
       return
     }
-    this.innerAudioContextMap.get(options.contextId).obeyMuteSwitch = options.listener
+    this.innerAudioContextMap.get(objectId).obeyMuteSwitch = options
   }
 
-  getAudioContextLoop(options: ESObject): ESObject {
+  getAudioContextLoop(options: ESObject, objectId: number): ESObject {
     wbLogger.debug('JsBridgeNativeApi', `NativeApi$getAudioContextLoop`)
-    if (!this.innerAudioContextMap.has(options.contextId)) {
+    if (!this.innerAudioContextMap.has(objectId)) {
       wbLogger.error('JsBridgeNativeApi', 'the AudioContext has not been init')
       return
     }
-    return this.innerAudioContextMap.get(options.contextId).loop
+    return this.innerAudioContextMap.get(objectId).loop
   }
 
-  setAudioContextLoop(options: ESObject): ESObject {
+  setAudioContextLoop(options: ESObject, objectId: number): ESObject {
     wbLogger.debug('JsBridgeNativeApi', `NativeApi$setAudioContextLoop`)
-    if (!this.innerAudioContextMap.has(options.contextId)) {
+    if (!this.innerAudioContextMap.has(objectId)) {
       wbLogger.error('JsBridgeNativeApi', 'the AudioContext has not been init')
       return
     }
-    this.innerAudioContextMap.get(options.contextId).loop = options.listener
+    this.innerAudioContextMap.get(objectId).loop = options
   }
 
-  getAudioContextDuration(options: ESObject): ESObject {
+  getAudioContextDuration(options: ESObject, objectId: number): ESObject {
     wbLogger.debug('JsBridgeNativeApi', `NativeApi$getAudioContextDuration`)
-    if (!this.innerAudioContextMap.has(options.contextId)) {
+    if (!this.innerAudioContextMap.has(objectId)) {
       wbLogger.error('JsBridgeNativeApi', 'the AudioContext has not been init')
       return
     }
-    return this.innerAudioContextMap.get(options.contextId).duration
+    return this.innerAudioContextMap.get(objectId).duration
   }
 
-  setAudioContextDuration(options: ESObject): ESObject {
+  setAudioContextDuration(options: ESObject, objectId: number): ESObject {
     wbLogger.debug('JsBridgeNativeApi', `NativeApi$setAudioContextDuration`)
-    if (!this.innerAudioContextMap.has(options.contextId)) {
+    if (!this.innerAudioContextMap.has(objectId)) {
       wbLogger.error('JsBridgeNativeApi', 'the AudioContext has not been init')
       return
     }
-    this.innerAudioContextMap.get(options.contextId).duration = options.listener
+    this.innerAudioContextMap.get(objectId).duration = options
   }
 
-  getAudioContextCurrentTime(options: ESObject): ESObject {
+  getAudioContextCurrentTime(options: ESObject, objectId: number): ESObject {
     wbLogger.debug('JsBridgeNativeApi', `NativeApi$getAudioContextCurrentTime`)
-    if (!this.innerAudioContextMap.has(options.contextId)) {
+    if (!this.innerAudioContextMap.has(objectId)) {
       wbLogger.error('JsBridgeNativeApi', 'the AudioContext has not been init')
       return
     }
-    return this.innerAudioContextMap.get(options.contextId).currentTime
+    return this.innerAudioContextMap.get(objectId).currentTime
   }
 
-  setAudioContextCurrentTime(options: ESObject): ESObject {
+  setAudioContextCurrentTime(options: ESObject, objectId: number): ESObject {
     wbLogger.debug('JsBridgeNativeApi', `NativeApi$setAudioContextCurrentTime`)
-    if (!this.innerAudioContextMap.has(options.contextId)) {
+    if (!this.innerAudioContextMap.has(objectId)) {
       wbLogger.error('JsBridgeNativeApi', 'the AudioContext has not been init')
       return
     }
-    this.innerAudioContextMap.get(options.contextId).currentTime = options.listener
+    this.innerAudioContextMap.get(objectId).currentTime = options
   }
 
-  getAudioContextBuffered(options: ESObject): ESObject {
+  getAudioContextBuffered(options: ESObject, objectId: number): ESObject {
     wbLogger.debug('JsBridgeNativeApi', `NativeApi$getAudioContextBuffered`)
-    if (!this.innerAudioContextMap.has(options.contextId)) {
+    if (!this.innerAudioContextMap.has(objectId)) {
       wbLogger.error('JsBridgeNativeApi', 'the AudioContext has not been init')
       return
     }
-    return this.innerAudioContextMap.get(options.contextId).buffered
+    return this.innerAudioContextMap.get(objectId).buffered
   }
 
-  setAudioContextBuffered(options: ESObject): ESObject {
+  setAudioContextBuffered(options: ESObject, objectId: number): ESObject {
     wbLogger.debug('JsBridgeNativeApi', `NativeApi$setAudioContextBuffered`)
-    if (!this.innerAudioContextMap.has(options.contextId)) {
+    if (!this.innerAudioContextMap.has(objectId)) {
       wbLogger.error('JsBridgeNativeApi', 'the AudioContext has not been init')
       return
     }
-    this.innerAudioContextMap.get(options.contextId).buffered = options.listener
+    this.innerAudioContextMap.get(objectId).buffered = options
   }
 
-  getAudioContextAutoplay(options: ESObject): ESObject {
+  getAudioContextAutoplay(options: ESObject, objectId: number): ESObject {
     wbLogger.debug('JsBridgeNativeApi', `NativeApi$getAudioContextAutoplay`)
-    if (!this.innerAudioContextMap.has(options.contextId)) {
+    if (!this.innerAudioContextMap.has(objectId)) {
       wbLogger.error('JsBridgeNativeApi', 'the AudioContext has not been init')
       return
     }
-    return this.innerAudioContextMap.get(options.contextId).autoplay
+    return this.innerAudioContextMap.get(objectId).autoplay
   }
 
-  setAudioContextAutoplay(options: ESObject): ESObject {
+  setAudioContextAutoplay(options: ESObject, objectId: number): ESObject {
     wbLogger.debug('JsBridgeNativeApi', `NativeApi$setAudioContextAutoplay`)
-    if (!this.innerAudioContextMap.has(options.contextId)) {
+    if (!this.innerAudioContextMap.has(objectId)) {
       wbLogger.error('JsBridgeNativeApi', 'the AudioContext has not been init')
       return
     }
-    this.innerAudioContextMap.get(options.contextId).autoplay = options.listener
+    this.innerAudioContextMap.get(objectId).autoplay = options
   }
 
-  getAudioContextSrc(options: ESObject): ESObject {
+  getAudioContextSrc(options: ESObject, objectId: number): ESObject {
     wbLogger.debug('JsBridgeNativeApi', `NativeApi$getAudioContextSrc`)
-    if (!this.innerAudioContextMap.has(options.contextId)) {
+    if (!this.innerAudioContextMap.has(objectId)) {
       wbLogger.error('JsBridgeNativeApi', 'the AudioContext has not been init')
       return
     }
-    return this.innerAudioContextMap.get(options.contextId).src
+    return this.innerAudioContextMap.get(objectId).src
   }
 
-  setAudioContextSrc(options: ESObject): ESObject {
+  setAudioContextSrc(options: ESObject, objectId: number): ESObject {
     wbLogger.debug('JsBridgeNativeApi', `NativeApi$setAudioContextSrc`)
-    if (!this.innerAudioContextMap.has(options.contextId)) {
+    if (!this.innerAudioContextMap.has(objectId)) {
       wbLogger.error('JsBridgeNativeApi', 'the AudioContext has not been init')
       return
     }
-    this.innerAudioContextMap.get(options.contextId).src = options.listener
+    this.innerAudioContextMap.get(objectId).src = options
   }
 }
 

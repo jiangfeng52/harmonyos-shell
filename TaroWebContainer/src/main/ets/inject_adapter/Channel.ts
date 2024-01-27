@@ -36,10 +36,12 @@ export const ChannelInstance: Channel = new Channel();
 
 class MethodChannel {
   private ChannelType = 'MethodChannel'
-
+  private listenerMap = new Map()
   private methodPools = new Map<string, (arg: any)=>any>()
+
+
   // TODO-ly 改为装饰器实现
-  registerMethod(methodName: string, fun: (arg: any)=>any) {
+  registerMethod(methodName: string, fun: (arg: any, objectId?: number)=>any) {
     if(this.methodPools.has(methodName)){
       return
     }
@@ -70,19 +72,24 @@ class MethodChannel {
       return undefined;
     }
 
-    const {isFun, properties, funs, stubId, taskId} = arg
+    const {isFun, properties, funs, stubId, objectId} = arg
 
     let argProxy;
     if (stubId == -1) { // 没有回调函数
       argProxy = properties;
     } else if(isFun) { // arg为函数
-      argProxy = function (...args){
-        const object = {
-          call: '',
-          args: args,
-          stubId: stubId,
+      if (this.listenerMap.has(stubId)) {
+        argProxy = this.listenerMap.get(stubId)
+      } else {
+        argProxy = function (...args){
+          const object = {
+            call: '',
+            args: args,
+            stubId: stubId,
+          }
+          ChannelInstance.jsCall(MethodChannelInstance.ChannelType, object)
         }
-        ChannelInstance.jsCall(MethodChannelInstance.ChannelType, object)
+        this.listenerMap.set(stubId, argProxy)
       }
     } else {
       let argObject = properties ?? {};
@@ -100,7 +107,7 @@ class MethodChannel {
       // arg为对象
       argProxy = argObject;
     }
-    return fun.call(null, argProxy)
+    return fun.call(null, argProxy, objectId)
   }
 }
 
