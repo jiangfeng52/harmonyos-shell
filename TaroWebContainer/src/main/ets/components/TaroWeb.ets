@@ -24,7 +24,7 @@ import { FileUtils } from '../utils/FileUtils';
 import { LocalUpdateManagerInstance } from '../update/LocalUpdateManager';
 import { AlbumBackward } from '../interfaces/Media'
 import webView from '@ohos.web.webview';
-import { NativeApiUpdate } from '../inject_adapter/NativeApi';
+import { NativeApi } from '../inject_adapter/NativeApi';
 import { ChannelInstance, MethodChannelInstance } from '../inject_adapter/Channel';
 
 const TARO_WEB_TAG = 'TaroWeb';
@@ -119,7 +119,7 @@ export struct TaroWeb {
     this.taroWebController.addRequestHandler(this.handleInternalResource);
     this.taroWebController.addRequestHandler(this.useLocalCacheResource);
 
-    MethodChannelInstance.registerMethods('NativeApi', NativeApiUpdate)
+    MethodChannelInstance.registerMethods('NativeApi', NativeApi)
 
   }
 
