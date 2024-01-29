@@ -168,6 +168,11 @@ export const NativeApiUpdate: ESObject = {
     return as.onUserCaptureScreen(options)
   },
 
+  offUserCaptureScreen(options: ESObject): void {
+    wbLogger.debug('JsBridgeNativeApi', `NativeApi$offUserCaptureScreen`)
+    return as.offUserCaptureScreen(options)
+  },
+
   hideKeyboard(options: ESObject): void {
     wbLogger.debug('JsBridgeNativeApi', `NativeApi$hideKeyboard`)
     return as.hideKeyboard(options)
