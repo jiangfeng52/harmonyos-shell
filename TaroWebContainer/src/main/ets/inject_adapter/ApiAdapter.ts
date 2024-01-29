@@ -230,7 +230,7 @@ export class ApiAdapter {
 
   getRunJavaScript(): string {
     let context = GlobalThis.getInstance().getContext('context') as common.UIAbilityContext;
-    let fileContent = context.resourceManager.getRawFileContentSync('app.js')
+    let fileContent = context.resourceManager.getRawFileContentSync('native.js')
     let textDecoder = util.TextDecoder.create("utf-8", { ignoreBOM: true });
     let channelScript = textDecoder.decodeWithStream(fileContent, { stream: false });
 
