@@ -47,14 +47,13 @@ class MethodChannel {
     }
     this.methodPools.set(methodName, fun)
   }
-  registerMethods(object: object){
+  registerMethods(className: string, object: object){
     for (const methodName of Object.keys(object)) {
       const method = object[methodName]
       if (typeof method === 'function') {
         // 注册
-        this.registerMethod(methodName, (arg: any)=>{
-          method.apply(object, arg)
-        })
+        let allName:string = `${className}$${methodName}`
+        this.registerMethod(allName, object[methodName])
       }
     }
   }

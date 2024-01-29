@@ -232,7 +232,20 @@ export class ApiAdapter {
     let context = GlobalThis.getInstance().getContext('context') as common.UIAbilityContext;
     let fileContent = context.resourceManager.getRawFileContentSync('app.js')
     let textDecoder = util.TextDecoder.create("utf-8", { ignoreBOM: true });
-    let result = textDecoder.decodeWithStream(fileContent, { stream: false });
+    let channelScript = textDecoder.decodeWithStream(fileContent, { stream: false });
+
+    let result: string = `
+      window.addEventListener('unhandledrejection', (event) => {
+         console.info('[ADSAPI] unhandledrejection: ', event);
+      })
+      if(typeof(adapterInited) === 'undefined'){
+          var navigationHeight = ${this.navigationBarHeight};
+          var systemBarHeight = ${this.systemBarHeight};
+          var customLaunchOptions = '${this.launchOptions}';
+          ${channelScript};
+          adapterInited = true;
+      }`
+
     return result
   }
 }
