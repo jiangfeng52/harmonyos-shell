@@ -121,7 +121,7 @@ class NativeApiConfig {
 }
 
 
-export const NativeApiUpdate: ESObject = {
+export const NativeApi: ESObject = {
   getWindowInfo: as['getWindowInfo'],
   getSystemInfoSync: as['getSystemInfoSync'],
   getSystemSetting: as['getSystemSetting'],
