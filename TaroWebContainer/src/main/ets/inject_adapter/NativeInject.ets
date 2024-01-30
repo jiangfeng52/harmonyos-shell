@@ -64,7 +64,7 @@ import { MediaItemData, ChooseAlbumResult, chooseAlbumOptions } from '../interfa
 const NATIVE_TAG = 'NativeInject';
 
 /**
- * Native注入类，实现一些跟壳工程比较紧密关联的Taro API
+ * Native注入类，实现一些跟壳工程比较紧密关联的Taro API。
  */
 
 export class NativeInject {
