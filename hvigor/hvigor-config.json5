@@ -1,7 +1,10 @@
 {
   "hvigorVersion": "4.0.2",
   "dependencies": {
-    "@ohos/hvigor-ohos-plugin": "4.0.2"
+    "@ohos/hvigor-ohos-plugin": "4.0.2",
+    "@babel/core": "^7.17.4",
+    "@babel/preset-env": "^7.16.7",
+    "@babel/plugin-transform-typescript": "^7.23.6"
   },
   "execution": {
     // "analyze": "default",                    /* Define the build analyze mode. Value: [ "default" | "verbose" | false ]. Default: "default" */
