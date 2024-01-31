@@ -59,12 +59,15 @@ import { LocalUpdateManagerInstance } from '../update/LocalUpdateManager';
 import util from '@ohos.util';
 import { selectMediaAssets } from '../utils/MediaUtil';
 import { MediaItemData, ChooseAlbumResult, chooseAlbumOptions } from '../interfaces/Media';
+import { PageManager } from '../webrouterservice/pagemanager/PageManager';
+import { GlobalRouter } from '../webrouterservice/globalrouter/GlobalRouter';
+import { RouterUtils } from '../utils/RouterUtils';
 
 
 const NATIVE_TAG = 'NativeInject';
 
 /**
- * Native注入类，实现一些跟壳工程比较紧密关联的Taro API。
+ * Native注入类，实现一些跟壳工程比较紧密关联的Taro API
  */
 
 export class NativeInject {
@@ -411,6 +414,27 @@ export class NativeInject {
           options && options.fail()
         }
         options && options.complete()
+      },
+      NavigateTo: (options) => {
+        return new Promise(async (resolve, reject) => {
+          resolve({errMsg: ''});
+          if (options.url) {
+            RouterUtils.pushUrlWithLog(options.url);
+          }
+          console.log('zhou NavigateToMessage', JSON.stringify(options));
+        })
+      },
+      NavigateWebToWeb: (options) => {
+        if (options.url) {
+          PageManager.getInstance().addUrl(options.url);
+          console.log('zhou NavigateWebToWebMessage', JSON.stringify(options));
+        }
+      },
+      //web 点击回退到 原生
+      NativeBack: (options) => {
+        let delta = options.delta;
+        console.log('zhou NativeBackMessage', JSON.stringify(options));
+        GlobalRouter.getInstance().onBackPress();
       }
     };
   }

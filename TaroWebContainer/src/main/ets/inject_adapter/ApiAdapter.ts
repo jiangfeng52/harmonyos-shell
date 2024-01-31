@@ -14,7 +14,7 @@
  */
 import WebView from '@ohos.web.webview';
 import buffer from '@ohos.buffer';
-import  { as } from '../utils/advancedapi.min';
+import  { createAs } from '../utils/advancedapi.min';
 import { wbLogger } from '../utils/Logger';
 
 /**
@@ -231,6 +231,11 @@ export class ApiAdapter {
         window.addEventListener('unhandledrejection', (event) => {
            console.info('[ADSAPI] unhandledrejection: ', event);
         })
+
+        var pageMap = new Map();
+        pageMap.set('/pages/api/routing/index', 'pages/TestPage');
+        pageMap.set('/pages/api/routing/index1', 'pages/Developer1');
+
         if(typeof(adapterInited) === 'undefined'){
             var asCallbackMap = new Map();
             var asAPIMap = new Map();
@@ -411,6 +416,7 @@ export class ApiAdapter {
   getAdapterProxy() {
     wbLogger.debug(ADAPTER_TAG, 'getAdapterProxy')
     const that = this
+    const as = createAs()
     Object.assign(as, that.nativeObj)
     Object.defineProperty(as, 'sendToAs', {
       get: () => {

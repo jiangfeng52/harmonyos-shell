@@ -28,7 +28,15 @@
     },
     {
       "name": "TaroWebContainer",
-      "srcPath": "./TaroWebContainer"
-    }
+      "srcPath": "./TaroWebContainer",
+      "targets": [
+        {
+          "name": "default",
+          "applyToProducts": [
+            "default"
+          ]
+        }
+      ]
+    },
   ]
 }

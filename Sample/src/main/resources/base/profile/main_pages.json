@@ -2,6 +2,8 @@
   "src": [
     "pages/Index",
     "pages/Capsule",
-    "pages/Developer"
+    "pages/Developer",
+    "pages/Page1",
+    "pages/TestPage"
   ]
 }

@@ -157,6 +157,18 @@ interface OpenSettingOptions {
   withSubscriptions?: boolean;
 }
 
+interface NavigateToOptions {
+  url: string;
+  complete: (res: string) => void;
+  events?: string;
+  fail?: (res: string) => void;
+  success?: (res: string) => void;
+}
+
+interface NativeBackOptions {
+  delta: number;
+}
+
 export interface RequestSubscribeMessageOptions {
   tmplIds: Array<string>;
 }
@@ -200,6 +212,9 @@ export interface InnerInjectObj {
   getCapsuleState: () => CapsuleState;
   chooseMediaAssets: (options: ChooseMediaOptions) => void;
   exitMiniProgram: (options: ExitMiniProgramOptions) => void;
+  NavigateTo: (options: NavigateToOptions) => Promise<ErrorMsg>;
+  NavigateWebToWeb: (options: NavigateToOptions) => void;
+  NativeBack: (options: NativeBackOptions) => void;
 }
 
 export interface InjectObject {
