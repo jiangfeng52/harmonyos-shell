@@ -3,6 +3,7 @@ import window from '@ohos.window';
 import Want from '@ohos.app.ability.Want';
 import { wbLogger } from '@hybrid/web-container';
 import { WebManager } from '@hybrid/web-container/src/main/ets/webrouterservice/webmanager/webManager'
+import { PageManager } from '@hybrid/web-container/src/main/ets/webrouterservice/pagemanager/PageManager';
 
 const ABILITY_TAG = 'EntryAbility';
 const storage = new LocalStorage();
@@ -33,6 +34,7 @@ export default class EntryAbility extends UIAbility {
       wbLogger.info(ABILITY_TAG, 'Succeeded in obtaining the main window. Data');
     })
     windowStage.loadContent('pages/Page1', storage, (err, data) => {
+      PageManager.getInstance().addUrl('');
       WebManager.getInstance().createWebInstance(windowStage.getMainWindowSync().getUIContext());
       if (err.code) {
         wbLogger.error(ABILITY_TAG, 'testTag', 'Failed to load the content. Cause: %{public}s', JSON.stringify(err) ?? '');

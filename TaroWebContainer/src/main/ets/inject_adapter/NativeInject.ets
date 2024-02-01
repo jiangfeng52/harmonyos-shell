@@ -62,6 +62,7 @@ import { MediaItemData, ChooseAlbumResult, chooseAlbumOptions } from '../interfa
 import { PageManager } from '../webrouterservice/pagemanager/PageManager';
 import { GlobalRouter } from '../webrouterservice/globalrouter/GlobalRouter';
 import { RouterUtils } from '../utils/RouterUtils';
+import { router } from '@kit.ArkUI';
 
 
 const NATIVE_TAG = 'NativeInject';
@@ -415,26 +416,40 @@ export class NativeInject {
         }
         options && options.complete()
       },
+      //web页跳转到原生页
       NavigateTo: (options) => {
         return new Promise(async (resolve, reject) => {
           resolve({errMsg: ''});
           if (options.url) {
             RouterUtils.pushUrlWithLog(options.url);
+            PageManager.getInstance().addUrl('');
           }
           console.log('zhou NavigateToMessage', JSON.stringify(options));
         })
       },
+      //web页跳转到web页
       NavigateWebToWeb: (options) => {
         if (options.url) {
           PageManager.getInstance().addUrl(options.url);
           console.log('zhou NavigateWebToWebMessage', JSON.stringify(options));
         }
       },
-      //web 点击回退到 原生
-      NativeBack: (options) => {
-        let delta = options.delta;
-        console.log('zhou NativeBackMessage', JSON.stringify(options));
-        GlobalRouter.getInstance().onBackPress();
+      //web 点击回退
+      WebBackTo: () => {
+        console.log('zhou WebBackTo');
+        let currentUrl2 = PageManager.getInstance().getCurrentUrl2();
+        PageManager.getInstance().removeCurrentUrl();
+        if (currentUrl2 === '') {
+          console.log('zhou WebBackToWebMessage web 点击回退到原生页 原生侧返回处理');
+          router.back();
+        } else {
+          console.log('zhou WebBackToWebMessage web 点击回退到web js侧返回处理');
+        }
+      },
+      GetCurrentUrl2: (options) => {
+        let currentUrl2 = PageManager.getInstance().getCurrentUrl2();
+        options.success && options.success(currentUrl2);
+        console.log('zhou GetCurrentUrl2Message, 桥接到js currentUrl2 = ' + currentUrl2);
       }
     };
   }

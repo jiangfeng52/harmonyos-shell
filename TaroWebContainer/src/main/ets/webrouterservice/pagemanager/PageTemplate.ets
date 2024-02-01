@@ -34,6 +34,7 @@ struct PageTemplate {
     if (router.getParams()) {
       this.url = (router.getParams() as routerParam).url;
     }
+    PageManager.getInstance().addUrl(this.url);
     this.isRefresh = !this.isRefresh;
   }
 
@@ -46,9 +47,10 @@ struct PageTemplate {
     }
   }
 
+  //右滑回退，web回退web/原生
   onBackPress(): boolean | void {
-    wbLogger.info(TAG, `onBackPress`);
-    let curUrl = PageManager.getInstance().gerCurrentUrl();
+    let curUrl = PageManager.getInstance().getCurrentUrl();
+    wbLogger.info(TAG, `onBackPress curUrl=` + curUrl);
     //处理二次回退逻辑
     if (curUrl === 'resource://rawfile/index.htmlxxxx') {
       wbLogger.info(TAG, `处理二次回退逻辑`);

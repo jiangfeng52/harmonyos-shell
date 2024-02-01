@@ -18,18 +18,30 @@ export class PageManager {
     this.urlList.add(url);
   }
 
-  removeUrl(url: string) {
-    if (this.urlList.has(url)) {
-      this.urlList.remove(url);
-    }
+  removeCurrentUrl() {
+    let len = this.urlList.length;
+    this.urlList.removeByIndex(len - 1);
   }
 
-  gerCurrentUrl(): string {
-    let CurrentUrl = ''
+  getUrlListSize(): number {
+    return this.urlList.length;
+  }
+
+  getCurrentUrl(): string {
+    let CurrentUrl = '';
     this.urlList.forEach((value: string, index?: number) => {
-      wbLogger.info(TAG, `getWebInstanceIds`);
+      wbLogger.info(TAG, `gerCurrentUrl() value=` + value);
       CurrentUrl = value;
     });
     return CurrentUrl;
+  }
+
+  getCurrentUrl2(): string {
+    let len = this.urlList.length;
+    let CurrentUrl2 = '';
+    if (len > 1) {
+      CurrentUrl2 = this.urlList[len - 2];
+    }
+    return CurrentUrl2;
   }
 }

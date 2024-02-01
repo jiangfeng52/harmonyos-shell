@@ -165,8 +165,9 @@ interface NavigateToOptions {
   success?: (res: string) => void;
 }
 
-interface NativeBackOptions {
-  delta: number;
+interface GetCurrentUrl2Options {
+  fail?: (res: string) => void;
+  success?: (res: string) => void;
 }
 
 export interface RequestSubscribeMessageOptions {
@@ -214,7 +215,8 @@ export interface InnerInjectObj {
   exitMiniProgram: (options: ExitMiniProgramOptions) => void;
   NavigateTo: (options: NavigateToOptions) => Promise<ErrorMsg>;
   NavigateWebToWeb: (options: NavigateToOptions) => void;
-  NativeBack: (options: NativeBackOptions) => void;
+  WebBackTo: () => void;
+  GetCurrentUrl2: (options: GetCurrentUrl2Options) => void;
 }
 
 export interface InjectObject {

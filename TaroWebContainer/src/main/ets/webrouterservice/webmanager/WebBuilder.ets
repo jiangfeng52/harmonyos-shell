@@ -61,24 +61,13 @@ export function WebBuilder(builderData: BuilderData) {
       })
       .onLoadIntercept((event) => {
         wbLogger.info(TAG, `onLoadIntercept`)
-        if (event) {
-          return GlobalRouter.getInstance().router(event.data)
-        }
+        // if (event) {
+        //   return GlobalRouter.getInstance().router(event.data)
+        // }
         return false;
       })
       .onControllerAttached(() => {
         wbLogger.info(TAG, `onControllerAttached`)
-        builderData.controller.runJavaScript(
-          builderData.apiAdapter.getRunJavaScript(),
-          (error, result) => {
-            if (error) {
-              return;
-            }
-            if (result) {
-              wbLogger.info(TAG, `onControllerAttached The asFinish() return value is: ${result}`)
-            }
-          }
-        );
       })
   }
 }

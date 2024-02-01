@@ -32,31 +32,11 @@ export class RouterStorage {
     return this.adapter;
   }
 
-  addNode(url: string, controller: WebviewController): void {
-    this.routeNodes.push({ url, controller });
-  }
-
-  getRouteNodes(): Array<RouteNode> {
-    return this.routeNodes;
-  }
-
-  getRouteNodesSize(): number {
-    return this.routeNodes.length;
-  }
-
   getCurrentNodeUrl(): string {
     const length: number = RouterStorage.instance.routeNodes.length;
     if (length === 0) {
       return '';
     }
     return this.routeNodes[length - 1].url;
-  }
-
-  getCurrentNodeController(): webview.WebviewController | null {
-    const length: number = RouterStorage.instance.routeNodes.length;
-    if (length === 0) {
-      return null;
-    }
-    return this.routeNodes[length - 1].controller;
   }
 }

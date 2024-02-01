@@ -11,7 +11,7 @@ import { NativeInject } from '../../inject_adapter/NativeInject';
 const TAG: string = 'zhou WebManager'
 
 export class WebManager {
-  private static  instance: WebManager;
+  private static instance: WebManager;
   private context: UIContext | null = null;
   private webIdleMap: Map<number, WebNode> = new Map();
   private adapter: ApiAdapter | undefined;
@@ -54,26 +54,13 @@ export class WebManager {
     const contexts = getContext(this) as common.UIAbilityContext;
     this.adapter.mergeInjectObj(nativeInject.buildInjectObj(contexts));
 
+    webNode?.initWeb('', this.context as UIContext, controller, webIndex, this.adapter);
     this.webIdleMap.set(webIndex, webNode);
   }
 
-  public getWebInstanceIds(url: string, controller: web_webview.WebviewController) {
-    wbLogger.info(TAG, `getWebInstanceIds`);
-    let webId = 1;
-    let webNode = this.webIdleMap.get(webId);
-    webNode?.release();
-    let apiAdapter = RouterStorage.getInstance().getAdapter();
-    webNode?.initWeb(url, this.context as UIContext, controller, webId, apiAdapter);
-  }
-
-  public getWebInstanceId(url: string) {
-    wbLogger.info(TAG, `getWebInstanceId`);
-    let webId = 1;
-    let webNode = this.webIdleMap.get(webId);
-    webNode?.release();
-    let newController = new web_webview.WebviewController();
-    RouterStorage.getInstance().addNode(url, newController);
-    let apiAdapter = RouterStorage.getInstance().getAdapter();
-    webNode?.initWeb(url, this.context as UIContext, newController, webId, apiAdapter);
+  public loadUrl(url: string) {
+    wbLogger.info(TAG, `loadUrl, url = ` + url);
+    let controller = RouterStorage.getInstance().getController();
+    controller.loadUrl(url);
   }
 }
