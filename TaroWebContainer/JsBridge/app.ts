@@ -125,7 +125,7 @@ window.MethodChannel = {
   },
 
   _NextId: 0, // 初始ID值
-  _stubMap: new Map(),
+  _stubMap: {},
   _listenerMap: new Map(),
   __registerArgStub: function (argObject: any, isFun: boolean, autoRelease: boolean) {
     const hasFun = isFunctionOrObjectWithFunction(argObject)
@@ -133,26 +133,26 @@ window.MethodChannel = {
       return -1
     }
     var objectId = this._NextId++
-    this._stubMap.set(objectId, {
+    this._stubMap[objectId] = {
       object: argObject,
       isFun: isFun,
       autoRelease: autoRelease
-    })
+    }
     return objectId
   },
   __ArgsMethodStub: function (nativeArg: any) {
     const {call, args, stubId} = nativeArg
-    const stub = this._stubMap.get(stubId);
+    const stub = this._stubMap[stubId];
     if (!stub) {
       console.debug('nativeapi', 'appjs argsStub hash been deleted ')
       return;
     }
     const {object, isFun, autoRelease} = stub
     if (autoRelease) {
-      this._stubMap.delete(stubId)
+      delete this._stubMap[stubId]
     }
     else if (call == 'complete') {
-      this._stubMap.delete(stubId)
+      delete this._stubMap[stubId]
     }
 
     if (isFun) {
