@@ -2,8 +2,8 @@ import { wbLogger } from '../../utils/Logger';
 import { WebManager } from '../webmanager/webManager';
 import { WebNode } from '../webmanager/WebNode';
 import { router } from '@kit.ArkUI';
-import { PageManager } from './PageManager';
 import { GlobalRouter } from '../globalrouter/GlobalRouter';
+import { RouterStorage } from '../globalrouter/RouterStorage';
 
 const TAG: string = 'zhou PageTemplate'
 
@@ -12,7 +12,6 @@ const TAG: string = 'zhou PageTemplate'
 struct PageTemplate {
   @State url: string = '';
   @State isRefresh: boolean = false;
-  @State canLoad: boolean = false;
   webId = 1;
   node?: WebNode;
 
@@ -25,17 +24,13 @@ struct PageTemplate {
       this.node.rebuild();
     }
     this.isRefresh = !this.isRefresh;
-    this.canLoad = false;
   }
 
   aboutToAppear(): void {
     wbLogger.info(TAG, `aboutToAppear`);
-    this.canLoad = true;
     if (router.getParams()) {
       this.url = (router.getParams() as routerParam).url;
     }
-    PageManager.getInstance().addUrl(this.url);
-    this.isRefresh = !this.isRefresh;
   }
 
   onPageHide(): void {
@@ -49,7 +44,7 @@ struct PageTemplate {
 
   //右滑回退，web回退web/原生
   onBackPress(): boolean | void {
-    let curUrl = PageManager.getInstance().getCurrentUrl();
+    let curUrl = RouterStorage.getInstance().getController()?.getUrl();
     wbLogger.info(TAG, `onBackPress curUrl=` + curUrl);
     //处理二次回退逻辑
     if (curUrl === 'resource://rawfile/index.htmlxxxx') {

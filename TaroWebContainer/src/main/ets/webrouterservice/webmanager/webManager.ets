@@ -40,15 +40,17 @@ export class WebManager {
     return this.webIdleMap.get(webId);
   }
 
-  public createWebInstance(context: UIContext) {
+  public initNode(context: UIContext) {
     wbLogger.info(TAG, `createWebInstance`);
     this.context = context;
     let webIndex = 1;
     let webNode = new WebNode();
     let controller: web_webview.WebviewController = new web_webview.WebviewController();
     this.adapter = new ApiAdapter();
+    this.adapter.setWebController(controller);
     RouterStorage.getInstance().setController(controller);
     RouterStorage.getInstance().setAdapter(this.adapter);
+    RouterStorage.getInstance().setWebNode(webNode);
 
     const nativeInject = new NativeInject(this.navigationBarData, this.capsuleOptions, this.capsuleController);
     const contexts = getContext(this) as common.UIAbilityContext;
@@ -61,6 +63,6 @@ export class WebManager {
   public loadUrl(url: string) {
     wbLogger.info(TAG, `loadUrl, url = ` + url);
     let controller = RouterStorage.getInstance().getController();
-    controller.loadUrl(url);
+    controller?.loadUrl(url);
   }
 }

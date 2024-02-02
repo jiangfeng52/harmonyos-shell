@@ -165,11 +165,6 @@ interface NavigateToOptions {
   success?: (res: string) => void;
 }
 
-interface GetCurrentUrl2Options {
-  fail?: (res: string) => void;
-  success?: (res: string) => void;
-}
-
 export interface RequestSubscribeMessageOptions {
   tmplIds: Array<string>;
 }
@@ -214,9 +209,7 @@ export interface InnerInjectObj {
   chooseMediaAssets: (options: ChooseMediaOptions) => void;
   exitMiniProgram: (options: ExitMiniProgramOptions) => void;
   NavigateTo: (options: NavigateToOptions) => Promise<ErrorMsg>;
-  NavigateWebToWeb: (options: NavigateToOptions) => void;
-  WebBackTo: () => void;
-  GetCurrentUrl2: (options: GetCurrentUrl2Options) => void;
+  webBackToNative: () => void;
 }
 
 export interface InjectObject {

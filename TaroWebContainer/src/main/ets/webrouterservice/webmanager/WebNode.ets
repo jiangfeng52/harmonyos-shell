@@ -3,6 +3,7 @@ import { ApiAdapter } from '../../inject_adapter/ApiAdapter';
 import { wbLogger } from '../../utils/Logger';
 import { BuilderData } from '../common/entity/BuilderData';
 import { WebBuilder } from './WebBuilder';
+import { UIContext } from '@kit.ArkUI';
 
 const TAG: string = 'zhou WebNode';
 
