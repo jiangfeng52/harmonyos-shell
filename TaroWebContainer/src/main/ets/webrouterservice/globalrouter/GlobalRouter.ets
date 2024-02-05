@@ -20,7 +20,7 @@ export class GlobalRouter {
     let curUrl = controller.webController.getUrl();
     wbLogger.info(TAG, `curUrl = ` + curUrl);
 
-    if (curUrl?.endsWith('from=native') ) {
+    if (curUrl?.endsWith('from=native') || curUrl?.endsWith('index/index')) {
       //web回退到原生
       if (controller.accessBackward()) {
         controller.backward();

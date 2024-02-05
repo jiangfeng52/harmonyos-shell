@@ -12,14 +12,15 @@ const TAG: string = 'zhou PageTemplate'
 struct PageTemplate {
   @State url: string = '';
   @State isRefresh: boolean = false;
+  @State isDownTree: boolean = false;
   webId = 1;
   node?: WebNode;
 
   onPageShow(): void {
-    wbLogger.info(TAG, `onPageShow 执行上树`);
+    wbLogger.info(TAG, `onPageShow 执行上树 this.isDownTree=` + this.isDownTree);
     this.node = WebManager.getInstance().getNode(this.webId);
     this.node?.add();
-    if (this.node !== undefined) {
+    if (this.node !== undefined && this.isDownTree) {
       wbLogger.info(TAG, `onPageShow rebuild`);
       this.node.rebuild();
     }
@@ -39,6 +40,7 @@ struct PageTemplate {
       this.node.remove();
       this.node = undefined;
       this.isRefresh = !this.isRefresh;
+      this.isDownTree = true;
     }
   }
 
