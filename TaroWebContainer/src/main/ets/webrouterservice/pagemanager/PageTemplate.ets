@@ -44,7 +44,8 @@ struct PageTemplate {
 
   //右滑回退，web回退web/原生
   onBackPress(): boolean | void {
-    let curUrl = RouterStorage.getInstance().getController()?.getUrl();
+    let controller = RouterStorage.getInstance().getController();
+    let curUrl: string = controller.webController.getUrl();
     wbLogger.info(TAG, `onBackPress curUrl=` + curUrl);
     //处理二次回退逻辑
     if (curUrl === 'resource://rawfile/index.htmlxxxx') {

@@ -1,13 +1,13 @@
 import { RouteNode } from '../common/entity/RouteNode';
-import web_webview from '@ohos.web.webview'
 import { ApiAdapter } from '../../inject_adapter/ApiAdapter';
 import { WebNode } from '../webmanager/WebNode';
+import { TaroWebController } from '../../components/TaroWeb';
 
 export class RouterStorage {
   private static instance: RouterStorage;
   private routeNodes: Array<RouteNode> = [];
-  private controller: web_webview.WebviewController | undefined = undefined;
-  private adapter: ApiAdapter | undefined = undefined;
+  private controller: TaroWebController = new TaroWebController();
+  private adapter: ApiAdapter= new ApiAdapter();
   private webNode: WebNode | null = null;
 
   public static getInstance(): RouterStorage {
@@ -17,11 +17,11 @@ export class RouterStorage {
     return RouterStorage.instance;
   }
 
-  setController(controller: web_webview.WebviewController): void {
+  setController(controller: TaroWebController): void {
     this.controller = controller;
   }
 
-  getController(): web_webview.WebviewController | undefined{
+  getController(): TaroWebController{
     return this.controller;
   }
 
@@ -37,7 +37,7 @@ export class RouterStorage {
     this.adapter = adapter;
   }
 
-  getAdapter(): ApiAdapter | undefined{
+  getAdapter(): ApiAdapter{
     return this.adapter;
   }
 

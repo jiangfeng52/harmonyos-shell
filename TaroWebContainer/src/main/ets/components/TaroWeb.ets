@@ -24,6 +24,7 @@ import { FileUtils } from '../utils/FileUtils';
 import { LocalUpdateManagerInstance } from '../update/LocalUpdateManager';
 import { AlbumBackward } from '../interfaces/Media'
 import webView from '@ohos.web.webview';
+import { RouterStorage } from '../webrouterservice/globalrouter/RouterStorage';
 
 const TARO_WEB_TAG = 'TaroWeb';
 
@@ -105,8 +106,8 @@ export struct TaroWeb {
   @Prop webUrl: string;
   @Prop webUrlPrefix: string;
   @Prop useCache: boolean;
-  @ObjectLink taroWebController: TaroWebController;
-  apiAdapter: ApiAdapter = new ApiAdapter();
+  @Prop apiAdapter: ApiAdapter;
+  taroWebController: TaroWebController = RouterStorage.getInstance().getController();
   scriptProxy: Object | undefined = undefined;
   enableWebDebug: boolean = true;
 

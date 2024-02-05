@@ -33,8 +33,9 @@ import { RouterUtils } from '../utils/RouterUtils';
 import router from '@ohos.router';
 import { wbLogger } from '../utils/Logger';
 import { AlbumBackward, ChooseAlbumResult, MediaItemData, chooseAlbumOptions } from '../interfaces/Media'
+import { RouterStorage } from '../webrouterservice/globalrouter/RouterStorage';
 
-const CONTAINER_TAG = 'TaroWebContainer';
+const CONTAINER_TAG = 'zhou TaroWebContainer';
 
 /**
  * TaroWebContainer组件，包含定制的Web组件和自定义导航栏
@@ -52,7 +53,7 @@ export struct TaroWebContainer {
   // 胶囊按钮点击后跳转的页面
   @Prop capsulePage: string = 'pages/Capsule';
   // 同步宿主页面的状态
-  @Prop @Watch('onPageStateUpdated') pageState: HostPageState;
+  @Prop @Watch('onPageStateUpdated') pageState: HostPageState = HostPageState.PageInit;
   // 监听UIAbility的Want
   @Prop @Watch('onWantUpdated') want: Want = {};
   // 导航栏状态控制器
@@ -75,7 +76,7 @@ export struct TaroWebContainer {
   @State previewOneImage: boolean = false;
 
   // 路由控制器
-  @Link taroWebController: TaroWebController;
+  taroWebController: TaroWebController = RouterStorage.getInstance().getController();
 
   // 用户自定义的注入对象
   injectObj: InjectObject | undefined;
@@ -226,7 +227,7 @@ export struct TaroWebContainer {
     GlobalThis.getInstance().setContext('context', context);
 
     // 创建高阶API适配器，合并注入的对象
-    this.adapter = new ApiAdapter();
+    this.adapter = RouterStorage.getInstance().getAdapter();
     this.adapter.setWebController(this.taroWebController.webController)
     const nativeInject = new NativeInject(this.navigationBarData, this.capsuleOptions, this.capsuleController);
     this.taroWebController.setAlbumBackward(this.albumBackward);

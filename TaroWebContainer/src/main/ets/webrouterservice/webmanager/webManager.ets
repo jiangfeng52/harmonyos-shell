@@ -7,6 +7,7 @@ import { WebNode } from './WebNode';
 import { RouterStorage } from '../globalrouter/RouterStorage';
 import { common } from '@kit.AbilityKit';
 import { NativeInject } from '../../inject_adapter/NativeInject';
+import { TaroWebController } from '../../components/TaroWeb';
 
 const TAG: string = 'zhou WebManager'
 
@@ -45,9 +46,9 @@ export class WebManager {
     this.context = context;
     let webIndex = 1;
     let webNode = new WebNode();
-    let controller: web_webview.WebviewController = new web_webview.WebviewController();
+    let controller: TaroWebController = new TaroWebController();
     this.adapter = new ApiAdapter();
-    this.adapter.setWebController(controller);
+    this.adapter.setWebController(controller.webController);
     RouterStorage.getInstance().setController(controller);
     RouterStorage.getInstance().setAdapter(this.adapter);
     RouterStorage.getInstance().setWebNode(webNode);
@@ -56,13 +57,13 @@ export class WebManager {
     const contexts = getContext(this) as common.UIAbilityContext;
     this.adapter.mergeInjectObj(nativeInject.buildInjectObj(contexts));
 
-    webNode?.initWeb('', this.context as UIContext, controller, webIndex, this.adapter);
+    webNode?.initWeb('resource://rawfile/index.html', this.context as UIContext, controller, webIndex, this.adapter);
     this.webIdleMap.set(webIndex, webNode);
   }
 
   public loadUrl(url: string) {
     wbLogger.info(TAG, `loadUrl, url = ` + url);
     let controller = RouterStorage.getInstance().getController();
-    controller?.loadUrl(url);
+    controller.loadUrl(url);
   }
 }

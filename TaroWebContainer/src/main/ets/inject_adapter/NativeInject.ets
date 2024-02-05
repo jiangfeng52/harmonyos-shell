@@ -398,7 +398,7 @@ export class NativeInject {
         return { visible: this.capsuleController.getCapsuleState() }
       },
       chooseMediaAssets: (options: ChooseMediaOptions) => {
-          selectMediaAssets(options, this.chooseAlbumCallback!)
+        selectMediaAssets(options, this.chooseAlbumCallback!)
       },
       exitMiniProgram: (options?: ExitMiniProgramOptions) => {
         try {
@@ -417,7 +417,7 @@ export class NativeInject {
       //web页跳转到原生页
       NavigateTo: (options) => {
         return new Promise(async (resolve, reject) => {
-          resolve({errMsg: ''});
+          resolve({ errMsg: '' });
           if (options.url) {
             RouterUtils.pushUrlWithLog(options.url);
           }
@@ -426,7 +426,7 @@ export class NativeInject {
       },
       //web 点击回退
       webBackToNative: () => {
-        console.log('zhou WebBackTo');
+        console.log('zhou webBackToNative');
         GlobalRouter.getInstance().onBackPress();
       }
     };

@@ -17,13 +17,13 @@ export class GlobalRouter {
   public onBackPress(): boolean {
     const routerStorageInstance = RouterStorage.getInstance();
     let controller = routerStorageInstance.getController();
-    let curUrl = controller?.getUrl();
+    let curUrl = controller.webController.getUrl();
     wbLogger.info(TAG, `curUrl = ` + curUrl);
 
     if (curUrl?.endsWith('from=native') ) {
       //web回退到原生
-      if (controller?.accessBackward()) {
-        controller?.backward();
+      if (controller.accessBackward()) {
+        controller.backward();
       }
       wbLogger.info(TAG, `web回退到原生 `);
       router.back();

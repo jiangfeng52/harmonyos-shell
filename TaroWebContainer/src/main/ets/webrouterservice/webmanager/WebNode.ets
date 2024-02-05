@@ -4,6 +4,7 @@ import { wbLogger } from '../../utils/Logger';
 import { BuilderData } from '../common/entity/BuilderData';
 import { WebBuilder } from './WebBuilder';
 import { UIContext } from '@kit.ArkUI';
+import { TaroWebController } from '../../components/TaroWeb';
 
 const TAG: string = 'zhou WebNode';
 
@@ -38,7 +39,7 @@ export class WebNode extends NodeController {
     this.isRemove = true;
   }
 
-  initWeb(url: string, uiContext: UIContext, controller: WebviewController, webId: number, apiAdapter: ApiAdapter) {
+  initWeb(url: string, uiContext: UIContext, controller: TaroWebController, webId: number, apiAdapter: ApiAdapter) {
     console.info(TAG, 'initWeb');
     if (this.rootNode !== null) {
       console.info(TAG, 'this.rootNode !== null');
@@ -46,7 +47,7 @@ export class WebNode extends NodeController {
     }
     this.rootNode = new BuilderNode(uiContext)
     this.rootNode.build(wrapBuilder<BuilderData[]>(WebBuilder),
-      {url: url, controller: controller, webId: webId, apiAdapter: apiAdapter})
+      {webUrl: url, taroWebController: controller, webId: webId, apiAdapter: apiAdapter})
   }
 
   release() {
