@@ -59,6 +59,8 @@ import { LocalUpdateManagerInstance } from '../update/LocalUpdateManager';
 import util from '@ohos.util';
 import { selectMediaAssets } from '../utils/MediaUtil';
 import { MediaItemData, ChooseAlbumResult, chooseAlbumOptions } from '../interfaces/Media';
+import { RouterUtils } from '../utils/RouterUtils';
+import { GlobalRouter } from '../webrouterservice/globalrouter/GlobalRouter';
 
 
 const NATIVE_TAG = 'NativeInject';
@@ -396,7 +398,7 @@ export class NativeInject {
         return { visible: this.capsuleController.getCapsuleState() }
       },
       chooseMediaAssets: (options: ChooseMediaOptions) => {
-          selectMediaAssets(options, this.chooseAlbumCallback!)
+        selectMediaAssets(options, this.chooseAlbumCallback!)
       },
       exitMiniProgram: (options?: ExitMiniProgramOptions) => {
         try {
@@ -411,6 +413,21 @@ export class NativeInject {
           options && options.fail()
         }
         options && options.complete()
+      },
+      //web页跳转到原生页
+      NavigateTo: (options) => {
+        return new Promise(async (resolve, reject) => {
+          resolve({ errMsg: '' });
+          if (options.url) {
+            RouterUtils.pushUrlWithLog(options.url);
+          }
+          console.log('zhou NavigateToMessage', JSON.stringify(options));
+        })
+      },
+      //web 点击回退
+      webBackToNative: () => {
+        console.log('zhou webBackToNative');
+        GlobalRouter.getInstance().onBackPress();
       }
     };
   }
