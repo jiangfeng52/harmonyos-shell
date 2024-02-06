@@ -10,7 +10,7 @@ export class Constant {
   /**
    * ?from = native
    */
-  static readonly FROM_NATIVE: string = '?from = native';
+  static readonly FROM_NATIVE: string = '?from=native';
   /**
    * The end of first webPage's URL
    */
