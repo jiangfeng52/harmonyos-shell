@@ -20,17 +20,20 @@ export class RouterUtils {
 
   static LoadPageWithWebUrl(webUrl: string) {
     WebManager.getInstance().loadUrl(webUrl);
-    router.pushUrl({
-      url: Constant.ROUTER_PAGE_URL,
-      params: {url: webUrl} },
-      router.RouterMode.Standard,
-      (err)=>{
-        if (err) {
-          wbLogger.error('LoadPageWithWebUrl',`Invoke pushUrl failed, code is ${err.code}, message is ${err.message}`);
-          return;
+    setTimeout(() => {
+      router.pushUrl({
+        url: Constant.ROUTER_PAGE_URL,
+        params: {url: webUrl} },
+        router.RouterMode.Standard,
+        (err)=>{
+          if (err) {
+            wbLogger.error('LoadPageWithWebUrl',`Invoke pushUrl failed, code is ${err.code}, message is ${err.message}`);
+            return;
+          }
+          wbLogger.info('LoadPageWithWebUrl', 'Invoke pushUrl succeeded.');
         }
-        wbLogger.info('LoadPageWithWebUrl', 'Invoke pushUrl succeeded.');
-      }
-    )
+      )
+    }, 200)
+
   }
 }
