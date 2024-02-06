@@ -1,6 +1,7 @@
 import { wbLogger } from '../../utils/Logger';
 import { RouterStorage } from './RouterStorage';
 import { router } from '@kit.ArkUI';
+import { Constant } from '../common/constant/Constant';
 
 const TAG: string = 'zhou GlobalRouter'
 
@@ -20,7 +21,7 @@ export class GlobalRouter {
     let curUrl = controller.webController.getUrl();
     wbLogger.info(TAG, `curUrl = ` + curUrl);
 
-    if (curUrl?.endsWith('from=native') || curUrl?.endsWith('index/index')) {
+    if (curUrl?.endsWith(Constant.FROM_NATIVE) || curUrl?.endsWith(Constant.END_FIRST_URL)) {
       //web回退到原生
       if (controller.accessBackward()) {
         controller.backward();

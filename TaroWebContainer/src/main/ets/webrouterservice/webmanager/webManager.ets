@@ -8,6 +8,7 @@ import { RouterStorage } from '../globalrouter/RouterStorage';
 import { common } from '@kit.AbilityKit';
 import { NativeInject } from '../../inject_adapter/NativeInject';
 import { TaroWebController } from '../../components/TaroWeb';
+import { Constant } from '../common/constant/Constant';
 
 const TAG: string = 'zhou WebManager'
 
@@ -57,7 +58,7 @@ export class WebManager {
     const contexts = getContext(this) as common.UIAbilityContext;
     this.adapter.mergeInjectObj(nativeInject.buildInjectObj(contexts));
 
-    webNode?.initWeb('resource://rawfile/index.html', this.context as UIContext, controller, webIndex, this.adapter);
+    webNode?.initWeb(Constant.URL_FIRST_PAGE, this.context as UIContext, controller, webIndex, this.adapter);
     this.webIdleMap.set(webIndex, webNode);
   }
 

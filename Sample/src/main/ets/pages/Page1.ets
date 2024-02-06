@@ -1,5 +1,6 @@
 import { WebManager } from '@hybrid/web-container/src/main/ets/webrouterservice/webmanager/webManager'
 import { router } from '@kit.ArkUI';
+import { RouterUtils } from '@hybrid/web-container/src/main/ets/utils/RouterUtils';
 
 @Entry
 @Component
@@ -14,12 +15,8 @@ struct Page1 {
           .width(120)
           .backgroundColor(0xF55A42)
           .onClick(() => {
-            WebManager.getInstance().loadUrl(this.url)
-            router.pushUrl({
-              url: '@bundle:com.advanced.temp/TaroWebContainer/ets/webrouterservice/pagemanager/PageTemplate',
-              params: { url: this.url }
-            });
-          })
+            RouterUtils.LoadPageWithWebUrl(this.url);
+          });
       }
       .width('100%')
     }
