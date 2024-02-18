@@ -1,4 +1,3 @@
-import { wbLogger } from '../utils/Logger'
 
 class Channel {
   // TODO-ly 当前的实现只适合单实例，如果出现多实例Web容器，当前的实现就会有问题

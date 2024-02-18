@@ -238,42 +238,42 @@ export struct TaroWebContainer {
 
     MethodChannelInstance.registerMethod('NativeApi$navigateToMiniProgram', (options: ESObject)=>{
       wbLogger.debug('JsBridgeNative', `NativeApi$navigateToMiniProgram`)
-      return nativeInject.buildInjectObj().navigateToMiniProgram(options)
+      return nativeInject.buildInjectObj(context).navigateToMiniProgram(options)
     })
 
     MethodChannelInstance.registerMethod('NativeApi$setNavigationBarColor', (options: ESObject)=>{
       wbLogger.debug('JsBridgeNative', `NativeApi$setNavigationBarColor`)
-      return nativeInject.buildInjectObj().setNavigationBarColor(options)
+      return nativeInject.buildInjectObj(context).setNavigationBarColor(options)
     })
 
     MethodChannelInstance.registerMethod('NativeApi$getMenuButtonBoundingClientRect', (options: ESObject)=>{
       wbLogger.debug('JsBridgeNative', `NativeApi$getMenuButtonBoundingClientRect`)
-      return nativeInject.buildInjectObj().getMenuButtonBoundingClientRect()
+      return nativeInject.buildInjectObj(context).getMenuButtonBoundingClientRect()
     })
 
     MethodChannelInstance.registerMethod('NativeApi$saveDataUrlToFile', (options: ESObject)=>{
       wbLogger.debug('JsBridgeNative', `NativeApi$getMenuButtonBoundingClientRect`)
-      return nativeInject.buildInjectObj().saveDataUrlToFile(options)
+      return nativeInject.buildInjectObj(context).saveDataUrlToFile(options)
     })
 
     MethodChannelInstance.registerMethod('NativeApi$copyFileToSandboxCache', (options: ESObject)=>{
       wbLogger.debug('JsBridgeNative', `NativeApi$copyFileToSandboxCache`)
-      return nativeInject.buildInjectObj().copyFileToSandboxCache(options)
+      return nativeInject.buildInjectObj(context).copyFileToSandboxCache(options)
     })
 
     MethodChannelInstance.registerMethod('NativeApi$chooseMediaAssets', (options: ESObject)=>{
       wbLogger.debug('JsBridgeNative', `NativeApi$chooseMediaAssets`)
-      return nativeInject.buildInjectObj().chooseMediaAssets(options)
+      return nativeInject.buildInjectObj(context).chooseMediaAssets(options)
     })
 
     MethodChannelInstance.registerMethod('NativeApi$openSetting', (options: ESObject)=>{
       wbLogger.debug('JsBridgeNative', `NativeApi$openSetting`)
-      return nativeInject.buildInjectObj().openSetting(options)
+      return nativeInject.buildInjectObj(context).openSetting(options)
     })
 
     MethodChannelInstance.registerMethod('NativeApi$getSetting', (options: ESObject)=>{
       wbLogger.debug('JsBridgeNative', `NativeApi$getSetting`)
-      return nativeInject.buildInjectObj().getSetting(options)
+      return nativeInject.buildInjectObj(context).getSetting(options)
     })
 
 
@@ -284,15 +284,11 @@ export struct TaroWebContainer {
             wbLogger.error(CONTAINER_TAG, `Run JavaScript error: ${JSON.stringify(error)}`)
             return;
           }
-          // if (result) {
-          //   wbLogger.info(TARO_WEB_TAG, `The asFinish() return value is: ${result}`)
-          // }
         });
       } catch (error) {
         wbLogger.error(CONTAINER_TAG, `runJavaScript error: ${(error as BusinessError).message}`);
       }
     })
-
 
     // 注入对象的内部依赖更新
     // nativeInject.setNaviController(this.navigationBarData);
