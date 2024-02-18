@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import router from '@ohos.router';
+import { GlobalRouter } from '../webrouterservice/globalrouter/GlobalRouter';
 
 const DEFAULT_TITLE_LEFT = 40;
 
@@ -52,11 +52,12 @@ export struct NavigationBar {
               .margin({ left: 26 })
               .objectFit(ImageFit.Contain)
               .onClick(() => {
-                if (this.onBackPressed) {
-                  this.onBackPressed();
-                } else {
-                  router.back()
-                }
+                GlobalRouter.getInstance().onBackPress();
+                // if (this.onBackPressed) {
+                //   this.onBackPressed();
+                // } else {
+                //   router.back()
+                // }
               })
               .id('backBtn')
           }

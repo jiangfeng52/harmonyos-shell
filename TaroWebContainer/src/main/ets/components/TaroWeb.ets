@@ -220,7 +220,6 @@ export struct TaroWeb {
       .onTitleReceive((event) => {
         wbLogger.info(TARO_WEB_TAG, `onTitleReceive=` + event?.title)
         this.onTitleReceive && this.onTitleReceive(event?.title ?? '')
-        this.taroWebController.webController.onActive();
       })
       .onRefreshAccessedHistory(() => {
         this.onRefreshAccessedHistory && this.onRefreshAccessedHistory();

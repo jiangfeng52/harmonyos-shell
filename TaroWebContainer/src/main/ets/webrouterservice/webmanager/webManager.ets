@@ -65,6 +65,8 @@ export class WebManager {
   public loadUrl(url: string) {
     wbLogger.info(TAG, `loadUrl, url = ` + url);
     let controller = RouterStorage.getInstance().getController();
+    //如果处于未激活状态loadUrl会失效
+    controller.webController.onActive();
     controller.loadUrl(url);
   }
 }
