@@ -6,6 +6,7 @@ import { TaroWebController } from '../../components/TaroWeb';
 export class RouterStorage {
   private static instance: RouterStorage;
   private routeNodes: Array<RouteNode> = [];
+  private uiContext: UIContext | undefined = undefined;
   private controller: TaroWebController = new TaroWebController();
   private adapter: ApiAdapter= new ApiAdapter();
   private webNode: WebNode | null = null;
@@ -15,6 +16,14 @@ export class RouterStorage {
       RouterStorage.instance = new RouterStorage();
     }
     return RouterStorage.instance;
+  }
+
+  setUIContext(uiContext: UIContext): void {
+    this.uiContext = uiContext;
+  }
+
+  getUIContext():UIContext | undefined {
+    return this.uiContext;
   }
 
   setController(controller: TaroWebController): void {

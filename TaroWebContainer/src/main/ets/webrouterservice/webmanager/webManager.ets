@@ -14,7 +14,7 @@ const TAG: string = 'zhou WebManager'
 
 export class WebManager {
   private static instance: WebManager;
-  private context: UIContext | null = null;
+  private context: UIContext | undefined = undefined;
   private webIdleMap: Map<number, WebNode> = new Map();
   private adapter: ApiAdapter | undefined;
   // 显示胶囊
@@ -42,7 +42,7 @@ export class WebManager {
     return this.webIdleMap.get(webId);
   }
 
-  public initNode(context: UIContext) {
+  public initNode(context: UIContext | undefined) {
     wbLogger.info(TAG, `createWebInstance`);
     this.context = context;
     let webIndex = 1;
@@ -58,7 +58,7 @@ export class WebManager {
     const contexts = getContext(this) as common.UIAbilityContext;
     this.adapter.mergeInjectObj(nativeInject.buildInjectObj(contexts));
 
-    webNode?.initWeb(Constant.URL_FIRST_PAGE, this.context as UIContext, controller, webIndex, this.adapter);
+    webNode?.initWeb(Constant.URL_FIRST_PAGE1 , this.context as UIContext, controller, webIndex, this.adapter);
     this.webIdleMap.set(webIndex, webNode);
   }
 

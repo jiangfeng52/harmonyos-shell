@@ -26,7 +26,7 @@ import { AlbumBackward } from '../interfaces/Media'
 import webView from '@ohos.web.webview';
 import { RouterStorage } from '../webrouterservice/globalrouter/RouterStorage';
 
-const TARO_WEB_TAG = 'TaroWeb';
+const TARO_WEB_TAG = 'zhou TaroWeb';
 
 export type InterceptRequestHandler = (request: WebResourceRequest) => WebResourceResponse | null;
 
@@ -218,7 +218,9 @@ export struct TaroWeb {
         return true
       })
       .onTitleReceive((event) => {
+        wbLogger.info(TARO_WEB_TAG, `onTitleReceive=` + event?.title)
         this.onTitleReceive && this.onTitleReceive(event?.title ?? '')
+        this.taroWebController.webController.onActive();
       })
       .onRefreshAccessedHistory(() => {
         this.onRefreshAccessedHistory && this.onRefreshAccessedHistory();

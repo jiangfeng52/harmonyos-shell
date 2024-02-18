@@ -7,6 +7,7 @@ export class Constant {
    * The URL of first page
    */
   static readonly URL_FIRST_PAGE: string = 'resource://rawfile/index.html';
+  static readonly URL_FIRST_PAGE1: string = '';
   /**
    * ?from = native
    */

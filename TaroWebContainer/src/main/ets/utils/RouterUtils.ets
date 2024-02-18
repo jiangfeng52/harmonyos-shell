@@ -25,15 +25,14 @@ export class RouterUtils {
         url: Constant.ROUTER_PAGE_URL,
         params: {url: webUrl} },
         router.RouterMode.Standard,
-        (err)=>{
+        (err) => {
           if (err) {
-            wbLogger.error('LoadPageWithWebUrl',`Invoke pushUrl failed, code is ${err.code}, message is ${err.message}`);
+            wbLogger.error('LoadPageWithWebUrl', `Invoke pushUrl failed, code is ${err.code}, message is ${err.message}`);
             return;
           }
           wbLogger.info('LoadPageWithWebUrl', 'Invoke pushUrl succeeded.');
         }
       )
-    }, 200)
-
+    }, 300);
   }
 }
