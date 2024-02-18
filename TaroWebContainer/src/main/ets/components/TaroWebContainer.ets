@@ -233,7 +233,7 @@ export struct TaroWebContainer {
     const nativeInject = new NativeInject(this.navigationBarData, this.capsuleOptions, this.capsuleController);
     this.taroWebController.setAlbumBackward(this.albumBackward);
     nativeInject.setChooseAlbumCallback(this.chooseAlbumCallback);
-    this.adapter.mergeInjectObj(nativeInject.buildInjectObj());
+    this.adapter.mergeInjectObj(nativeInject.buildInjectObj(context));
     this.injectObj && this.adapter.mergeInjectObj(this.injectObj);
 
     MethodChannelInstance.registerMethod('NativeApi$navigateToMiniProgram', (options: ESObject)=>{

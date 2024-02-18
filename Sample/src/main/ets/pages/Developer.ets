@@ -1,8 +1,8 @@
 import router from '@ohos.router';
-import { NavigationBar, NavigationBarData } from '@ohos/web-container';
+import { NavigationBar, NavigationBarData } from '@hybrid/web-container';
 import { NotificationRequest, SendMessageOptions, NotificationContent, NotificationPictureContent, NotificationBasicContent,
   NotificationLongTextContent, NotificationMultiLineContent, CancelMessageOptions, sendMessage, cancelMessage
-} from '@ohos/web-container';
+} from '@hybrid/web-container';
 
 
 PersistentStorage.persistProp('enableDevDomain', false);

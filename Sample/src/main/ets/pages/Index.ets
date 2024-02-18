@@ -1,6 +1,6 @@
 import Want from '@ohos.app.ability.Want';
 import Url from '@ohos.url';
-import { TaroWebContainer, InjectObject, HostPageState, TaroWebController, Logger, LoggerLevel, wbLogger } from '@ohos/web-container';
+import { TaroWebContainer, InjectObject, HostPageState, TaroWebController, Logger, LoggerLevel, wbLogger } from '@hybrid/web-container';
 
 const SAMPLE_INDEX_TAG = 'SampleIndex';
 const defaultEntryDomain = 'resource://rawfile/';

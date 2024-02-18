@@ -1,7 +1,7 @@
 import UIAbility from '@ohos.app.ability.UIAbility';
 import window from '@ohos.window';
 import Want from '@ohos.app.ability.Want';
-import { wbLogger } from '@ohos/web-container';
+import { wbLogger } from '@hybrid/web-container';
 
 const ABILITY_TAG = 'EntryAbility';
 const storage = new LocalStorage();
