@@ -33,6 +33,8 @@ import { RouterUtils } from '../utils/RouterUtils';
 import router from '@ohos.router';
 import { wbLogger } from '../utils/Logger';
 import { AlbumBackward, ChooseAlbumResult, MediaItemData, chooseAlbumOptions } from '../interfaces/Media'
+import { ChannelInstance, MethodChannelInstance } from '../inject_adapter/Channel';
+import { BusinessError } from '@ohos.base';
 
 const CONTAINER_TAG = 'TaroWebContainer';
 
@@ -227,15 +229,29 @@ export struct TaroWebContainer {
 
     // 创建高阶API适配器，合并注入的对象
     this.adapter = new ApiAdapter();
-    this.adapter.setWebController(this.taroWebController.webController)
     const nativeInject = new NativeInject(this.navigationBarData, this.capsuleOptions, this.capsuleController);
     this.taroWebController.setAlbumBackward(this.albumBackward);
     nativeInject.setChooseAlbumCallback(this.chooseAlbumCallback);
-    this.adapter.mergeInjectObj(nativeInject.buildInjectObj(context));
-    this.injectObj && this.adapter.mergeInjectObj(this.injectObj);
 
-    // 注入对象的内部依赖更新
-    // nativeInject.setNaviController(this.navigationBarData);
+    ChannelInstance.setRunJavascriptFun((jsCode: string)=>{
+      try {
+        this.taroWebController.webController.runJavaScript(jsCode, (error, result) => {
+          if (error) {
+            wbLogger.error(CONTAINER_TAG, `Run JavaScript error: ${JSON.stringify(error)}`)
+            return;
+          }
+        });
+      } catch (error) {
+        wbLogger.error(CONTAINER_TAG, `runJavaScript error: ${(error as BusinessError).message}`);
+      }
+    })
+
+    MethodChannelInstance.registerMethods('NativeApi', nativeInject.buildInjectObj(context))
+
+    if (!!this.injectObj){
+      MethodChannelInstance.registerMethods('NativeApi', this.injectObj)
+    }
+
     getBundleInfoPermissions().then((permissions: bundleManager.ReqPermissionDetail[]) => {
       nativeInject.setPermissionInfo(permissions);
     })

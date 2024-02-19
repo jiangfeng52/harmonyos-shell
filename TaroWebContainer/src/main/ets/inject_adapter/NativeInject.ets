@@ -32,6 +32,7 @@ import {
   SubscriptionsSetting,
   ChooseMediaOptions,
   ExitMiniProgramOptions,
+  SettingOptions,
 } from '../interfaces/InjectObject';
 import {
   getBundleUsedPermission,
@@ -117,6 +118,7 @@ export class NativeInject {
   public buildInjectObj(context: common.UIAbilityContext): InnerInjectObj {
     return {
       copyFileToSandboxCache: (src: string) => {
+        wbLogger.debug('JsBridgeNative', `NativeApi$copyFileToSandboxCache`)
         const context = getContext() as common.UIAbilityContext;
         const fileName = src.substring(src.lastIndexOf('/') + 1);
         const sandboxPath = `${context.cacheDir}/${Date.now()}_${fileName}`;
@@ -125,6 +127,7 @@ export class NativeInject {
         return { internalCachePath: switchHapSandBoxToInternal(sandboxPath) }
       },
       setNavigationBarColor: (options) => {
+        wbLogger.debug('JsBridgeNative', `NativeApi$setNavigationBarColor`)
         wbLogger.info(NATIVE_TAG, `setNavigationBarColor: ${JSON.stringify(options || {})}`)
         this.navigationBarData.barColor = options.backgroundColor ?? this.navigationBarData.barColor;
         this.navigationBarData.barFrontColor = options.frontColor ?? this.navigationBarData.barFrontColor;
@@ -143,12 +146,15 @@ export class NativeInject {
         this.setStatusBarFrontColor(this.navigationBarData.barFrontColor);
       },
       showNavigationBarLoading: () => {
+        wbLogger.debug('JsBridgeNative', `NativeApi$showNavigationBarLoading`)
         this.navigationBarData.loading = true;
       },
       hideNavigationBarLoading: () => {
+        wbLogger.debug('JsBridgeNative', `NativeApi$hideNavigationBarLoading`)
         this.navigationBarData.loading = false;
       },
       getMenuButtonBoundingClientRect: () => {
+        wbLogger.debug('JsBridgeNative', `NativeApi$getMenuButtonBoundingClientRect`)
         return {
           left: this.windowWidth - this.capsuleOptions.marginRight - this.capsuleOptions.width,
           right: this.windowWidth - this.capsuleOptions.marginRight,
@@ -158,187 +164,196 @@ export class NativeInject {
           height: this.capsuleOptions.height,
         }
       },
-      navigateToMiniProgram: (options) => {
+      navigateToMiniProgram: async (options) => {
         // options.path 格式:
         // - EntryAbility:///pages/api/framework/index?paramA=good
         // - /pages/api/framework/index?paramA=good
-        return new Promise((resolve, reject) => {
-          resolve({ errMsg: '' });
-          wbLogger.info(NATIVE_TAG, 'navigateToMiniProgram options:' + JSON.stringify(options));
-          const entryAbility = 'EntryAbility';
-          let abilityName = entryAbility;
-          let path = '';
-          let query = '';
-          if (options.path) {
-            const targetUri: string = options.path.startsWith('/') ? `${entryAbility}://${options.path}` : options.path;
-            const uriInfo = new uri.URI(targetUri);
-            abilityName = uriInfo.scheme;
-            path = uriInfo.path;
-            query = (!uriInfo.query || uriInfo.query === 'null') ? '' : uriInfo.query;
-          }
-          const wantInfo: Want = {
-            deviceId: '',
-            bundleName: options.appId,
-            abilityName,
-            parameters: {
-              extraData: options.extraData || {},
-              path,
-              query,
-            },
-          };
-          wbLogger.debug(NATIVE_TAG, `navigateToMiniProgram: ${JSON.stringify(wantInfo)}`);
-          try {
-            const context = getContext(this) as common.UIAbilityContext;
-            context.startAbility(wantInfo).then(() => {
-              resolve({ errMsg: '' });
-            }).catch(() => {
-              reject({ errMsg: 'invalid appid or path scheme' } as ErrorMsg);
-            })
-          } catch (paramError) {
-            wbLogger.warn(NATIVE_TAG, `navigateToMiniProgram failed: ${JSON.stringify(paramError)}`);
-            reject({
-              errMsg: `code: ${(paramError as BusinessError).code}, message ${(paramError as BusinessError).message}`
-            } as ErrorMsg
-            );
-          }
-        })
+        wbLogger.debug('JsBridgeNative', `NativeApi$navigateToMiniProgram`)
+        wbLogger.info(NATIVE_TAG, 'navigateToMiniProgram options:' + JSON.stringify(options));
+        const entryAbility = 'EntryAbility';
+        let abilityName = entryAbility;
+        let path = '';
+        let query = '';
+        if (options.path) {
+          const targetUri: string = options.path.startsWith('/') ? `${entryAbility}://${options.path}` : options.path;
+          const uriInfo = new uri.URI(targetUri);
+          abilityName = uriInfo.scheme;
+          path = uriInfo.path;
+          query = (!uriInfo.query || uriInfo.query === 'null') ? '' : uriInfo.query;
+        }
+        const wantInfo: Want = {
+          deviceId: '',
+          bundleName: options.appId,
+          abilityName,
+          parameters: {
+            extraData: options.extraData || {},
+            path,
+            query,
+          },
+        };
+        wbLogger.debug(NATIVE_TAG, `navigateToMiniProgram: ${JSON.stringify(wantInfo)}`);
+        try {
+          const context = getContext(this) as common.UIAbilityContext;
+          context.startAbility(wantInfo).then(() => {
+            options.success({ errMsg: '' });
+          }).catch(() => {
+            options.fail({ errMsg: 'invalid appid or path scheme' } as ErrorMsg);
+          })
+        } catch (paramError) {
+          wbLogger.warn(NATIVE_TAG, `navigateToMiniProgram failed: ${JSON.stringify(paramError)}`);
+          options.fail({
+            errMsg: `code: ${(paramError as BusinessError).code}, message ${(paramError as BusinessError).message}`
+          } as ErrorMsg
+          );
+        }
       },
       setNavigationStyle: (style, textStyle, backgroundColor) => {
+        wbLogger.debug('JsBridgeNative', `NativeApi$setNavigationStyle`)
         this.navigationBarData.visible = style !== 'custom';
         this.navigationBarData.barFrontColor = textStyle === 'white' ? '#ffffff' : '#000000';
         this.navigationBarData.barColor = backgroundColor;
         this.navigationBarData.animationDuration = 0;
         this.setStatusBarFrontColor(this.navigationBarData.barFrontColor);
       },
-      openSetting: (options) => {
+      openSetting: async (options: SettingOptions) => {
+        wbLogger.debug('JsBridgeNative', `NativeApi$openSetting`)
         const apiName: string = 'openSetting';
         // 接口返回
-        return new Promise(async (resolve, reject) => {
-          try {
-            const curPermissions: Array<PermissionInfo> = getBundleUserPermissions(this.permissionInfo);
-            const bundleScope = await getBundleWxScopeList(curPermissions);
-            const bundleUsedScope = getBundleUsedPermission(bundleScope.allScope, bundleScope.bundleScope);
-            // 打开应用的权限列表
-            openPermissionsInSystemSettings();
-            if (options.withSubscriptions) {
-              let NotificationBasicContent: NotificationBasicContent = {
-                title: '设置',
-                text: '获取中',
-                additionalText: "",
-              }
-              let NotificationContent: NotificationContent = {
-                contentType: 'NOTIFICATION_CONTENT_BASIC_TEXT',
-                normal: NotificationBasicContent
-              }
-              let notificationRequests: NotificationRequest = {
-                id: 1222287986,
-                slotType: 'OTHER_TYPES',
-                content: NotificationContent,
-                path: ''
-              }
-              let sendMessageOption: SendMessageOptions = {
-                notificationRequest: notificationRequests
-              }
-              let subscriptionsSetting: SubscriptionsSetting = {
-                mainSwitch: false,
-                itemSettings: []
-              }
-              await sendMessage(sendMessageOption).then(async (res) => {
-                let cancelMessageOptions: CancelMessageOptions = {
-                  id: 1222287986
-                }
-                await cancelMessage(cancelMessageOptions).then((res) => {
-                  subscriptionsSetting.mainSwitch = true
-                }).catch((err: Error) => {
-                  subscriptionsSetting.mainSwitch = false
-                })
-              }).catch((err: Error) => {
-                console.log('requestSubscribeMessage', JSON.stringify(err))
-              })
-              const subscribeCode = await getMassageList()
-              subscriptionsSetting.itemSettings = subscribeCode.massageList
-              return resolve({
-                authSetting: bundleUsedScope.allScope,
-                subscriptionsSetting: subscriptionsSetting,
-                errMsg: `${apiName}:ok`
-              });
+        try {
+          const curPermissions: Array<PermissionInfo> = getBundleUserPermissions(this.permissionInfo);
+          const bundleScope = await getBundleWxScopeList(curPermissions);
+          const bundleUsedScope = getBundleUsedPermission(bundleScope.allScope, bundleScope.bundleScope);
+          // 打开应用的权限列表
+          openPermissionsInSystemSettings();
+          if (options.withSubscriptions) {
+            let NotificationBasicContent: NotificationBasicContent = {
+              title: '设置',
+              text: '获取中',
+              additionalText: "",
             }
-            return resolve({ authSetting: bundleUsedScope.allScope, errMsg: `${apiName}:ok` });
-          } catch (paramError) {
-            wbLogger.warn(NATIVE_TAG, `openSetting: ${JSON.stringify(paramError)}`);
-            return reject(
-              {
-                errMsg: `${apiName}:fail error code: ${(paramError as BusinessError).code} ${(paramError as BusinessError).message}`
-              } as ErrorMsg
-            );
+            let NotificationContent: NotificationContent = {
+              contentType: 'NOTIFICATION_CONTENT_BASIC_TEXT',
+              normal: NotificationBasicContent
+            }
+            let notificationRequests: NotificationRequest = {
+              id: 1222287986,
+              slotType: 'OTHER_TYPES',
+              content: NotificationContent,
+              path: ''
+            }
+            let sendMessageOption: SendMessageOptions = {
+              notificationRequest: notificationRequests
+            }
+            let subscriptionsSetting: SubscriptionsSetting = {
+              mainSwitch: false,
+              itemSettings: []
+            }
+            await sendMessage(sendMessageOption).then(async (res) => {
+              let cancelMessageOptions: CancelMessageOptions = {
+                id: 1222287986
+              }
+              await cancelMessage(cancelMessageOptions).then((res) => {
+                subscriptionsSetting.mainSwitch = true
+              }).catch((err: Error) => {
+                subscriptionsSetting.mainSwitch = false
+              })
+            }).catch((err: Error) => {
+              console.log('requestSubscribeMessage', JSON.stringify(err))
+            })
+            const subscribeCode = await getMassageList()
+            subscriptionsSetting.itemSettings = subscribeCode.massageList
+            options.success({
+              authSetting: bundleUsedScope.allScope,
+              subscriptionsSetting: subscriptionsSetting,
+              errMsg: `${apiName}:ok`
+            });
           }
-        })
+          options.success({ authSetting: bundleUsedScope.allScope, errMsg: `${apiName}:ok` });
+        } catch (paramError) {
+          wbLogger.warn(NATIVE_TAG, `openSetting: ${JSON.stringify(paramError)}`);
+          options.fail({
+            errMsg: `${apiName}:fail error code: ${(paramError as BusinessError).code} ${(paramError as BusinessError).message}`
+          } as ErrorMsg
+          );
+        }
       },
-      getSetting: (options) => {
+      getSetting: async (options: SettingOptions) => {
+        wbLogger.debug('JsBridgeNative', `NativeApi$getSetting`)
         const apiName: string = 'getSetting';
         // 接口返回
-        return new Promise(async (resolve, reject) => {
-          try {
-            const curPermissions: Array<PermissionInfo> = getBundleUserPermissions(this.permissionInfo);
-            const bundleScope = await getBundleWxScopeList(curPermissions);
-            const bundleUsedScope = getBundleUsedPermission(bundleScope.allScope, bundleScope.bundleScope);
-            if (options.withSubscriptions) {
-              let NotificationBasicContent: NotificationBasicContent = {
-                title: '设置',
-                text: '获取中',
-                additionalText: "",
-              }
-              let NotificationContent: NotificationContent = {
-                contentType: 'NOTIFICATION_CONTENT_BASIC_TEXT',
-                normal: NotificationBasicContent
-              }
-              let notificationRequests: NotificationRequest = {
-                id: 1222287986,
-                slotType: 'OTHER_TYPES',
-                content: NotificationContent,
-                path: ''
-              }
-              let sendMessageOption: SendMessageOptions = {
-                notificationRequest: notificationRequests
-              }
-              let subscriptionsSetting: SubscriptionsSetting = {
-                mainSwitch: false,
-                itemSettings: []
-              }
-              await sendMessage(sendMessageOption).then(async (res) => {
-                let cancelMessageOptions: CancelMessageOptions = {
-                  id: 1222287986
-                }
-                await cancelMessage(cancelMessageOptions).then((res) => {
-                  subscriptionsSetting.mainSwitch = true
-                }).catch((err: Error) => {
-                  subscriptionsSetting.mainSwitch = false
-                })
-              }).catch((err: Error) => {
-                console.log('requestSubscribeMessage', JSON.stringify(err))
-              })
-              const subscribeCode = await getMassageList()
-              subscriptionsSetting.itemSettings = subscribeCode.massageList
-              return resolve({
-                authSetting: bundleUsedScope.allScope,
-                subscriptionsSetting: subscriptionsSetting,
-                errMsg: `${apiName}:ok`
-              });
+        try {
+          const curPermissions: Array<PermissionInfo> = getBundleUserPermissions(this.permissionInfo);
+          const bundleScope = await getBundleWxScopeList(curPermissions);
+          const bundleUsedScope = getBundleUsedPermission(bundleScope.allScope, bundleScope.bundleScope);
+          if (options.withSubscriptions) {
+            let NotificationBasicContent: NotificationBasicContent = {
+              title: '设置',
+              text: '获取中',
+              additionalText: "",
             }
-            return resolve({ authSetting: bundleUsedScope.allScope, errMsg: `${apiName}:ok` });
-          } catch (paramError) {
-            return reject(
-              {
-                errMsg: `${apiName}:fail error code: ${(paramError as BusinessError).code} ${(paramError as BusinessError).message}`
-              } as ErrorMsg
-            );
+            let NotificationContent: NotificationContent = {
+              contentType: 'NOTIFICATION_CONTENT_BASIC_TEXT',
+              normal: NotificationBasicContent
+            }
+            let notificationRequests: NotificationRequest = {
+              id: 1222287986,
+              slotType: 'OTHER_TYPES',
+              content: NotificationContent,
+              path: ''
+            }
+            let sendMessageOption: SendMessageOptions = {
+              notificationRequest: notificationRequests
+            }
+            let subscriptionsSetting: SubscriptionsSetting = {
+              mainSwitch: false,
+              itemSettings: []
+            }
+            await sendMessage(sendMessageOption).then(async (res) => {
+              let cancelMessageOptions: CancelMessageOptions = {
+                id: 1222287986
+              }
+              await cancelMessage(cancelMessageOptions).then((res) => {
+                subscriptionsSetting.mainSwitch = true
+              }).catch((err: Error) => {
+                subscriptionsSetting.mainSwitch = false
+              })
+            }).catch((err: Error) => {
+              console.log('requestSubscribeMessage', JSON.stringify(err))
+            })
+            const subscribeCode = await getMassageList()
+            subscriptionsSetting.itemSettings = subscribeCode.massageList
+            options.success({
+              authSetting: bundleUsedScope.allScope,
+              subscriptionsSetting: subscriptionsSetting,
+              errMsg: `${apiName}:ok`
+            });
           }
-        })
+          options.success({ authSetting: bundleUsedScope.allScope, errMsg: `${apiName}:ok` });
+        } catch (paramError) {
+          options.fail({
+            errMsg: `${apiName}:fail error code: ${(paramError as BusinessError).code} ${(paramError as BusinessError).message}`
+          } as ErrorMsg
+          );
+        }
       },
-      getUpdateManager: () => {
-        return LocalUpdateManagerInstance;
+      applyUpdate: () => {
+        wbLogger.debug('JsBridgeNative', `NativeApi$getUpdateManager`)
+        return LocalUpdateManagerInstance.applyUpdate();
+      },
+      onCheckForUpdate: (option: ESObject) => {
+        wbLogger.debug('JsBridgeNative', `NativeApi$getUpdateManager`)
+        return LocalUpdateManagerInstance.onCheckForUpdate(option);
+      },
+      onUpdateFailed: (option: ESObject) => {
+        wbLogger.debug('JsBridgeNative', `NativeApi$getUpdateManager`)
+        return LocalUpdateManagerInstance.onUpdateFailed(option);
+      },
+      onUpdateReady: (option: ESObject) => {
+        wbLogger.debug('JsBridgeNative', `NativeApi$getUpdateManager`)
+        return LocalUpdateManagerInstance.onUpdateReady(option);
       },
       requestSubscribeMessage: async (options: RequestSubscribeMessageOptions) => {
+        wbLogger.debug('JsBridgeNative', `NativeApi$requestSubscribeMessage`)
         const apiName: string = 'requestSubscribeMessage';
         return new Promise(async (resolve) => {
           try {
@@ -364,6 +379,7 @@ export class NativeInject {
         })
       },
       saveDataUrlToFile: (options: SaveDataUrlOptions) => {
+        wbLogger.debug('JsBridgeNative', `NativeApi$saveDataUrlToFile`)
         try {
           let tmpFilePath = `internal://cache/${Date.now()}_${options.url.split('/').splice(-1, 1).toString()}`;
           const data = options.data.split(',');
@@ -390,15 +406,19 @@ export class NativeInject {
         }
       },
       setCapsuleState: (visible: boolean) => {
+        wbLogger.debug('JsBridgeNative', `NativeApi$setCapsuleState`)
         this.capsuleController.changeCapsuleState(visible);
       },
       getCapsuleState: () => {
+        wbLogger.debug('JsBridgeNative', `NativeApi$getCapsuleState`)
         return { visible: this.capsuleController.getCapsuleState() }
       },
       chooseMediaAssets: (options: ChooseMediaOptions) => {
-          selectMediaAssets(options, this.chooseAlbumCallback!)
+        wbLogger.debug('JsBridgeNative', `NativeApi$chooseMediaAssets`)
+        selectMediaAssets(options, this.chooseAlbumCallback!)
       },
       exitMiniProgram: (options?: ExitMiniProgramOptions) => {
+        wbLogger.debug('JsBridgeNative', `NativeApi$exitMiniProgram`)
         try {
           context.terminateSelf()
             .then(() => {
