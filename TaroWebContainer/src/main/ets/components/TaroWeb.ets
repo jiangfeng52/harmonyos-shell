@@ -114,13 +114,11 @@ export struct TaroWeb {
 
   aboutToAppear() {
     webView.WebviewController.setWebDebuggingAccess(this.enableWebDebug);
-    // this.scriptProxy = this.apiAdapter.getAdapterProxy();
     this.taroWebController.hasBindedTaroWeb = true
     this.taroWebController.addRequestHandler(this.handleInternalResource);
     this.taroWebController.addRequestHandler(this.useLocalCacheResource);
 
     MethodChannelInstance.registerMethods('NativeApi', NativeApi)
-
   }
 
   aboutToDisappear() {
