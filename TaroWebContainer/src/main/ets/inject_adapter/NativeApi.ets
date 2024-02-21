@@ -482,4 +482,114 @@ export const NativeApi: ESObject = {
     }
     NativeApiConfig.getInstance().innerAudioContextMap.get(objectId).src = options
   },
+
+  closeBLEConnection(options: ESObject): void {
+    wbLogger.debug('JsBridgeNativeApi', `NativeApi$closeBLEConnection`)
+    return as.closeBLEConnection(options)
+  },
+
+  createBLEConnection(options: ESObject): void {
+    wbLogger.debug('JsBridgeNativeApi', `NativeApi$createBLEConnection`)
+    return as.createBLEConnection(options)
+  },
+
+  getBLEDeviceCharacteristics(options: ESObject): void {
+    wbLogger.debug('JsBridgeNativeApi', `NativeApi$getBLEDeviceCharacteristics`)
+    return as.getBLEDeviceCharacteristics(options)
+  },
+
+  getBLEDeviceRSSI(options: ESObject): void {
+    wbLogger.debug('JsBridgeNativeApi', `NativeApi$getBLEDeviceRSSI`)
+    return as.getBLEDeviceRSSI(options)
+  },
+
+  getBLEDeviceServices(options: ESObject): void {
+    wbLogger.debug('JsBridgeNativeApi', `NativeApi$getBLEDeviceServices`)
+    return as.getBLEDeviceServices(options)
+  },
+
+  notifyBLECharacteristicValueChange(options: ESObject): void {
+    wbLogger.debug('JsBridgeNativeApi', `NativeApi$notifyBLECharacteristicValueChange`)
+    return as.notifyBLECharacteristicValueChange(options)
+  },
+
+  onBLECharacteristicValueChange(options: ESObject): void {
+    wbLogger.debug('JsBridgeNativeApi', `NativeApi$onBLECharacteristicValueChange`)
+    return as.onBLECharacteristicValueChange(options)
+  },
+
+  onBLEConnectionStateChange(options: ESObject): void {
+    wbLogger.debug('JsBridgeNativeApi', `NativeApi$onBLEConnectionStateChange`)
+    return as.onBLEConnectionStateChange(options)
+  },
+
+  readBLECharacteristicValue(options: ESObject): void {
+    wbLogger.debug('JsBridgeNativeApi', `NativeApi$readBLECharacteristicValue`)
+    return as.readBLECharacteristicValue(options)
+  },
+
+  setBLEMTU(options: ESObject): void {
+    wbLogger.debug('JsBridgeNativeApi', `NativeApi$setBLEMTU`)
+    return as.setBLEMTU(options)
+  },
+
+  writeBLECharacteristicValue(options: ESObject): void {
+    wbLogger.debug('JsBridgeNativeApi', `NativeApi$writeBLECharacteristicValue`)
+    return as.writeBLECharacteristicValue(options)
+  },
+
+  closeBluetoothAdapter(options: ESObject): void {
+    wbLogger.debug('JsBridgeNativeApi', `NativeApi$closeBluetoothAdapter`)
+    return as.closeBluetoothAdapter(options)
+  },
+
+  getBluetoothAdapterState(options: ESObject): void {
+    wbLogger.debug('JsBridgeNativeApi', `NativeApi$getBluetoothAdapterState`)
+    return as.getBluetoothAdapterState(options)
+  },
+
+  getBluetoothDevices(options: ESObject): void {
+    wbLogger.debug('JsBridgeNativeApi', `NativeApi$getBluetoothDevices`)
+    return as.getBluetoothDevices(options)
+  },
+
+  getConnectedBluetoothDevices(options: ESObject): void {
+    wbLogger.debug('JsBridgeNativeApi', `NativeApi$getConnectedBluetoothDevices`)
+    return as.getConnectedBluetoothDevices(options)
+  },
+
+  offBluetoothAdapterStateChange(options: ESObject): void {
+    wbLogger.debug('JsBridgeNativeApi', `NativeApi$offBluetoothAdapterStateChange`)
+    return as.offBluetoothAdapterStateChange(options)
+  },
+
+  offBluetoothDeviceFound(options: ESObject): void {
+    wbLogger.debug('JsBridgeNativeApi', `NativeApi$offBluetoothDeviceFound`)
+    return as.offBluetoothDeviceFound(options)
+  },
+
+  onBluetoothAdapterStateChange(options: ESObject): void {
+    wbLogger.debug('JsBridgeNativeApi', `NativeApi$onBluetoothAdapterStateChange`)
+    return as.onBluetoothAdapterStateChange(options)
+  },
+
+  onBluetoothDeviceFound(options: ESObject): void {
+    wbLogger.debug('JsBridgeNativeApi', `NativeApi$onBluetoothDeviceFound`)
+    return as.onBluetoothDeviceFound(options)
+  },
+
+  openBluetoothAdapter(options: ESObject): void {
+    wbLogger.debug('JsBridgeNativeApi', `NativeApi$openBluetoothAdapter`)
+    return as.openBluetoothAdapter(options)
+  },
+
+  startBluetoothDevicesDiscovery(options: ESObject): void {
+    wbLogger.debug('JsBridgeNativeApi', `NativeApi$startBluetoothDevicesDiscovery`)
+    return as.startBluetoothDevicesDiscovery(options)
+  },
+
+  stopBluetoothDevicesDiscovery(options: ESObject): void {
+    wbLogger.debug('JsBridgeNativeApi', `NativeApi$stopBluetoothDevicesDiscovery`)
+    return as.stopBluetoothDevicesDiscovery(options)
+  },
 }
