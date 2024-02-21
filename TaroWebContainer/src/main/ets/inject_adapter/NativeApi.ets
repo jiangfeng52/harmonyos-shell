@@ -44,6 +44,7 @@ class NativeApiConfig {
 export const NativeApi: ESObject = {
   getWindowInfo: as['getWindowInfo'],
   getSystemInfoSync: as['getSystemInfoSync'],
+  getDeviceInfo: as['getDeviceInfo'],
   getSystemSetting: as['getSystemSetting'],
   getAppBaseInfo: as['getAppBaseInfo'],
   getAppAuthorizeSetting: as['getAppAuthorizeSetting'],
@@ -54,6 +55,66 @@ export const NativeApi: ESObject = {
   getVideoInfo(options: ESObject): void {
     wbLogger.debug('JsBridgeNativeApi', `NativeApi$getVideoInfo`)
     return as.getVideoInfo(options)
+  },
+
+  openAppAuthorizeSetting(options: ESObject): void {
+    wbLogger.debug('JsBridgeNativeApi', `NativeApi$openAppAuthorizeSetting`)
+    as.openAppAuthorizeSetting(options)
+  },
+
+  startAccelerometer(options: ESObject): void {
+    wbLogger.debug('JsBridgeNativeApi', `NativeApi$startAccelerometer`)
+    as.startAccelerometer(options)
+  },
+
+  stopAccelerometer(options: ESObject): void {
+    wbLogger.debug('JsBridgeNativeApi', `NativeApi$stopAccelerometer`)
+    as.stopAccelerometer(options)
+  },
+
+  onAccelerometerChange(options: ESObject): void {
+    wbLogger.debug('JsBridgeNativeApi', `NativeApi$onAccelerometerChange`)
+    as.onAccelerometerChange(options)
+  },
+
+  offAccelerometerChange(options: ESObject): void {
+    wbLogger.debug('JsBridgeNativeApi', `NativeApi$offAccelerometerChange`)
+    as.offAccelerometerChange(options)
+  },
+
+  startCompass(options: ESObject): void {
+    wbLogger.debug('JsBridgeNativeApi', `NativeApi$startCompass`)
+    as.startCompass(options)
+  },
+
+  stopCompass(options: ESObject): void {
+    wbLogger.debug('JsBridgeNativeApi', `NativeApi$stopCompass`)
+    as.stopCompass(options)
+  },
+
+  onCompassChange(options: ESObject): void {
+    wbLogger.debug('JsBridgeNativeApi', `NativeApi$onCompassChange`)
+    as.onCompassChange(options)
+  },
+
+  offCompassChange(options: ESObject): void {
+    wbLogger.debug('JsBridgeNativeApi', `NativeApi$offCompassChange`)
+    as.offCompassChange(options)
+  },
+
+  startGyroscope(options: ESObject): void {
+    wbLogger.debug('JsBridgeNativeApi', `NativeApi$startGyroscope`)
+    as.startGyroscope(options)
+  },
+
+  stopGyroscope(options: ESObject): void {
+    wbLogger.debug('JsBridgeNativeApi', `NativeApi$stopGyroscope`)
+    as.stopGyroscope(options)
+  },
+
+  onGyroscopeChange(options: ESObject): void {
+    wbLogger.debug('JsBridgeNativeApi', `NativeApi$onGyroscopeChange`)
+    as.onGyroscopeChange(options)
   },
 
   getImageInfo(options: ESObject): void {
@@ -82,6 +143,16 @@ export const NativeApi: ESObject = {
     return as.setKeepScreenOn(options)
   },
 
+  setScreenBrightness(options: ESObject): void {
+    wbLogger.debug('JsBridgeNativeApi', `NativeApi$setScreenBrightness`)
+    return as.setScreenBrightness(options)
+  },
+
+  getScreenBrightness(options: ESObject): void {
+    wbLogger.debug('JsBridgeNativeApi', `NativeApi$getScreenBrightness`)
+    return as.getScreenBrightness(options)
+  },
+
   //回调监听
   onUserCaptureScreen(options: ESObject): void {
     wbLogger.debug('JsBridgeNativeApi', `NativeApi$onUserCaptureScreen`)
@@ -93,14 +164,69 @@ export const NativeApi: ESObject = {
     return as.offUserCaptureScreen(options)
   },
 
+  onLocationChange(options: ESObject): void {
+    wbLogger.debug('JsBridgeNativeApi', `NativeApi$onLocationChange`)
+    return as.onLocationChange(options)
+  },
+
+  offLocationChange(options: ESObject): void {
+    wbLogger.debug('JsBridgeNativeApi', `NativeApi$offLocationChange`)
+    return as.offLocationChange(options)
+  },
+
   hideKeyboard(options: ESObject): void {
     wbLogger.debug('JsBridgeNativeApi', `NativeApi$hideKeyboard`)
     return as.hideKeyboard(options)
   },
 
+  onKeyboardHeightChange(options: ESObject): void {
+    wbLogger.debug('JsBridgeNativeApi', `NativeApi$onKeyboardHeightChange`)
+    return as.onKeyboardHeightChange(options)
+  },
+
+  offKeyboardHeightChange(options: ESObject): void {
+    wbLogger.debug('JsBridgeNativeApi', `NativeApi$offKeyboardHeightChange`)
+    return as.offKeyboardHeightChange(options)
+  },
+
   makePhoneCall(options: ESObject): void {
     wbLogger.debug('JsBridgeNativeApi', `NativeApi$makePhoneCall`)
     return as.makePhoneCall(options)
+  },
+
+  getSavedFileInfo(options: ESObject): void {
+    wbLogger.debug('JsBridgeNativeApi', `NativeApi$getSavedFileInfo`)
+    return as.getSavedFileInfo(options)
+  },
+
+  getSavedFileList(options: ESObject): void {
+    wbLogger.debug('JsBridgeNativeApi', `NativeApi$getSavedFileList`)
+    return as.getSavedFileList(options)
+  },
+
+  removeSavedFile(options: ESObject): void {
+    wbLogger.debug('JsBridgeNativeApi', `NativeApi$removeSavedFile`)
+    return as.removeSavedFile(options)
+  },
+
+  addPhoneContact(options: ESObject): void {
+    wbLogger.debug('JsBridgeNativeApi', `NativeApi$addPhoneContact`)
+    return as.addPhoneContact(options)
+  },
+
+  scanCode(options: ESObject): void {
+    wbLogger.debug('JsBridgeNativeApi', `NativeApi$scanCode`)
+    return as.scanCode(options)
+  },
+
+  vibrateShort(options: ESObject): void {
+    wbLogger.debug('JsBridgeNativeApi', `NativeApi$vibrateShort`)
+    return as.vibrateShort(options)
+  },
+
+  vibrateLong(options: ESObject): void {
+    wbLogger.debug('JsBridgeNativeApi', `NativeApi$vibrateLong`)
+    return as.vibrateLong(options)
   },
 
   // NativeRequest
