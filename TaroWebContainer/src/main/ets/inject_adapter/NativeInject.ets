@@ -60,6 +60,7 @@ import { LocalUpdateManagerInstance } from '../update/LocalUpdateManager';
 import util from '@ohos.util';
 import { selectMediaAssets } from '../utils/MediaUtil';
 import { MediaItemData, ChooseAlbumResult, chooseAlbumOptions } from '../interfaces/Media';
+import { requestAccessBluetoothPermission } from '../utils/BluetoothUtil';
 
 
 const NATIVE_TAG = 'NativeInject';
@@ -431,7 +432,11 @@ export class NativeInject {
           options && options.fail()
         }
         options && options.complete()
-      }
+      },
+      requestAccessPermission: async (options: SettingOptions) => {
+        wbLogger.debug('JsBridgeNative', `NativeApi$requestAccessPermission`)
+        return requestAccessBluetoothPermission(options)
+      },
     };
   }
 }

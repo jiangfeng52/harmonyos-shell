@@ -157,12 +157,6 @@ export interface GetSettingRetOptions {
   errMsg: string;
 }
 
-export interface SettingOptions {
-  success: Function;
-  fail: Function;
-  withSubscriptions?: boolean;
-}
-
 export interface copyFileToSandboxCacheRetOptions {
   internalCachePath: string
 }
@@ -217,6 +211,7 @@ export interface InnerInjectObj {
   getCapsuleState: () => CapsuleState;
   chooseMediaAssets: (options: ChooseMediaOptions) => void;
   exitMiniProgram: (options: ExitMiniProgramOptions) => void;
+  requestAccessPermission: (options: SettingOptions) => void
 }
 
 export interface InjectObject {
