@@ -197,13 +197,19 @@ export interface CapsuleController {
   getCapsuleState: () => boolean;
 }
 
+export interface NavigationStyle {
+  style: string ;
+  textStyle: string ;
+  backgroundColor: string;
+}
+
 export interface InnerInjectObj {
   setNavigationBarColor: (options: NavigationBarOptions) => void;
   showNavigationBarLoading: () => void;
   hideNavigationBarLoading: () => void;
   getMenuButtonBoundingClientRect: () => MenuButtonBoundingClientResult;
   navigateToMiniProgram: (options: NavigateToMiniProgramOptions) => void;
-  setNavigationStyle: (style: string, textStyle: string, backgroundColor: string) => void;
+  setNavigationStyle: (navigationStyle: NavigationStyle) => void;
   openSetting: (options: SettingOptions) => void;
   getSetting: (options: SettingOptions) => void;
   copyFileToSandboxCache: (src: string) => copyFileToSandboxCacheRetOptions;

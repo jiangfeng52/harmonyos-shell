@@ -33,6 +33,7 @@ import {
   ChooseMediaOptions,
   ExitMiniProgramOptions,
   SettingOptions,
+  NavigationStyle,
 } from '../interfaces/InjectObject';
 import {
   getBundleUsedPermission,
@@ -207,11 +208,11 @@ export class NativeInject {
           );
         }
       },
-      setNavigationStyle: (style, textStyle, backgroundColor) => {
+      setNavigationStyle: (navigationStyle: NavigationStyle) => {
         wbLogger.debug('JsBridgeNative', `NativeApi$setNavigationStyle`)
-        this.navigationBarData.visible = style !== 'custom';
-        this.navigationBarData.barFrontColor = textStyle === 'white' ? '#ffffff' : '#000000';
-        this.navigationBarData.barColor = backgroundColor;
+        this.navigationBarData.visible = navigationStyle.style !== 'custom';
+        this.navigationBarData.barFrontColor = navigationStyle.textStyle === 'white' ? '#ffffff' : '#000000';
+        this.navigationBarData.barColor = navigationStyle.backgroundColor;
         this.navigationBarData.animationDuration = 0;
         this.setStatusBarFrontColor(this.navigationBarData.barFrontColor);
       },
