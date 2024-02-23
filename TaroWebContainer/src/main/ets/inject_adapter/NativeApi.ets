@@ -133,6 +133,11 @@ export const NativeApi: ESObject = {
     return as.openDocument(options)
   },
 
+  login(options: ESObject): void {
+    wbLogger.debug('JsBridgeNativeApi', `NativeApi$login`)
+    return as.login(options)
+  },
+
   getUserInfo(options: ESObject): void {
     wbLogger.debug('JsBridgeNativeApi', `NativeApi$getUserInfo`)
     return as.getUserInfo(options)
