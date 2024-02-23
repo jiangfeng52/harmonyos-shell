@@ -116,7 +116,7 @@ export class NativeInject {
     this.permissionInfo = permissionInfo;
   }
 
-  public buildInjectObj(context: common.UIAbilityContext): InnerInjectObj {
+  public buildInjectObj(): InnerInjectObj {
     return {
       copyFileToSandboxCache: (src: string) => {
         const context = getContext() as common.UIAbilityContext;
@@ -402,6 +402,7 @@ export class NativeInject {
       },
       exitMiniProgram: (options?: ExitMiniProgramOptions) => {
         try {
+          const context = getContext() as common.UIAbilityContext;
           context.terminateSelf()
             .then(() => {
               options && options.success()

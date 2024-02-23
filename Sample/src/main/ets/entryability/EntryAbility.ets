@@ -2,7 +2,10 @@ import UIAbility from '@ohos.app.ability.UIAbility';
 import window from '@ohos.window';
 import Want from '@ohos.app.ability.Want';
 import { wbLogger } from '@hybrid/web-container';
+import { WebManager } from '@hybrid/web-container/src/main/ets/webrouterservice/webmanager/webManager';
+import { GlobalThis } from '@hybrid/web-container/src/main/ets/utils/GlobalThis';
 import { RouterStorage } from '@hybrid/web-container/src/main/ets/webrouterservice/globalrouter/RouterStorage';
+import { getSystemBarHeight } from '@hybrid/web-container/src/main/ets/utils/WindowUtil';
 
 const ABILITY_TAG = 'EntryAbility';
 const storage = new LocalStorage();
@@ -33,14 +36,16 @@ export default class EntryAbility extends UIAbility {
       wbLogger.info(ABILITY_TAG, 'Succeeded in obtaining the main window. Data');
     })
     windowStage.loadContent('pages/Page1', storage, (err, data) => {
-      RouterStorage.getInstance().setUIContext(windowStage.getMainWindowSync().getUIContext());
-      //WebManager.getInstance().initNode(windowStage.getMainWindowSync().getUIContext());
+      //RouterStorage.getInstance().setUIContext(windowStage.getMainWindowSync().getUIContext());
+      GlobalThis.getInstance().setContext('context', this.context);
+      WebManager.getInstance().initNode(windowStage.getMainWindowSync().getUIContext());
       if (err.code) {
         wbLogger.error(ABILITY_TAG, 'testTag', 'Failed to load the content. Cause: %{public}s', JSON.stringify(err) ?? '');
         return;
       }
       wbLogger.info(ABILITY_TAG, 'Succeeded in loading the content. Data: %{public}s', JSON.stringify(data) ?? '');
     });
+    RouterStorage.getInstance().setSystemBarHeight(getSystemBarHeight(windowStage.getMainWindowSync()));
   }
 
   onWindowStageDestroy() {

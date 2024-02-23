@@ -17,6 +17,8 @@ export class WebManager {
   private context: UIContext | undefined = undefined;
   private webIdleMap: Map<number, WebNode> = new Map();
   private adapter: ApiAdapter | undefined;
+  // 系统状态栏高度
+  systemBarHeight: number = RouterStorage.getInstance().getSystemBarHeight();
   // 显示胶囊
   showCapsule: boolean = true;
   // 导航栏状态控制器
@@ -55,8 +57,9 @@ export class WebManager {
     RouterStorage.getInstance().setWebNode(webNode);
 
     const nativeInject = new NativeInject(this.navigationBarData, this.capsuleOptions, this.capsuleController);
-    const contexts = getContext(this) as common.UIAbilityContext;
-    this.adapter.mergeInjectObj(nativeInject.buildInjectObj(contexts));
+    this.adapter.mergeInjectObj(nativeInject.buildInjectObj());
+    this.adapter.setNavigationBarHeight(this.systemBarHeight + this.navigationBarData.titleHeight + this.navigationBarData.paddingBottom);
+    this.adapter.setSystemBarHeight(this.systemBarHeight);
 
     webNode?.initWeb(Constant.URL_FIRST_PAGE1 , this.context as UIContext, controller, webIndex, this.adapter);
     this.webIdleMap.set(webIndex, webNode);

@@ -221,10 +221,10 @@ export struct TaroWebContainer {
     // 加载组件时，url更新
     this.originIndexUrl = this.webUrl;
     this.handleWantInfo();
-    const context = getContext(this) as common.UIAbilityContext;
+    const context = GlobalThis.getInstance().getContext('context');
     // 使用UIAbility的context初始化对象
     AdvancedAPI.init(context);
-    GlobalThis.getInstance().setContext('context', context);
+    //GlobalThis.getInstance().setContext('context', context);
 
     // 创建高阶API适配器，合并注入的对象
     this.adapter = RouterStorage.getInstance().getAdapter();
@@ -232,7 +232,7 @@ export struct TaroWebContainer {
     const nativeInject = new NativeInject(this.navigationBarData, this.capsuleOptions, this.capsuleController);
     this.taroWebController.setAlbumBackward(this.albumBackward);
     nativeInject.setChooseAlbumCallback(this.chooseAlbumCallback);
-    this.adapter.mergeInjectObj(nativeInject.buildInjectObj(context));
+    this.adapter.mergeInjectObj(nativeInject.buildInjectObj());
     this.injectObj && this.adapter.mergeInjectObj(this.injectObj);
 
     // 注入对象的内部依赖更新
