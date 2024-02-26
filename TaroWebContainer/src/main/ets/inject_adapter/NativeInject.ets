@@ -356,28 +356,26 @@ export class NativeInject {
       requestSubscribeMessage: async (options: RequestSubscribeMessageOptions) => {
         wbLogger.debug('JsBridgeNative', `NativeApi$requestSubscribeMessage`)
         const apiName: string = 'requestSubscribeMessage';
-        return new Promise(async (resolve) => {
-          try {
-            const enableCode = await enableNotification();
-            if (enableCode.errMsg === 'success') {
-              const addSlotCode = await addNotificationManagerSlot(options)
-              console.log('requestSubscribeMessage', JSON.stringify(addSlotCode))
-              if (addSlotCode.errMsg == 'success') {
-                return resolve(addSlotCode);
-              } else {
-                return resolve(addSlotCode);
-              }
+        try {
+          const enableCode = await enableNotification();
+          if (enableCode.errMsg === 'success') {
+            const addSlotCode = await addNotificationManagerSlot(options)
+            console.log('requestSubscribeMessage', JSON.stringify(addSlotCode))
+            if (addSlotCode.errMsg == 'success') {
+              options.success({ errMsg: `${apiName}:ok` });
             } else {
-              return resolve(enableCode);
+              options.fail({ errMsg: `${apiName}:error` });
             }
-          } catch (paramError) {
-            let enableCode: SubscribeMessageOptions = {
-              errCode: (paramError as BusinessError).code,
-              errMsg: `${apiName}:fail error ${(paramError as BusinessError).message}`
-            }
-            return resolve(enableCode);
+          } else {
+            options.fail({ errMsg: `EnableNotification fail` });
           }
-        })
+        } catch (paramError) {
+          let enableCode: SubscribeMessageOptions = {
+            errCode: (paramError as BusinessError).code,
+            errMsg: `${apiName}:fail error ${(paramError as BusinessError).message}`
+          }
+          options.fail({ errMsg: enableCode.errMsg });
+        }
       },
       saveDataUrlToFile: (options: SaveDataUrlOptions) => {
         wbLogger.debug('JsBridgeNative', `NativeApi$saveDataUrlToFile`)
