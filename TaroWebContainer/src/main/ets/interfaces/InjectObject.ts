@@ -173,6 +173,8 @@ interface OpenSettingOptions {
 
 export interface RequestSubscribeMessageOptions {
   tmplIds: Array<string>;
+  success: Function;
+  fail: Function;
 }
 
 export interface SubscribeMessageOptions {
@@ -217,7 +219,7 @@ export interface InnerInjectObj {
   onCheckForUpdate: (options: ESObject) => ESObject;
   onUpdateFailed: (options: ESObject) => ESObject;
   onUpdateReady: (options: ESObject) => ESObject;
-  requestSubscribeMessage: (options: RequestSubscribeMessageOptions) => Promise<SubscribeMessageOptions>;
+  requestSubscribeMessage: (options: RequestSubscribeMessageOptions) => void;
   saveDataUrlToFile: (options: SaveDataUrlOptions) => void;
   setCapsuleState: (visible: boolean) => void;
   getCapsuleState: () => CapsuleState;
