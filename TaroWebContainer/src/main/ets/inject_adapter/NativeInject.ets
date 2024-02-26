@@ -32,6 +32,7 @@ import {
   SubscriptionsSetting,
   ChooseMediaOptions,
   ExitMiniProgramOptions,
+  SettingOptions,
 } from '../interfaces/InjectObject';
 import {
   getBundleUsedPermission,
@@ -160,50 +161,48 @@ export class NativeInject {
           height: this.capsuleOptions.height,
         }
       },
-      navigateToMiniProgram: (options) => {
+      navigateToMiniProgram: async (options) => {
         // options.path 格式:
         // - EntryAbility:///pages/api/framework/index?paramA=good
         // - /pages/api/framework/index?paramA=good
-        return new Promise((resolve, reject) => {
-          resolve({ errMsg: '' });
-          wbLogger.info(NATIVE_TAG, 'navigateToMiniProgram options:' + JSON.stringify(options));
-          const entryAbility = 'EntryAbility';
-          let abilityName = entryAbility;
-          let path = '';
-          let query = '';
-          if (options.path) {
-            const targetUri: string = options.path.startsWith('/') ? `${entryAbility}://${options.path}` : options.path;
-            const uriInfo = new uri.URI(targetUri);
-            abilityName = uriInfo.scheme;
-            path = uriInfo.path;
-            query = (!uriInfo.query || uriInfo.query === 'null') ? '' : uriInfo.query;
-          }
-          const wantInfo: Want = {
-            deviceId: '',
-            bundleName: options.appId,
-            abilityName,
-            parameters: {
-              extraData: options.extraData || {},
-              path,
-              query,
-            },
-          };
-          wbLogger.debug(NATIVE_TAG, `navigateToMiniProgram: ${JSON.stringify(wantInfo)}`);
-          try {
-            const context = getContext(this) as common.UIAbilityContext;
-            context.startAbility(wantInfo).then(() => {
-              resolve({ errMsg: '' });
-            }).catch(() => {
-              reject({ errMsg: 'invalid appid or path scheme' } as ErrorMsg);
-            })
-          } catch (paramError) {
-            wbLogger.warn(NATIVE_TAG, `navigateToMiniProgram failed: ${JSON.stringify(paramError)}`);
-            reject({
-              errMsg: `code: ${(paramError as BusinessError).code}, message ${(paramError as BusinessError).message}`
-            } as ErrorMsg
-            );
-          }
-        })
+        wbLogger.debug('JsBridgeNative', `NativeApi$navigateToMiniProgram`)
+        wbLogger.info(NATIVE_TAG, 'navigateToMiniProgram options:' + JSON.stringify(options));
+        const entryAbility = 'EntryAbility';
+        let abilityName = entryAbility;
+        let path = '';
+        let query = '';
+        if (options.path) {
+          const targetUri: string = options.path.startsWith('/') ? `${entryAbility}://${options.path}` : options.path;
+          const uriInfo = new uri.URI(targetUri);
+          abilityName = uriInfo.scheme;
+          path = uriInfo.path;
+          query = (!uriInfo.query || uriInfo.query === 'null') ? '' : uriInfo.query;
+        }
+        const wantInfo: Want = {
+          deviceId: '',
+          bundleName: options.appId,
+          abilityName,
+          parameters: {
+            extraData: options.extraData || {},
+            path,
+            query,
+          },
+        };
+        wbLogger.debug(NATIVE_TAG, `navigateToMiniProgram: ${JSON.stringify(wantInfo)}`);
+        try {
+          const context = getContext(this) as common.UIAbilityContext;
+          context.startAbility(wantInfo).then(() => {
+            options.success({ errMsg: '' });
+          }).catch(() => {
+            options.fail({ errMsg: 'invalid appid or path scheme' } as ErrorMsg);
+          })
+        } catch (paramError) {
+          wbLogger.warn(NATIVE_TAG, `navigateToMiniProgram failed: ${JSON.stringify(paramError)}`);
+          options.fail({
+            errMsg: `code: ${(paramError as BusinessError).code}, message ${(paramError as BusinessError).message}`
+          } as ErrorMsg
+          );
+        }
       },
       setNavigationStyle: (style, textStyle, backgroundColor) => {
         this.navigationBarData.visible = style !== 'custom';
@@ -212,133 +211,142 @@ export class NativeInject {
         this.navigationBarData.animationDuration = 0;
         this.setStatusBarFrontColor(this.navigationBarData.barFrontColor);
       },
-      openSetting: (options) => {
+      openSetting: async (options: SettingOptions) => {
+        wbLogger.debug('JsBridgeNative', `NativeApi$openSetting`)
         const apiName: string = 'openSetting';
         // 接口返回
-        return new Promise(async (resolve, reject) => {
-          try {
-            const curPermissions: Array<PermissionInfo> = getBundleUserPermissions(this.permissionInfo);
-            const bundleScope = await getBundleWxScopeList(curPermissions);
-            const bundleUsedScope = getBundleUsedPermission(bundleScope.allScope, bundleScope.bundleScope);
-            // 打开应用的权限列表
-            openPermissionsInSystemSettings();
-            if (options.withSubscriptions) {
-              let NotificationBasicContent: NotificationBasicContent = {
-                title: '设置',
-                text: '获取中',
-                additionalText: "",
-              }
-              let NotificationContent: NotificationContent = {
-                contentType: 'NOTIFICATION_CONTENT_BASIC_TEXT',
-                normal: NotificationBasicContent
-              }
-              let notificationRequests: NotificationRequest = {
-                id: 1222287986,
-                slotType: 'OTHER_TYPES',
-                content: NotificationContent,
-                path: ''
-              }
-              let sendMessageOption: SendMessageOptions = {
-                notificationRequest: notificationRequests
-              }
-              let subscriptionsSetting: SubscriptionsSetting = {
-                mainSwitch: false,
-                itemSettings: []
-              }
-              await sendMessage(sendMessageOption).then(async (res) => {
-                let cancelMessageOptions: CancelMessageOptions = {
-                  id: 1222287986
-                }
-                await cancelMessage(cancelMessageOptions).then((res) => {
-                  subscriptionsSetting.mainSwitch = true
-                }).catch((err: Error) => {
-                  subscriptionsSetting.mainSwitch = false
-                })
-              }).catch((err: Error) => {
-                console.log('requestSubscribeMessage', JSON.stringify(err))
-              })
-              const subscribeCode = await getMassageList()
-              subscriptionsSetting.itemSettings = subscribeCode.massageList
-              return resolve({
-                authSetting: bundleUsedScope.allScope,
-                subscriptionsSetting: subscriptionsSetting,
-                errMsg: `${apiName}:ok`
-              });
+        try {
+          const curPermissions: Array<PermissionInfo> = getBundleUserPermissions(this.permissionInfo);
+          const bundleScope = await getBundleWxScopeList(curPermissions);
+          const bundleUsedScope = getBundleUsedPermission(bundleScope.allScope, bundleScope.bundleScope);
+          // 打开应用的权限列表
+          openPermissionsInSystemSettings();
+          if (options.withSubscriptions) {
+            let NotificationBasicContent: NotificationBasicContent = {
+              title: '设置',
+              text: '获取中',
+              additionalText: "",
             }
-            return resolve({ authSetting: bundleUsedScope.allScope, errMsg: `${apiName}:ok` });
-          } catch (paramError) {
-            wbLogger.warn(NATIVE_TAG, `openSetting: ${JSON.stringify(paramError)}`);
-            return reject(
-              {
-                errMsg: `${apiName}:fail error code: ${(paramError as BusinessError).code} ${(paramError as BusinessError).message}`
-              } as ErrorMsg
-            );
+            let NotificationContent: NotificationContent = {
+              contentType: 'NOTIFICATION_CONTENT_BASIC_TEXT',
+              normal: NotificationBasicContent
+            }
+            let notificationRequests: NotificationRequest = {
+              id: 1222287986,
+              slotType: 'OTHER_TYPES',
+              content: NotificationContent,
+              path: ''
+            }
+            let sendMessageOption: SendMessageOptions = {
+              notificationRequest: notificationRequests
+            }
+            let subscriptionsSetting: SubscriptionsSetting = {
+              mainSwitch: false,
+              itemSettings: []
+            }
+            await sendMessage(sendMessageOption).then(async (res) => {
+              let cancelMessageOptions: CancelMessageOptions = {
+                id: 1222287986
+              }
+              await cancelMessage(cancelMessageOptions).then((res) => {
+                subscriptionsSetting.mainSwitch = true
+              }).catch((err: Error) => {
+                subscriptionsSetting.mainSwitch = false
+              })
+            }).catch((err: Error) => {
+              console.log('requestSubscribeMessage', JSON.stringify(err))
+            })
+            const subscribeCode = await getMassageList()
+            subscriptionsSetting.itemSettings = subscribeCode.massageList
+            options.success({
+              authSetting: bundleUsedScope.allScope,
+              subscriptionsSetting: subscriptionsSetting,
+              errMsg: `${apiName}:ok`
+            });
           }
-        })
+          options.success({ authSetting: bundleUsedScope.allScope, errMsg: `${apiName}:ok` });
+        } catch (paramError) {
+          wbLogger.warn(NATIVE_TAG, `openSetting: ${JSON.stringify(paramError)}`);
+          options.fail({
+            errMsg: `${apiName}:fail error code: ${(paramError as BusinessError).code} ${(paramError as BusinessError).message}`
+          } as ErrorMsg
+          );
+        }
       },
-      getSetting: (options) => {
+      getSetting: async (options: SettingOptions) => {
+        wbLogger.debug('JsBridgeNative', `NativeApi$getSetting`)
         const apiName: string = 'getSetting';
         // 接口返回
-        return new Promise(async (resolve, reject) => {
-          try {
-            const curPermissions: Array<PermissionInfo> = getBundleUserPermissions(this.permissionInfo);
-            const bundleScope = await getBundleWxScopeList(curPermissions);
-            const bundleUsedScope = getBundleUsedPermission(bundleScope.allScope, bundleScope.bundleScope);
-            if (options.withSubscriptions) {
-              let NotificationBasicContent: NotificationBasicContent = {
-                title: '设置',
-                text: '获取中',
-                additionalText: "",
-              }
-              let NotificationContent: NotificationContent = {
-                contentType: 'NOTIFICATION_CONTENT_BASIC_TEXT',
-                normal: NotificationBasicContent
-              }
-              let notificationRequests: NotificationRequest = {
-                id: 1222287986,
-                slotType: 'OTHER_TYPES',
-                content: NotificationContent,
-                path: ''
-              }
-              let sendMessageOption: SendMessageOptions = {
-                notificationRequest: notificationRequests
-              }
-              let subscriptionsSetting: SubscriptionsSetting = {
-                mainSwitch: false,
-                itemSettings: []
-              }
-              await sendMessage(sendMessageOption).then(async (res) => {
-                let cancelMessageOptions: CancelMessageOptions = {
-                  id: 1222287986
-                }
-                await cancelMessage(cancelMessageOptions).then((res) => {
-                  subscriptionsSetting.mainSwitch = true
-                }).catch((err: Error) => {
-                  subscriptionsSetting.mainSwitch = false
-                })
-              }).catch((err: Error) => {
-                console.log('requestSubscribeMessage', JSON.stringify(err))
-              })
-              const subscribeCode = await getMassageList()
-              subscriptionsSetting.itemSettings = subscribeCode.massageList
-              return resolve({
-                authSetting: bundleUsedScope.allScope,
-                subscriptionsSetting: subscriptionsSetting,
-                errMsg: `${apiName}:ok`
-              });
+        try {
+          const curPermissions: Array<PermissionInfo> = getBundleUserPermissions(this.permissionInfo);
+          const bundleScope = await getBundleWxScopeList(curPermissions);
+          const bundleUsedScope = getBundleUsedPermission(bundleScope.allScope, bundleScope.bundleScope);
+          if (options.withSubscriptions) {
+            let NotificationBasicContent: NotificationBasicContent = {
+              title: '设置',
+              text: '获取中',
+              additionalText: "",
             }
-            return resolve({ authSetting: bundleUsedScope.allScope, errMsg: `${apiName}:ok` });
-          } catch (paramError) {
-            return reject(
-              {
-                errMsg: `${apiName}:fail error code: ${(paramError as BusinessError).code} ${(paramError as BusinessError).message}`
-              } as ErrorMsg
-            );
+            let NotificationContent: NotificationContent = {
+              contentType: 'NOTIFICATION_CONTENT_BASIC_TEXT',
+              normal: NotificationBasicContent
+            }
+            let notificationRequests: NotificationRequest = {
+              id: 1222287986,
+              slotType: 'OTHER_TYPES',
+              content: NotificationContent,
+              path: ''
+            }
+            let sendMessageOption: SendMessageOptions = {
+              notificationRequest: notificationRequests
+            }
+            let subscriptionsSetting: SubscriptionsSetting = {
+              mainSwitch: false,
+              itemSettings: []
+            }
+            await sendMessage(sendMessageOption).then(async (res) => {
+              let cancelMessageOptions: CancelMessageOptions = {
+                id: 1222287986
+              }
+              await cancelMessage(cancelMessageOptions).then((res) => {
+                subscriptionsSetting.mainSwitch = true
+              }).catch((err: Error) => {
+                subscriptionsSetting.mainSwitch = false
+              })
+            }).catch((err: Error) => {
+              console.log('requestSubscribeMessage', JSON.stringify(err))
+            })
+            const subscribeCode = await getMassageList()
+            subscriptionsSetting.itemSettings = subscribeCode.massageList
+            options.success({
+              authSetting: bundleUsedScope.allScope,
+              subscriptionsSetting: subscriptionsSetting,
+              errMsg: `${apiName}:ok`
+            });
           }
-        })
+          options.success({ authSetting: bundleUsedScope.allScope, errMsg: `${apiName}:ok` });
+        } catch (paramError) {
+          options.fail({
+            errMsg: `${apiName}:fail error code: ${(paramError as BusinessError).code} ${(paramError as BusinessError).message}`
+          } as ErrorMsg
+          );
+        }
       },
-      getUpdateManager: () => {
-        return LocalUpdateManagerInstance;
+      applyUpdate: () => {
+        wbLogger.debug('JsBridgeNative', `NativeApi$getUpdateManager`)
+        return LocalUpdateManagerInstance.applyUpdate();
+      },
+      onCheckForUpdate: (option: ESObject) => {
+        wbLogger.debug('JsBridgeNative', `NativeApi$getUpdateManager`)
+        return LocalUpdateManagerInstance.onCheckForUpdate(option);
+      },
+      onUpdateFailed: (option: ESObject) => {
+        wbLogger.debug('JsBridgeNative', `NativeApi$getUpdateManager`)
+        return LocalUpdateManagerInstance.onUpdateFailed(option);
+      },
+      onUpdateReady: (option: ESObject) => {
+        wbLogger.debug('JsBridgeNative', `NativeApi$getUpdateManager`)
+        return LocalUpdateManagerInstance.onUpdateReady(option);
       },
       requestSubscribeMessage: async (options: RequestSubscribeMessageOptions) => {
         const apiName: string = 'requestSubscribeMessage';

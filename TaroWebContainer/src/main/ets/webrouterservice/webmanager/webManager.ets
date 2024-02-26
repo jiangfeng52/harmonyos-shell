@@ -9,6 +9,8 @@ import { common } from '@kit.AbilityKit';
 import { NativeInject } from '../../inject_adapter/NativeInject';
 import { TaroWebController } from '../../components/TaroWeb';
 import { Constant } from '../common/constant/Constant';
+import { ChannelInstance, MethodChannelInstance } from '../../inject_adapter/Channel';
+import { BusinessError } from '@kit.BasicServicesKit';
 
 const TAG: string = 'zhou WebManager'
 
@@ -51,13 +53,31 @@ export class WebManager {
     let webNode = new WebNode();
     let controller: TaroWebController = new TaroWebController();
     this.adapter = new ApiAdapter();
-    this.adapter.setWebController(controller.webController);
     RouterStorage.getInstance().setController(controller);
     RouterStorage.getInstance().setAdapter(this.adapter);
     RouterStorage.getInstance().setWebNode(webNode);
 
     const nativeInject = new NativeInject(this.navigationBarData, this.capsuleOptions, this.capsuleController);
-    this.adapter.mergeInjectObj(nativeInject.buildInjectObj());
+    //this.adapter.mergeInjectObj(nativeInject.buildInjectObj());
+    ChannelInstance.setRunJavascriptFun((jsCode: string)=>{
+      try {
+        controller.webController.runJavaScript(jsCode, (error, result) => {
+          if (error) {
+            wbLogger.error(TAG, `Run JavaScript error: ${JSON.stringify(error)}`)
+            return;
+          }
+        });
+      } catch (error) {
+        wbLogger.error(TAG, `runJavaScript error: ${(error as BusinessError).message}`);
+      }
+    })
+
+    MethodChannelInstance.registerMethods('NativeApi', nativeInject.buildInjectObj())
+
+    // if (!!this.injectObj){
+    //   MethodChannelInstance.registerMethods('NativeApi', this.injectObj)
+    // }
+
     this.adapter.setNavigationBarHeight(this.systemBarHeight + this.navigationBarData.titleHeight + this.navigationBarData.paddingBottom);
     this.adapter.setSystemBarHeight(this.systemBarHeight);
 

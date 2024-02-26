@@ -25,6 +25,8 @@ import { LocalUpdateManagerInstance } from '../update/LocalUpdateManager';
 import { AlbumBackward } from '../interfaces/Media'
 import webView from '@ohos.web.webview';
 import { RouterStorage } from '../webrouterservice/globalrouter/RouterStorage';
+import { NativeApi } from '../inject_adapter/NativeApi';
+import { ChannelInstance, MethodChannelInstance } from '../inject_adapter/Channel';
 
 const TARO_WEB_TAG = 'zhou TaroWeb';
 
@@ -113,10 +115,11 @@ export struct TaroWeb {
 
   aboutToAppear() {
     webView.WebviewController.setWebDebuggingAccess(this.enableWebDebug);
-    this.scriptProxy = this.apiAdapter.getAdapterProxy();
     this.taroWebController.hasBindedTaroWeb = true
     this.taroWebController.addRequestHandler(this.handleInternalResource);
     this.taroWebController.addRequestHandler(this.useLocalCacheResource);
+
+    MethodChannelInstance.registerMethods('NativeApi', NativeApi)
   }
 
   aboutToDisappear() {
@@ -177,9 +180,14 @@ export struct TaroWeb {
       .geolocationAccess(true)
       .javaScriptAccess(true)
       .javaScriptProxy({
-        object: this.scriptProxy,
-        name: 'as',
-        methodList: this.apiAdapter.getMethodList() || [],
+        object: {
+          nativeMethod: (channelType: string, objectJson: string) => {
+            wbLogger.debug('nativeApi', `channelType ${channelType} objectJson(${objectJson})`)
+            return ChannelInstance.call(channelType, objectJson) as object
+          },
+        },
+        name: 'JSBridge',
+        methodList: ['nativeMethod'],
         controller: this.taroWebController.webController,
       })
       .onConsole((event) => {
@@ -218,7 +226,6 @@ export struct TaroWeb {
         return true
       })
       .onTitleReceive((event) => {
-        wbLogger.info(TARO_WEB_TAG, `onTitleReceive=` + event?.title)
         this.onTitleReceive && this.onTitleReceive(event?.title ?? '')
       })
       .onRefreshAccessedHistory(() => {
