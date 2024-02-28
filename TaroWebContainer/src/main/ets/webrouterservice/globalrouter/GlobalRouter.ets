@@ -32,6 +32,11 @@ export class GlobalRouter {
     } else {
       wbLogger.info(TAG, `web回退到web `);
       if (controller?.accessBackward()) {
+        let entries = controller.webController.getBackForwardEntries()
+        let backUrl = entries.getItemAtIndex(entries.size - 2).historyUrl
+        if (backUrl === 'resource://rawfile/index.html#/pages/component/index/index' || backUrl === 'resource://rawfile/index.html#/pages/api/index/index') {
+          AppStorage.setOrCreate('tabBarVisible', true)
+        }
         controller?.backward();
         return true;
       }

@@ -36,7 +36,6 @@ export default class EntryAbility extends UIAbility {
       wbLogger.info(ABILITY_TAG, 'Succeeded in obtaining the main window. Data');
     })
     windowStage.loadContent('pages/Page1', storage, (err, data) => {
-      //RouterStorage.getInstance().setUIContext(windowStage.getMainWindowSync().getUIContext());
       GlobalThis.getInstance().setContext('context', this.context);
       WebManager.getInstance().initNode(windowStage.getMainWindowSync().getUIContext());
       if (err.code) {

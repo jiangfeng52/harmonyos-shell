@@ -227,6 +227,7 @@ export interface InnerInjectObj {
   exitMiniProgram: (options: ExitMiniProgramOptions) => void;
   NavigateTo: (options: NavigateToOptions) => Promise<ErrorMsg>;
   webBackToNative: () => void;
+  setOrCreateAppStorage: <T>(propName: string, newValue: T) => void;
 }
 
 export interface InjectObject {

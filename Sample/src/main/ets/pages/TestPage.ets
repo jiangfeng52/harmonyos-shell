@@ -1,5 +1,3 @@
-import { WebManager } from '@hybrid/web-container/src/main/ets/webrouterservice/webmanager/webManager';
-import { router } from '@kit.ArkUI';
 import { RouterUtils } from '@hybrid/web-container/src/main/ets/utils/RouterUtils';
 
 @Entry
@@ -15,7 +13,7 @@ struct TestPage {
           .width(150)
           .backgroundColor(0xF55A42)
           .onClick(() => {
-            RouterUtils.LoadPageWithWebUrl(this.url);
+            RouterUtils.LoadPageWithWebUrl(this.url, 4);
           });
       }
       .width('100%')

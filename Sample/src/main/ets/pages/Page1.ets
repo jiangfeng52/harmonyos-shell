@@ -13,7 +13,7 @@ struct Page1 {
           .width(120)
           .backgroundColor(0xF55A42)
           .onClick(() => {
-            RouterUtils.LoadPageWithWebUrl(this.url);
+            RouterUtils.LoadPageWithWebUrl(this.url, 1);
           });
       }
       .width('100%')
