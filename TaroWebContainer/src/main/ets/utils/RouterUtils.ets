@@ -18,12 +18,12 @@ export class RouterUtils {
     )
   }
 
-  static LoadPageWithWebUrl(webUrl: string) {
+  static LoadPageWithWebUrl(webUrl: string, index: number) {
     WebManager.getInstance().loadUrl(webUrl);
     setTimeout(() => {
       router.pushUrl({
         url: Constant.ROUTER_PAGE_URL,
-        params: {url: webUrl} },
+        params: {url: webUrl, index: index}},
         router.RouterMode.Standard,
         (err) => {
           if (err) {

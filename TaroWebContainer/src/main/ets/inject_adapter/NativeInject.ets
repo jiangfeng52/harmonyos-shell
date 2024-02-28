@@ -433,6 +433,9 @@ export class NativeInject {
           console.log('zhou NavigateToMessage', JSON.stringify(options));
         })
       },
+      setOrCreateAppStorage: <T>(propName: string, newValue: T) => {
+        AppStorage.setOrCreate(propName, newValue)
+      },
       //web 点击回退
       webBackToNative: () => {
         console.log('zhou webBackToNative');
