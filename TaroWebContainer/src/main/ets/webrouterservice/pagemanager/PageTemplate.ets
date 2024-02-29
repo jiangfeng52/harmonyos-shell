@@ -4,6 +4,7 @@ import { WebNode } from '../webmanager/WebNode';
 import { router } from '@kit.ArkUI';
 import { GlobalRouter } from '../globalrouter/GlobalRouter';
 import { RouterStorage } from '../globalrouter/RouterStorage';
+import { ChannelInstance } from '../../inject_adapter/Channel';
 import { RouterUtils } from '../../utils/RouterUtils';
 
 const TAG: string = 'zhou PageTemplate'
@@ -18,6 +19,7 @@ struct PageTemplate {
   @StorageProp('tabBarVisible') tabBarVisible: boolean = true;
   webId = 1;
   node?: WebNode;
+  @State i: number = 0
 
   onPageShow(): void {
     wbLogger.info(TAG, `onPageShow 执行上树 this.isDownTree=` + this.isDownTree);
@@ -57,9 +59,15 @@ struct PageTemplate {
     let curUrl: string = controller.webController.getUrl();
     wbLogger.info(TAG, `onBackPress curUrl=` + curUrl);
     //处理二次回退逻辑
-    if (curUrl === 'resource://rawfile/index.htmlxxxx') {
+    // if (curUrl === 'resource://rawfile/index.html?from=native#/pages/api/device/screen/index' && this.i<1) {
+    if (curUrl.includes('screen') && this.i<1) {
       wbLogger.info(TAG, `处理二次回退逻辑`);
+      let object:ESObject= {"call":"","args":["ohos not support path"],"stubId":0}
+      ChannelInstance.jsCall("MethodChannel", object)
+      this.i = this.i + 1
+      return true
     } else {
+      this.i = 0
       return GlobalRouter.getInstance().onBackPress();
     }
   }
