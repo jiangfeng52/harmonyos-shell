@@ -1,6 +1,9 @@
 import Want from '@ohos.app.ability.Want';
 import Url from '@ohos.url';
-import { TaroWebContainer, InjectObject, HostPageState, TaroWebController, Logger, LoggerLevel, wbLogger } from '@hybrid/web-container';
+import { TaroWebContainer, InjectObject, HostPageState, TaroWebController, Logger, LoggerLevel, wbLogger, Storage } from '@hybrid/web-container';
+import bundleManager from '@ohos.bundle.bundleManager';
+import common from '@ohos.app.ability.common';
+
 
 const SAMPLE_INDEX_TAG = 'SampleIndex';
 const defaultEntryDomain = 'resource://rawfile/';
@@ -19,6 +22,9 @@ struct TaroMpharmonySample {
   @LocalStorageLink('refresh') refresh: boolean = false;
 
   @State taroWebController: TaroWebController = new TaroWebController();
+  // 初始化数据库
+  @State storage: Storage = new Storage(getContext(this) as common.UIAbilityContext,
+    bundleManager.getBundleInfoForSelfSync(bundleManager.BundleFlag.GET_BUNDLE_INFO_DEFAULT).name)
 
   // 用户可以自定义对象注入到Web环境中，如使用native.sayHello格式进行调用
   nativeObj: InjectObject = {
@@ -67,6 +73,21 @@ struct TaroMpharmonySample {
     return !this.enableDevDomain;
   }
 
+  // 数据共享样例函数
+  putData(){
+    this.storage.put("11", 'hello world', () => {})
+  }
+
+  getData(){
+    this.storage.get('onLaunch', (err, data) => {
+      if (err) {
+        console.log(JSON.stringify(err))
+      } else {
+        console.log(`success to get data: ${ data }`, )
+      }
+    })
+  }
+
   build() {
     Column() {
       TaroWebContainer({
@@ -78,6 +99,7 @@ struct TaroMpharmonySample {
         taroWebController: this.taroWebController,
         isFullScreen: true, // 是否全屏显示
         injectObj: this.nativeObj, // 注入对象
+        storage: this.storage,
       })
         .width('100%')
         .height('100%')

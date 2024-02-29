@@ -16,7 +16,16 @@
 
 import buffer from '@ohos.buffer';
 import { wbLogger } from '../utils/Logger'
+import { GlobalThis } from '../utils/GlobalThis'
 import { as } from '../utils/advancedapi.min';
+import { KEY_PREFIX } from '../utils/Storage'
+import { BusinessError } from '@ohos.base';
+
+export interface StorageStatus {
+  done: boolean; // 操作是否完成
+  data: string|number|boolean|Uint8Array;
+  errorMsg: string;
+}
 
 class NativeApiConfig {
   public fileManager: ESObject
@@ -31,12 +40,14 @@ class NativeApiConfig {
     }
     return NativeApiConfig.INSTANCE
   }
+  public storageStatusMap: Map<string, StorageStatus>
 
   constructor() {
     this.networkTaskMap = new Map()
     this.networkTaskID = 0
     this.innerAudioContextMap = new Map()
     this.innerAudioContextId = 0
+    this.storageStatusMap = new Map()
   }
 }
 
@@ -613,4 +624,143 @@ export const NativeApi: ESObject = {
     }
     NativeApiConfig.getInstance().innerAudioContextMap.get(objectId).src = options
   },
+
+  // data sharing
+  getExecStatus(options: ESObject): ESObject {
+    wbLogger.debug('JsBridgeNativeApi', `NativeApi$getExecStatus`)
+    const map = NativeApiConfig.getInstance().storageStatusMap
+    const mkey = options.method +'$'+ options.key
+    if ( !map.has(mkey) ) {
+      return { done: false, data: '', errorMsg: '' }
+    } else {
+      const res = map.get(mkey)
+      map.delete(mkey)
+      return res
+    }
+  },
+
+  setStorageSync(options: ESObject): ESObject {
+    wbLogger.debug('JsBridgeNativeApi', `NativeApi$setStorageSync`)
+    const key:string = options.key
+    const data:string = options.data
+
+    const KvStore = GlobalThis.getInstance().getKvStore('kvStore')
+    KvStore?.put(KEY_PREFIX + key, data, (err) => {
+      if (err != undefined) {
+        NativeApiConfig.getInstance().storageStatusMap.set(
+          'setStorageSync$' + key, { done: false, data: '' , errorMsg : `setStorageSync fail: ${JSON.stringify(err)}` }
+        )
+        wbLogger.error('JsBridgeNative', JSON.stringify(err))
+      } else {
+        NativeApiConfig.getInstance().storageStatusMap.set(
+          'setStorageSync$' + key, { done: true, data: '' , errorMsg : '' }
+        )
+        wbLogger.info('JsBridgeNative', "Succeeded in putting")
+      }
+    })
+  },
+
+  removeStorageSync(options: ESObject): ESObject {
+    wbLogger.debug('JsBridgeNativeApi', `NativeApi$removeStorageSync`)
+    if (typeof options !== 'string') {
+      return
+    }
+    const kvStore = GlobalThis.getInstance().getKvStore('kvStore')
+    const map = NativeApiConfig.getInstance().storageStatusMap
+    kvStore?.delete(KEY_PREFIX + options, (err) => {
+      if (err != undefined) {
+        map.set(
+          'removeStorageSync$' + options, { done: false, data: '' , errorMsg : `removeStorageSync fail: ${JSON.stringify(err)}` }
+        )
+        wbLogger.error('JsBridgeNative', `delete data fail: ${JSON.stringify(err)}`)
+      } else{
+        map.set(
+          'removeStorageSync$' + options, { done: true, data: '' , errorMsg :'' }
+        )
+        wbLogger.info('JsBridgeNative', `delete data success, key: ${options}`)
+      }
+    })
+  },
+
+  getStorageSync(options: ESObject): void {
+    wbLogger.debug('JsBridgeNative', `NativeApi$getStorageSync`)
+    wbLogger.debug('JsBridgeNative', JSON.stringify(options))
+
+    const KvStore = GlobalThis.getInstance().getKvStore('kvStore')
+    const map = NativeApiConfig.getInstance().storageStatusMap
+    KvStore?.get(KEY_PREFIX + options, (err, data) => {
+      if (err != undefined) {
+        map.set(
+          'getStorageSync$' + options, { done: false, data: '' , errorMsg : `getStorageSync fail: ${JSON.stringify(err)}` }
+        )
+        wbLogger.error('JsBridgeNative', JSON.stringify(err))
+      } else {
+        map.set(
+          'getStorageSync$' + options, { done: true, data: data , errorMsg : '' }
+        )
+        wbLogger.info('JsBridgeNative', "Succeeded in get")
+      }
+    })
+  },
+
+  getStorageInfoSync(options: ESObject): void {
+    wbLogger.debug('JsBridgeNative', `NativeApi$getStorageInfoSync`)
+
+    const kvStore = GlobalThis.getInstance().getKvStore('kvStore')
+    const map = NativeApiConfig.getInstance().storageStatusMap
+
+    kvStore?.getEntries(KEY_PREFIX, (err, items) => {
+      if (err !== undefined) {
+        map.set(
+          'getStorageInfoSync$', { done: false, data: '' , errorMsg : `getStorageInfoSync fail: ${JSON.stringify(err)}` }
+        )
+        wbLogger.error('JsBridgeNative', JSON.stringify(err))
+      } else {
+        const keys:string[] = []
+        for (let item of items) {
+          keys.push(item.key.substring(KEY_PREFIX.length))
+        }
+        map.set(
+          'getStorageInfoSync$', { done: true, data: JSON.stringify(keys) , errorMsg : '' }
+        )
+        wbLogger.error('JsBridgeNative', `success to get entries`)
+      }
+    })
+  },
+
+  clearStorageSync(options: ESObject): void {
+    wbLogger.debug('JsBridgeNative', `NativeApi$clearStorageSync`)
+
+    const kvStore = GlobalThis.getInstance().getKvStore('kvStore')
+    const map = NativeApiConfig.getInstance().storageStatusMap
+    try {
+      kvStore?.getEntries(KEY_PREFIX, (err, items) => {
+        if (err !== undefined) {
+          map.set(
+            'clearStorageSync$', { done: false, data: '' , errorMsg : `clearStorageSync fail: ${JSON.stringify(err)}` }
+          )
+          wbLogger.error('JsBridgeNative', JSON.stringify(err))
+        }
+        if (!items) {
+          return
+        }
+        for (let item of items) {
+          kvStore?.delete(item.key, (err) => {
+            if (err != undefined) {
+              wbLogger.error('JsBridgeNative', `Failed to delete.code is ${err.code}, message is ${err.message}`)
+              }
+            }
+          )
+          map.set(
+            'clearStorageSync$', { done: true, data: '' , errorMsg : '' }
+          )
+        }
+      })
+    } catch (err) {
+      map.set(
+        'clearStorageSync$', { done: false, data: '' , errorMsg : `getStorageInfoSync fail: ${JSON.stringify(err)}` }
+      )
+      wbLogger.error('JsBridgeNative', `Failed to clear data is ${err.code},message is ${err.message}`)
+    }
+  }
 }
