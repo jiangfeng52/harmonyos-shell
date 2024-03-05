@@ -51,6 +51,10 @@
     {
       "name": "media_reason",
       "value": "申请文件读写权限"
+    },
+    {
+      "name": "access_bluetooth_reason",
+      "value": "允许接入蓝牙"
     }
   ]
 }
