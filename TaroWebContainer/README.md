@@ -12,6 +12,15 @@
 ohpm install @hybrid/web-container
 ```
 
+### 约束与限制
+在下述版本验证通过：
+
+- `DevEco Studio NEXT Developer Preview1`, SDK: API11 （可以通过 [HarmonyOS NEXT 开发者
+  预览版 Beta 招募][NEXT招募] 申请获得）
+- Taro 版本 3.6.24
+
+上述版本也是最低版本要求
+
 ## TaroWebContainer组件使用指南
 1. 使用DevEco Studio开发工具新建应用工程，选择`Empty Ability`模板，使用默认配置。
 2. 在`entry/oh-package.json5`文件中添加`@hybrid/web-container`模块的依赖并点击`Sync`进行同步：
@@ -454,6 +463,5 @@ updateManager.onUpdateFailed(() => {
 
 **注意：需要确保在arkTs端热更新模块请求网络完成或者下载好更新之前完成监听函数的注册，不然可能arkTs已通知完毕，js端监听不到通知**
 
-
-
 [Web调试devtools配置]: https://gitee.com/openharmony/docs/blob/master/zh-cn/application-dev/web/web-debugging-with-devtools.md
+[NEXT招募]: https://developer.huawei.com/consumer/cn/activityDetail/harmonyos-next-preview/
