@@ -149,8 +149,11 @@ export struct TaroWeb {
 
   useLocalCacheResource: InterceptRequestHandler = (request) => {
     const url = request.getRequestUrl();
-    if (this.useCache && this.webUrlPrefix) {
-      const path: string | undefined = url?.replace(this.webUrlPrefix, '');
+    if (url && this.useCache && this.webUrlPrefix) {
+      let path: string = url.replace(this.webUrlPrefix, '');
+      path = path.split('#')[0]
+      wbLogger.debug('TaroWeb', 'intercepter path=%{public}s', path)
+
       const localLastPath = LocalUpdateManagerInstance.getLastVersionPath()
       if (localLastPath != '') {
         wbLogger.debug('TaroWeb', 'useLocalCacheResource path=%{public}s', path)

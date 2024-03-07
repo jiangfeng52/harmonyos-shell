@@ -128,7 +128,7 @@ export struct TaroWebContainer {
   }
 
   setSystemBarFrontColor = (color: string) => {
-    const context = getContext(this) as common.UIAbilityContext;
+    const context = GlobalThis.getInstance().getContext('context') as common.UIAbilityContext; // getContext(this) as common.UIAbilityContext;
     window.getLastWindow(context).then((windowClass) => {
       setSystemBarProperties(windowClass, color);
     });
@@ -222,10 +222,10 @@ export struct TaroWebContainer {
     // 加载组件时，url更新
     this.originIndexUrl = this.webUrl;
     this.handleWantInfo();
-    const context = getContext(this) as common.UIAbilityContext;
+    const context = GlobalThis.getInstance().getContext('context') as common.UIAbilityContext;//getContext(this) as common.UIAbilityContext;
     // 使用UIAbility的context初始化对象
     AdvancedAPI.init(context);
-    GlobalThis.getInstance().setContext('context', context);
+    // GlobalThis.getInstance().setContext('context', context);
 
     // 创建高阶API适配器，合并注入的对象
     this.adapter = new ApiAdapter();
