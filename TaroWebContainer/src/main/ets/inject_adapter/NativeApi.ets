@@ -749,81 +749,91 @@ export const NativeApi: ESObject = {
     }
   },
 
-  setStorageSync(options: ESObject): ESObject {
+  setStorage(options: ESObject): ESObject {
     wbLogger.debug('JsBridgeNativeApi', `NativeApi$setStorageSync`)
     const key:string = options.key
     const data:string = options.data
+    const fail:ESObject = options.fail
+    const success:ESObject = options.success
 
     const KvStore = GlobalThis.getInstance().getKvStore('kvStore')
+    const map = NativeApiConfig.getInstance().storageStatusMap
     KvStore?.put(KEY_PREFIX + key, data, (err) => {
-      if (err != undefined) {
-        NativeApiConfig.getInstance().storageStatusMap.set(
+      if (err) {
+        map.set(
           'setStorageSync$' + key, { done: false, data: '' , errorMsg : `setStorageSync fail: ${JSON.stringify(err)}` }
         )
+        if (fail) { fail( {errMsg:`setStorage fail: ${JSON.stringify(err)}`} ) }
         wbLogger.error('JsBridgeNative', JSON.stringify(err))
       } else {
-        NativeApiConfig.getInstance().storageStatusMap.set(
+        map.set(
           'setStorageSync$' + key, { done: true, data: '' , errorMsg : '' }
         )
-        wbLogger.info('JsBridgeNative', "Succeeded in putting")
+        if (success) { success( {errMsg:'ok'} ) }
       }
     })
   },
 
-  removeStorageSync(options: ESObject): ESObject {
+  removeStorage(options: ESObject): ESObject {
     wbLogger.debug('JsBridgeNativeApi', `NativeApi$removeStorageSync`)
-    if (typeof options !== 'string') {
-      return
-    }
+    const key:string = options.key
+    const fail:ESObject = options.fail
+    const success:ESObject = options.success
+
     const kvStore = GlobalThis.getInstance().getKvStore('kvStore')
     const map = NativeApiConfig.getInstance().storageStatusMap
-    kvStore?.delete(KEY_PREFIX + options, (err) => {
-      if (err != undefined) {
+    kvStore?.delete(KEY_PREFIX + key, (err) => {
+      if (err) {
         map.set(
-          'removeStorageSync$' + options, { done: false, data: '' , errorMsg : `removeStorageSync fail: ${JSON.stringify(err)}` }
+          'removeStorageSync$' + key, { done: false, data: '' , errorMsg : `removeStorageSync fail: ${JSON.stringify(err)}` }
         )
+        if (fail) { fail({ errMsg:`removeStorage fail: ${JSON.stringify(err) }` }) }
         wbLogger.error('JsBridgeNative', `delete data fail: ${JSON.stringify(err)}`)
       } else{
         map.set(
-          'removeStorageSync$' + options, { done: true, data: '' , errorMsg :'' }
+          'removeStorageSync$' + key, { done: true, data: '' , errorMsg :'' }
         )
-        wbLogger.info('JsBridgeNative', `delete data success, key: ${options}`)
+        if (success) { success( {errMsg:'ok'} ) }
       }
     })
   },
 
-  getStorageSync(options: ESObject): void {
+  getStorage(options: ESObject): void {
     wbLogger.debug('JsBridgeNative', `NativeApi$getStorageSync`)
-    wbLogger.debug('JsBridgeNative', JSON.stringify(options))
+    const key:string = options.key
+    const fail:ESObject = options.fail
+    const success:ESObject = options.success
 
     const KvStore = GlobalThis.getInstance().getKvStore('kvStore')
     const map = NativeApiConfig.getInstance().storageStatusMap
-    KvStore?.get(KEY_PREFIX + options, (err, data) => {
-      if (err != undefined) {
+    KvStore?.get(KEY_PREFIX + key, (err, data) => {
+      if (err) {
         map.set(
-          'getStorageSync$' + options, { done: false, data: '' , errorMsg : `getStorageSync fail: ${JSON.stringify(err)}` }
+          'getStorageSync$' + key, { done: false, data: '' , errorMsg : `getStorageSync fail: ${JSON.stringify(err)}` }
         )
+        if (fail) { fail({errMsg:`getStorage fail: ${JSON.stringify(err)}`}) }
         wbLogger.error('JsBridgeNative', JSON.stringify(err))
       } else {
         map.set(
-          'getStorageSync$' + options, { done: true, data: data , errorMsg : '' }
+          'getStorageSync$' + key, { done: true, data: data , errorMsg : '' }
         )
-        wbLogger.info('JsBridgeNative', "Succeeded in get")
+        if (success) { success( {errMsg:'ok', data: data } ) }
       }
     })
   },
 
-  getStorageInfoSync(options: ESObject): void {
+  getStorageInfo(options: ESObject): void {
     wbLogger.debug('JsBridgeNative', `NativeApi$getStorageInfoSync`)
-
+    const fail:ESObject = options.fail
+    const success:ESObject = options.success
     const kvStore = GlobalThis.getInstance().getKvStore('kvStore')
     const map = NativeApiConfig.getInstance().storageStatusMap
-
     kvStore?.getEntries(KEY_PREFIX, (err, items) => {
-      if (err !== undefined) {
+      if (err) {
         map.set(
           'getStorageInfoSync$', { done: false, data: '' , errorMsg : `getStorageInfoSync fail: ${JSON.stringify(err)}` }
         )
+        if (fail) { fail({errMsg:`getStorageInfo fail: ${JSON.stringify(err)}`}) }
         wbLogger.error('JsBridgeNative', JSON.stringify(err))
       } else {
         const keys:string[] = []
@@ -833,22 +843,25 @@ export const NativeApi: ESObject = {
         map.set(
           'getStorageInfoSync$', { done: true, data: JSON.stringify(keys) , errorMsg : '' }
         )
-        wbLogger.error('JsBridgeNative', `success to get entries`)
+        if (success) { success({ data: JSON.stringify(keys) }) }
       }
     })
   },
 
-  clearStorageSync(options: ESObject): void {
-    wbLogger.debug('JsBridgeNative', `NativeApi$clearStorageSync`)
+  clearStorage(options: ESObject): void {
+    wbLogger.debug('JsBridgeNative', `NativeApi$clearStorage`)
 
+    const fail:ESObject = options.fail
+    const success:ESObject = options.success
     const kvStore = GlobalThis.getInstance().getKvStore('kvStore')
     const map = NativeApiConfig.getInstance().storageStatusMap
     try {
       kvStore?.getEntries(KEY_PREFIX, (err, items) => {
-        if (err !== undefined) {
+        if (err) {
           map.set(
             'clearStorageSync$', { done: false, data: '' , errorMsg : `clearStorageSync fail: ${JSON.stringify(err)}` }
           )
+          if (fail) { fail({errMsg:`clearStorage fail: ${JSON.stringify(err)}`}) }
           wbLogger.error('JsBridgeNative', JSON.stringify(err))
         }
         if (!items) {
@@ -856,20 +869,19 @@ export const NativeApi: ESObject = {
         }
         for (let item of items) {
           kvStore?.delete(item.key, (err) => {
-            if (err != undefined) {
+            if (err) {
               wbLogger.error('JsBridgeNative', `Failed to delete.code is ${err.code}, message is ${err.message}`)
-              }
+            }
             }
           )
           map.set(
             'clearStorageSync$', { done: true, data: '' , errorMsg : '' }
           )
+          if (success) { success({ errMsg:'ok' }) }
         }
       })
     } catch (err) {
-      map.set(
-        'clearStorageSync$', { done: false, data: '' , errorMsg : `getStorageInfoSync fail: ${JSON.stringify(err)}` }
-      )
+      if (fail) { fail({errMsg:`clearStorage fail: ${JSON.stringify(err)}`}) }
       wbLogger.error('JsBridgeNative', `Failed to clear data is ${err.code},message is ${err.message}`)
     }
   }
