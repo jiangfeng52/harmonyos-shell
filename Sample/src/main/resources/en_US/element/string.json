@@ -50,6 +50,10 @@
     {
       "name": "media_reason",
       "value": "Applying for File Read and Write Permissions"
+    },
+    {
+      "name": "access_bluetooth_reason",
+      "value": "允许接入蓝牙"
     }
   ]
 }
