@@ -95,7 +95,10 @@ window.MethodChannel = {
       window.MethodChannel.__ArgsMethodStub(object)
     })
   },
-  jsBridgeMode: function (mode: { isAsync: boolean, autoRelease?: boolean }) {
+  jsBridgeMode: function (mode: {
+    isAsync: boolean,
+    autoRelease?: boolean
+  }) {
     return function (target: any, key: string, descriptor: PropertyDescriptor) {
       const className = target.constructor.name
       descriptor.value = function (...args: any[]) {
@@ -163,8 +166,7 @@ window.MethodChannel = {
     const {object, isFun, autoRelease} = stub
     if (autoRelease) {
       delete this._stubMap[stubId]
-    }
-    else if (call == 'complete') {
+    } else if (call == 'complete') {
       delete this._stubMap[stubId]
     }
 
