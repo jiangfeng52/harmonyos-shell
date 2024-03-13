@@ -2,6 +2,7 @@
   "src": [
     "pages/Index",
     "pages/Capsule",
-    "pages/Developer"
+    "pages/Developer",
+    "pages/TaroHybridPage"
   ]
 }
