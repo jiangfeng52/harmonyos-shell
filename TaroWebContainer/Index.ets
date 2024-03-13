@@ -12,3 +12,5 @@ export { NotificationRequest, SendMessageOptions, NotificationContent, Notificat
 } from './src/main/ets/utils/SubscribeMessageUtil'
 export { GlobalThis } from './src/main/ets/utils/GlobalThis'
 export { Storage } from './src/main/ets/utils/Storage'
+export { TaroHybridManager } from './src/main/ets/tarohybrid/TaroHybridManager'
+export { TaroHybrid } from './src/main/ets/tarohybrid/TaroHybrid'
