@@ -25,7 +25,7 @@ import { LocalUpdateManagerInstance } from '../update/LocalUpdateManager';
 import { AlbumBackward } from '../interfaces/Media'
 import webView from '@ohos.web.webview';
 import { NativeApi } from '../inject_adapter/NativeApi';
-import { ChannelInstance, MethodChannelInstance } from '../inject_adapter/Channel';
+import { Channel, MethodChannel } from '../inject_adapter/Channel';
 
 const TARO_WEB_TAG = 'TaroWeb';
 
@@ -111,6 +111,8 @@ export struct TaroWeb {
   apiAdapter: ApiAdapter = new ApiAdapter();
   scriptProxy: Object | undefined = undefined;
   enableWebDebug: boolean = true;
+  @Link channel: Channel
+  @Link methodChannel: MethodChannel
 
   aboutToAppear() {
     webView.WebviewController.setWebDebuggingAccess(this.enableWebDebug);
@@ -118,7 +120,7 @@ export struct TaroWeb {
     this.taroWebController.addRequestHandler(this.handleInternalResource);
     this.taroWebController.addRequestHandler(this.useLocalCacheResource);
 
-    MethodChannelInstance.registerMethods('NativeApi', NativeApi)
+    this.methodChannel.registerMethods('NativeApi', NativeApi)
   }
 
   aboutToDisappear() {
@@ -182,7 +184,7 @@ export struct TaroWeb {
         object: {
           nativeMethod: (channelType: string, objectJson: string) => {
             wbLogger.debug('nativeApi', `channelType ${channelType} objectJson(${objectJson})`)
-            return ChannelInstance.call(channelType, objectJson) as object
+            return this.channel.call(channelType, objectJson) as object
           },
         },
         name: 'JSBridge',

@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-class Channel {
+export class Channel {
   // TODO-ly 当前的实现只适合单实例，如果出现多实例Web容器，当前的实现就会有问题
   private runJavascriptFun?: (jsCode: string)=>void
   setRunJavascriptFun(fun: (jsCode: string)=>void){
@@ -45,13 +45,13 @@ class Channel {
     this.runJavascriptFun && this.runJavascriptFun(jsCode)
   }
 }
-export const ChannelInstance: Channel = new Channel();
+// export const ChannelInstance: Channel = new Channel();
 
-class MethodChannel {
+export class MethodChannel {
   private ChannelType = 'MethodChannel'
   private listenerMap = new Map()
   private methodPools = new Map<string, (arg: any)=>any>()
-
+  private channel: Channel
 
   // TODO-ly 改为装饰器实现
   registerMethod(methodName: string, fun: (arg: any, objectId?: number)=>any) {
@@ -71,8 +71,9 @@ class MethodChannel {
     }
   }
 
-  constructor() {
-    ChannelInstance.registerChannel(this.ChannelType, (object: any)=>{
+  constructor(channel: Channel) {
+    this.channel = channel
+    this.channel.registerChannel(this.ChannelType, (object: any)=>{
       return this.call(object)
     })
   }
@@ -93,13 +94,13 @@ class MethodChannel {
       if (this.listenerMap.has(stubId)) {
         argProxy = this.listenerMap.get(stubId)
       } else {
-        argProxy = function (...args){
+        argProxy = (...args)=>{//function (...args){
           const object = {
             call: '',
             args: args,
             stubId: stubId,
           }
-          ChannelInstance.jsCall(MethodChannelInstance.ChannelType, object)
+          this.channel.jsCall(this.ChannelType, object)
         }
         this.listenerMap.set(stubId, argProxy)
       }
@@ -107,13 +108,13 @@ class MethodChannel {
       let argObject = properties ?? {};
       // 补充方法的声明
       for(const value of funs) {
-        argObject[value] = function (...args){
+        argObject[value] = (...args)=>{//function (...args){
           const object = {
             call: value,
             args: args,
             stubId: stubId
           }
-          ChannelInstance.jsCall(MethodChannelInstance.ChannelType, object)
+          this.channel.jsCall(this.ChannelType, object)
         }
       }
       // arg为对象
@@ -123,4 +124,4 @@ class MethodChannel {
   }
 }
 
-export const MethodChannelInstance: MethodChannel = new MethodChannel();
+// export const MethodChannelInstance: MethodChannel = new MethodChannel();

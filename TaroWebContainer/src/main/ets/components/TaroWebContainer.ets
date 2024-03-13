@@ -33,8 +33,8 @@ import { RouterUtils } from '../utils/RouterUtils';
 import router from '@ohos.router';
 import { wbLogger } from '../utils/Logger';
 import { AlbumBackward, ChooseAlbumResult, MediaItemData, chooseAlbumOptions } from '../interfaces/Media'
-import { ChannelInstance, MethodChannelInstance } from '../inject_adapter/Channel';
 import { BusinessError } from '@ohos.base';
+import { Channel, MethodChannel } from '../inject_adapter/Channel';
 
 const CONTAINER_TAG = 'TaroWebContainer';
 
@@ -61,6 +61,8 @@ export struct TaroWebContainer {
   @State navigationBarData: NavigationBarData = new NavigationBarData();
   // 系统状态状态栏高度
   @State systemBarHeight: number = 0;
+  @State channel: Channel = new Channel()
+  @State methodChannel: MethodChannel = new MethodChannel(this.channel)
 
   // 显示图库
   @State showAlbum: boolean = false;
@@ -183,6 +185,8 @@ export struct TaroWebContainer {
         onTitleReceive: this.onTitleReceive,
         onRefreshAccessedHistory: this.onRefreshAccessedHistory,
         enableWebDebug: this.enableWebDebug,
+        channel: this.channel,
+        methodChannel: this.methodChannel
       })
       NavigationBar({
         navigationBarData: this.navigationBarData,
@@ -222,10 +226,11 @@ export struct TaroWebContainer {
     // 加载组件时，url更新
     this.originIndexUrl = this.webUrl;
     this.handleWantInfo();
-    const context = getContext(this) as common.UIAbilityContext;
+    // const context = getContext(this) as common.UIAbilityContext;
+    const context = GlobalThis.getInstance().getContext('context') as common.UIAbilityContext
     // 使用UIAbility的context初始化对象
     AdvancedAPI.init(context);
-    GlobalThis.getInstance().setContext('context', context);
+    // GlobalThis.getInstance().setContext('context', context);
 
     // 创建高阶API适配器，合并注入的对象
     this.adapter = new ApiAdapter();
@@ -233,7 +238,7 @@ export struct TaroWebContainer {
     this.taroWebController.setAlbumBackward(this.albumBackward);
     nativeInject.setChooseAlbumCallback(this.chooseAlbumCallback);
 
-    ChannelInstance.setRunJavascriptFun((jsCode: string)=>{
+    this.channel.setRunJavascriptFun((jsCode: string)=>{
       try {
         this.taroWebController.webController.runJavaScript(jsCode, (error, result) => {
           if (error) {
@@ -246,10 +251,10 @@ export struct TaroWebContainer {
       }
     })
 
-    MethodChannelInstance.registerMethods('NativeApi', nativeInject.buildInjectObj(context))
+    this.methodChannel.registerMethods('NativeApi', nativeInject.buildInjectObj(context))
 
     if (!!this.injectObj){
-      MethodChannelInstance.registerMethods('NativeApi', this.injectObj)
+      this.methodChannel.registerMethods('NativeApi', this.injectObj)
     }
 
     getBundleInfoPermissions().then((permissions: bundleManager.ReqPermissionDetail[]) => {

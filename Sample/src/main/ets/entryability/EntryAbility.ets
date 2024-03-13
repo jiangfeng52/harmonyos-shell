@@ -1,7 +1,7 @@
 import UIAbility from '@ohos.app.ability.UIAbility';
 import window from '@ohos.window';
 import Want from '@ohos.app.ability.Want';
-import { wbLogger } from '@hybrid/web-container';
+import { GlobalThis, wbLogger } from '@hybrid/web-container';
 
 const ABILITY_TAG = 'EntryAbility';
 const storage = new LocalStorage();
@@ -32,6 +32,7 @@ export default class EntryAbility extends UIAbility {
       wbLogger.info(ABILITY_TAG, 'Succeeded in obtaining the main window. Data');
     })
     windowStage.loadContent('pages/Index', storage, (err, data) => {
+      GlobalThis.getInstance().setContext('context', this.context)
       if (err.code) {
         wbLogger.error(ABILITY_TAG, 'testTag', 'Failed to load the content. Cause: %{public}s', JSON.stringify(err) ?? '');
         return;
