@@ -277,6 +277,7 @@ export class NativeInject {
           } as ErrorMsg
           );
         }
+        options.complete('openSetting: complete success')
       },
       getSetting: async (options: SettingOptions) => {
         wbLogger.debug('JsBridgeNative', `NativeApi$getSetting`)
@@ -336,6 +337,7 @@ export class NativeInject {
           } as ErrorMsg
           );
         }
+        options.complete('getSetting: complete success')
       },
       applyUpdate: () => {
         wbLogger.debug('JsBridgeNative', `NativeApi$getUpdateManager`)

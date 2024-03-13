@@ -10,4 +10,5 @@ export { UpdateConfig } from './src/main/ets/data/source/bean/UpdateConfig'
 export { NotificationRequest, SendMessageOptions, NotificationContent, NotificationPictureContent, NotificationBasicContent,
   NotificationLongTextContent, NotificationMultiLineContent, CancelMessageOptions, sendMessage, cancelMessage
 } from './src/main/ets/utils/SubscribeMessageUtil'
+export { GlobalThis } from './src/main/ets/utils/GlobalThis'
 export { Storage } from './src/main/ets/utils/Storage'

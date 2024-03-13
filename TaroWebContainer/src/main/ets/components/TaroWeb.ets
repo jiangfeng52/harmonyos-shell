@@ -25,7 +25,7 @@ import { LocalUpdateManagerInstance } from '../update/LocalUpdateManager';
 import { AlbumBackward } from '../interfaces/Media'
 import webView from '@ohos.web.webview';
 import { NativeApi } from '../inject_adapter/NativeApi';
-import { ChannelInstance, MethodChannelInstance } from '../inject_adapter/Channel';
+import { Channel, MethodChannel } from '../inject_adapter/Channel';
 
 const TARO_WEB_TAG = 'TaroWeb';
 
@@ -111,6 +111,9 @@ export struct TaroWeb {
   apiAdapter: ApiAdapter = new ApiAdapter();
   scriptProxy: Object | undefined = undefined;
   enableWebDebug: boolean = true;
+  @Link channel: Channel
+  @Link methodChannel: MethodChannel
+  private nativeAPI: NativeApi = new NativeApi()
 
   aboutToAppear() {
     webView.WebviewController.setWebDebuggingAccess(this.enableWebDebug);
@@ -118,7 +121,7 @@ export struct TaroWeb {
     this.taroWebController.addRequestHandler(this.handleInternalResource);
     this.taroWebController.addRequestHandler(this.useLocalCacheResource);
 
-    MethodChannelInstance.registerMethods('NativeApi', NativeApi)
+    this.methodChannel.registerMethods('NativeApi', this.nativeAPI.nativeObj)
   }
 
   aboutToDisappear() {
@@ -149,8 +152,12 @@ export struct TaroWeb {
 
   useLocalCacheResource: InterceptRequestHandler = (request) => {
     const url = request.getRequestUrl();
-    if (this.useCache && this.webUrlPrefix) {
-      const path: string | undefined = url?.replace(this.webUrlPrefix, '');
+    if (url && this.useCache && this.webUrlPrefix) {
+      // const path: string | undefined = url?.replace(this.webUrlPrefix, '');
+      let path: string = url.replace(this.webUrlPrefix, '');
+      path = path.split('#')[0]
+      wbLogger.debug('TaroWeb', 'intercepter path=%{public}s', path)
+
       const localLastPath = LocalUpdateManagerInstance.getLastVersionPath()
       if (localLastPath != '') {
         wbLogger.debug('TaroWeb', 'useLocalCacheResource path=%{public}s', path)
@@ -182,7 +189,7 @@ export struct TaroWeb {
         object: {
           nativeMethod: (channelType: string, objectJson: string) => {
             wbLogger.debug('nativeApi', `channelType ${channelType} objectJson(${objectJson})`)
-            return ChannelInstance.call(channelType, objectJson) as object
+            return this.channel.call(channelType, objectJson) as object
           },
         },
         name: 'JSBridge',

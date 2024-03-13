@@ -147,6 +147,7 @@ export interface OpenSettingRetOptions {
 export interface SettingOptions {
   success: Function;
   fail: Function;
+  complete: Function;
   withSubscriptions?: boolean;
 }
 
@@ -155,12 +156,6 @@ export interface GetSettingRetOptions {
   subscriptionsSetting?: SubscriptionsSetting;
   miniprogramAuthSetting?: AuthSetting;
   errMsg: string;
-}
-
-export interface SettingOptions {
-  success: Function;
-  fail: Function;
-  withSubscriptions?: boolean;
 }
 
 export interface copyFileToSandboxCacheRetOptions {
