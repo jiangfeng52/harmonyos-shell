@@ -113,6 +113,7 @@ export struct TaroWeb {
   enableWebDebug: boolean = true;
   @Link channel: Channel
   @Link methodChannel: MethodChannel
+  private nativeAPI: NativeApi = new NativeApi()
 
   aboutToAppear() {
     webView.WebviewController.setWebDebuggingAccess(this.enableWebDebug);
@@ -120,7 +121,7 @@ export struct TaroWeb {
     this.taroWebController.addRequestHandler(this.handleInternalResource);
     this.taroWebController.addRequestHandler(this.useLocalCacheResource);
 
-    this.methodChannel.registerMethods('NativeApi', NativeApi)
+    this.methodChannel.registerMethods('NativeApi', this.nativeAPI.nativeObj)
   }
 
   aboutToDisappear() {
@@ -151,8 +152,12 @@ export struct TaroWeb {
 
   useLocalCacheResource: InterceptRequestHandler = (request) => {
     const url = request.getRequestUrl();
-    if (this.useCache && this.webUrlPrefix) {
-      const path: string | undefined = url?.replace(this.webUrlPrefix, '');
+    if (url && this.useCache && this.webUrlPrefix) {
+      // const path: string | undefined = url?.replace(this.webUrlPrefix, '');
+      let path: string = url.replace(this.webUrlPrefix, '');
+      path = path.split('#')[0]
+      wbLogger.debug('TaroWeb', 'intercepter path=%{public}s', path)
+
       const localLastPath = LocalUpdateManagerInstance.getLastVersionPath()
       if (localLastPath != '') {
         wbLogger.debug('TaroWeb', 'useLocalCacheResource path=%{public}s', path)
