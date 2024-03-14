@@ -35,6 +35,7 @@ import { wbLogger } from '../utils/Logger';
 import { AlbumBackward, ChooseAlbumResult, MediaItemData, chooseAlbumOptions } from '../interfaces/Media'
 import { BusinessError } from '@ohos.base';
 import { Channel, MethodChannel } from '../inject_adapter/Channel';
+import { Storage } from  '../utils/Storage';
 
 const CONTAINER_TAG = 'TaroWebContainer';
 
@@ -80,12 +81,12 @@ export struct TaroWebContainer {
 
   // 路由控制器
   @Link taroWebController: TaroWebController;
+  @Link storage: Storage;
 
   // 用户自定义的注入对象
   injectObj: InjectObject | undefined;
   // 是否全屏显示应用
   isFullScreen: boolean = true;
-
   // 高阶API适配器
   private adapter: ApiAdapter | undefined;
 

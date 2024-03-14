@@ -13,6 +13,7 @@
  * limitations under the License.
  */
 import { Context } from '@ohos.abilityAccessCtrl';
+import distributedKVStore from '@ohos.data.distributedKVStore';
 
 /**
  * 存储全局信息，构造单例对象
@@ -23,6 +24,7 @@ export class GlobalThis {
 
   private static instance: GlobalThis;
   private _uiContexts = new Map<string, Context>();
+  private _kvStore = new Map<string, distributedKVStore.SingleKVStore>()
 
   public static getInstance(): GlobalThis {
     if (!GlobalThis.instance) {
@@ -38,4 +40,13 @@ export class GlobalThis {
   setContext(key: string, value: Context): void {
     this._uiContexts.set(key, value);
   }
+
+  getKvStore(key: string): distributedKVStore.SingleKVStore | undefined {
+    return this._kvStore.get(key);
+  }
+
+  setKvStore(key: string, value: distributedKVStore.SingleKVStore): void {
+    this._kvStore.set(key, value);
+  }
+
 }

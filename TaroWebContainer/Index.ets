@@ -11,3 +11,4 @@ export { NotificationRequest, SendMessageOptions, NotificationContent, Notificat
   NotificationLongTextContent, NotificationMultiLineContent, CancelMessageOptions, sendMessage, cancelMessage
 } from './src/main/ets/utils/SubscribeMessageUtil'
 export { GlobalThis } from './src/main/ets/utils/GlobalThis'
+export { Storage } from './src/main/ets/utils/Storage'
