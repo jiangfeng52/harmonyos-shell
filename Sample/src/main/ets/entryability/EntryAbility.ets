@@ -1,7 +1,9 @@
 import UIAbility from '@ohos.app.ability.UIAbility';
 import window from '@ohos.window';
 import Want from '@ohos.app.ability.Want';
-import { GlobalThis, wbLogger } from '@hybrid/web-container';
+import { GlobalThis, TaroHybridManager, wbLogger } from '@hybrid/web-container';
+import common from '@ohos.app.ability.common';
+import { TaroHybridNativeMethods } from '../pages/TaroHybridNativeMethods';
 
 const ABILITY_TAG = 'EntryAbility';
 const storage = new LocalStorage();
@@ -32,7 +34,18 @@ export default class EntryAbility extends UIAbility {
       wbLogger.info(ABILITY_TAG, 'Succeeded in obtaining the main window. Data');
     })
     windowStage.loadContent('pages/Index', storage, (err, data) => {
-      GlobalThis.getInstance().setContext('context', this.context)
+      TaroHybridManager.init({
+        uiAbilityContex: this.context,
+        domain: 'http://domain',
+        injectNativeMethod: (uiAbilityContext: common.UIAbilityContext) => {
+          return new TaroHybridNativeMethods(uiAbilityContext).nativeObj
+        }
+      })
+      TaroHybridManager.preLoader(
+        windowStage.getMainWindowSync().getUIContext(),
+        "/spa/main/index.html",
+        "/pages/index/index"
+      )
       if (err.code) {
         wbLogger.error(ABILITY_TAG, 'testTag', 'Failed to load the content. Cause: %{public}s', JSON.stringify(err) ?? '');
         return;
