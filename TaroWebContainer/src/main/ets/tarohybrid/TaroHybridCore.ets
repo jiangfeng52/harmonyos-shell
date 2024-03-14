@@ -3,9 +3,11 @@ import { TaroWebController } from '../components/TaroWeb';
 import { TaroWebContainer } from '../components/TaroWebContainer';
 import { InjectObject } from '../interfaces/InjectObject';
 import { GlobalThis } from '../utils/GlobalThis';
+import { Storage } from '../utils/Storage';
 import { DebugLayout } from './DebugDialog';
 import { TaroHybridManager } from './TaroHybridManager';
 import { TaroHybridUtils } from './TaroHybridUtils';
+import bundleManager from '@ohos.bundle.bundleManager';
 
 export interface TaroHybridCoreBuilderData {
   domain: string
@@ -32,6 +34,8 @@ struct TaroHybridCore {
   @State isDebug: boolean = (GlobalThis.getInstance().getContext('context') as common.UIAbilityContext).applicationInfo.debug
   @State useCache: boolean = true
   injectObj: InjectObject = TaroHybridManager.getInjectNativeMethod()
+  @State storage: Storage = new Storage(GlobalThis.getInstance().getContext('context') as common.UIAbilityContext,
+    bundleManager.getBundleInfoForSelfSync(bundleManager.BundleFlag.GET_BUNDLE_INFO_DEFAULT).name)
 
   // debugLayout相关
   private debugLayoutHeight: number = 300;
@@ -56,7 +60,8 @@ struct TaroHybridCore {
       useCache: this.useCache,
       isFullScreen: false, // 是否全屏显示
       injectObj: this.injectObj,
-      showCapsule: false
+      showCapsule: false,
+      storage: this.storage
     })
       .width('100%')
       .height('100%')
