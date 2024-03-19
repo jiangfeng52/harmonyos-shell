@@ -30,7 +30,7 @@ struct TaroHybridCore {
   @Prop indexHtmlPath: string;
   @Prop taroPath: string;
   @Prop domain: string;
-  @State taroWebController: TaroWebController = TaroHybridManager.getBuilderInstance(this.indexHtmlPath).builderData.taroWebController//new TaroWebController()
+  @State taroWebController: TaroWebController = TaroHybridManager.getCoreInstance(this.indexHtmlPath)?.builderData.taroWebController ?? new TaroWebController()
   @State isDebug: boolean = (GlobalThis.getInstance().getContext('context') as common.UIAbilityContext).applicationInfo.debug
   @State useCache: boolean = true
   injectObj: InjectObject = TaroHybridManager.getInjectNativeMethod()

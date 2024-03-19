@@ -102,6 +102,7 @@ export class TaroWebController {
  */
 @Component
 export struct TaroWeb {
+
   onTitleReceive?: (title: string) => void;
   onRefreshAccessedHistory?: () => void;
   @Prop webUrl: string;

@@ -1,5 +1,5 @@
 import { FrameNode, NodeController } from '@ohos.arkui.node'
-import { TaroHybridManager } from './TaroHybridManager'
+import { TaroHybridCoreInstance, TaroHybridManager } from './TaroHybridManager'
 import { HostPageState } from '../interfaces/HostPageState'
 
 @Component
@@ -24,7 +24,12 @@ export struct TaroHybrid {
   }
 
   aboutToAppear(): void {
-    this.taroHybridCoreController = new TaroWebNodeController(this.indexHtmlPath, this.taroPath)
+    const instance = TaroHybridManager.getOrCreateCoreInstance(this.indexHtmlPath, this.taroPath)
+    this.taroHybridCoreController = new TaroWebNodeController(instance)
+  }
+  aboutToDisappear(): void {
+
+
   }
 
   build() {
@@ -35,14 +40,11 @@ export struct TaroHybrid {
 class TaroWebNodeController extends NodeController {
 
   private isPageShow: boolean = false
-  private randomNum = Math.random();
-  private indexHtmlPath: string
-  private taroPath: string
+  private coreInstance: TaroHybridCoreInstance
 
-  constructor(indexHtmlPath: string, taroPath: string) {
+  constructor(coreInstance: TaroHybridCoreInstance) {
     super();
-    this.indexHtmlPath = indexHtmlPath;
-    this.taroPath = taroPath
+    this.coreInstance = coreInstance
   }
 
 
@@ -60,6 +62,6 @@ class TaroWebNodeController extends NodeController {
       return null
     }
 
-    return TaroHybridManager.getBuilderNode(uiContext, this.indexHtmlPath, this.taroPath)?.getFrameNode() ?? null
+    return this.coreInstance.getBuilderNode(uiContext).getFrameNode()
   }
 }
