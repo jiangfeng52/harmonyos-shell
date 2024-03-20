@@ -3,6 +3,7 @@ import dataPreferences from '@ohos.data.preferences';
 import { GlobalThis } from '../utils/GlobalThis';
 import common from '@ohos.app.ability.common';
 import { BusinessError } from '@kit.BasicServicesKit';
+import preferences from '@ohos.data.preferences';
 
 export class TaroHybridUtils {
   static addQueryParamToHash(urlString: string, paramName: string, paramValue: string): string {
@@ -28,12 +29,12 @@ export class TaroHybridUtils {
     return dataPreferences.getPreferencesSync(context, options);
   }
 
-  static getSP(key: string): string | undefined{
+  static getSP(key: string, defVal?: preferences.ValueType): preferences.ValueType{
     const preferences = TaroHybridUtils.getPreferences()
-    return preferences?.getSync(key, '') + '';
+    return preferences?.getSync(key, defVal??'') ?? '';
   }
 
-  static setSP(key: string, value: string) {
+  static setSP(key: string, value: preferences.ValueType) {
     const preferences = TaroHybridUtils.getPreferences()
     preferences?.putSync(key, value)
     preferences?.flush((err: BusinessError) => {})

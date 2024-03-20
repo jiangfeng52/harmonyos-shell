@@ -7,9 +7,29 @@ import { GlobalThis } from '../utils/GlobalThis';
 import { TaroWebController } from '../components/TaroWeb';
 import { InjectObject } from '../interfaces/InjectObject';
 
-interface TaroHybridWrapBuilderInstance {
-  builderNode: BuilderNode<TaroHybridCoreBuilderData[]>,
+export class TaroHybridCoreInstance {
+  private builderNode: BuilderNode<TaroHybridCoreBuilderData[]> | undefined
   builderData: TaroHybridCoreBuilderData
+
+  constructor(domain: string, indexHtmlPath: string, taroPath: string) {
+    this.builderData = {
+      domain: domain,
+      indexHtmlPath: indexHtmlPath,
+      taroPath: taroPath,
+      taroWebController: new TaroWebController()
+    }
+  }
+
+  getBuilderNode(uiContext: UIContext){
+    if (!this.builderNode) {
+      this.builderNode = new BuilderNode(uiContext)
+      this.builderNode.build(
+          wrapBuilder<TaroHybridCoreBuilderData[]>(TaroHybridCoreBuilder),
+          this.builderData
+        )
+    }
+    return this.builderNode
+  }
 }
 
 export interface TaroHybridManagerOptions {
@@ -20,7 +40,9 @@ export interface TaroHybridManagerOptions {
 
 export class TaroHybridManager {
   private static options: TaroHybridManagerOptions | null = null
-  private static builderInstanceMaps: HashMap<string, TaroHybridWrapBuilderInstance> = new HashMap();
+  private static builderInstanceMaps: HashMap<string, TaroHybridCoreInstance> = new HashMap();
+  // 回收机制：引用计数
+  private static referenceCountMap: HashMap<string, number> = new HashMap();
 
   static init(options: TaroHybridManagerOptions){
     TaroHybridManager.options = options
@@ -31,64 +53,64 @@ export class TaroHybridManager {
   }
 
   static preLoader(uiContext: UIContext, indexHtmlPath: string, taroPath: string){
-    TaroHybridManager.createBuilderInstance(uiContext, indexHtmlPath, taroPath)
+    const instance = TaroHybridManager.getOrCreateCoreInstance(indexHtmlPath, taroPath)
+    instance.getBuilderNode(uiContext)
   }
-  private static createBuilderInstance(uiContext: UIContext, indexHtmlPath: string, taroPath: string){
-    const builderInstance:TaroHybridWrapBuilderInstance = {
-      builderNode: new BuilderNode(uiContext),
-      builderData: {
-        domain: TaroHybridManager?.options?.domain??'',
-        indexHtmlPath: indexHtmlPath, // 注意：此处需求/开头
-        taroPath: taroPath, // 注意：此处需要/开头
-        taroWebController: new TaroWebController()
-      }
-    }
-
-    // 一定要先保存到Map里，再build
-    TaroHybridManager.builderInstanceMaps.set(indexHtmlPath, builderInstance)
-
-    builderInstance.builderNode.build(
-      wrapBuilder<TaroHybridCoreBuilderData[]>(TaroHybridCoreBuilder),
-      builderInstance.builderData
-    )
-    return builderInstance;
-  }
-
-  static getBuilderInstance(indexHtmlPath: string){
-    return TaroHybridManager.builderInstanceMaps.get(indexHtmlPath)
-  }
-
-  static getBuilderNode(uiContext: UIContext, indexHtmlPath: string, taroPath: string) {
+  static getOrCreateCoreInstance(indexHtmlPath: string, taroPath: string): TaroHybridCoreInstance{
     let builderInstance = TaroHybridManager.builderInstanceMaps.get(indexHtmlPath)
     if (!builderInstance){
-      builderInstance = TaroHybridManager.createBuilderInstance(uiContext, indexHtmlPath, taroPath)
+      builderInstance = new TaroHybridCoreInstance(
+        TaroHybridManager?.options?.domain??'',
+        indexHtmlPath,
+        taroPath
+      )
+      // 一定要先保存到Map里，再build
+      TaroHybridManager.builderInstanceMaps.set(indexHtmlPath, builderInstance)
     }
-    return builderInstance.builderNode;
+
+    return builderInstance
+  }
+  static appear(indexHtmlPath: string){
+    let count = TaroHybridManager.referenceCountMap.get(indexHtmlPath) ?? 0;
+    TaroHybridManager.referenceCountMap.set(indexHtmlPath, count + 1)
+  }
+  static disappear(indexHtmlPath: string){
+    let count = TaroHybridManager.referenceCountMap.get(indexHtmlPath) ?? 0;
+    if(count > 1) {
+      TaroHybridManager.referenceCountMap.set(indexHtmlPath, count - 1)
+    } else {
+      // 回收
+      TaroHybridManager.referenceCountMap.remove(indexHtmlPath)
+      TaroHybridManager.builderInstanceMaps.remove(indexHtmlPath)
+    }
   }
 
-  // private static sTaroWebController: TaroWebController = new TaroWebController()
+  static getCoreInstance(indexHtmlPath: string): TaroHybridCoreInstance | undefined{
+    return TaroHybridManager.builderInstanceMaps.get(indexHtmlPath)
+  }
   static loadUrl(indexHtmlPath: string, taroPath: string){
-    const builderInstance = TaroHybridManager.builderInstanceMaps.get(indexHtmlPath)
-    if (!builderInstance) {
+    const instance = TaroHybridManager.getCoreInstance(indexHtmlPath)
+    if (!instance) {
       return ;
     }
-
-    let webUrl = `${builderInstance.builderData.domain}${indexHtmlPath}#${taroPath}`
+    const data = instance.builderData
+    let webUrl = `${data.domain}${indexHtmlPath}#${taroPath}`
     webUrl = TaroHybridUtils.addQueryParamToHash(webUrl, 'from', 'native')
 
     //如果处于未激活状态loadUrl会失效
-    builderInstance.builderData.taroWebController.webController.onActive();
-    builderInstance.builderData.taroWebController.loadUrl(webUrl);
+    data.taroWebController.webController.onActive();
+    data.taroWebController.loadUrl(webUrl);
   }
 
 
   static onBack(indexHtmlPath: string): boolean {
-    const builderInstance = TaroHybridManager.builderInstanceMaps.get(indexHtmlPath)
-    if (!builderInstance) {
-      return false
+    const instance = TaroHybridManager.getCoreInstance(indexHtmlPath)
+    if (!instance) {
+      return false;
     }
+    const data = instance.builderData
 
-    let controller = builderInstance.builderData.taroWebController;
+    let controller = data.taroWebController;
     let curUrl = controller.webController.getUrl();
 
     if (curUrl?.endsWith('?from=native')) {  //web回退到原生
