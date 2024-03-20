@@ -26,10 +26,10 @@ export struct TaroHybrid {
   aboutToAppear(): void {
     const instance = TaroHybridManager.getOrCreateCoreInstance(this.indexHtmlPath, this.taroPath)
     this.taroHybridCoreController = new TaroWebNodeController(instance)
+    TaroHybridManager.appear(this.indexHtmlPath)
   }
   aboutToDisappear(): void {
-
-
+    TaroHybridManager.disappear(this.indexHtmlPath)
   }
 
   build() {

@@ -32,32 +32,41 @@ struct TaroHybridCore {
   @Prop domain: string;
   @State taroWebController: TaroWebController = TaroHybridManager.getCoreInstance(this.indexHtmlPath)?.builderData.taroWebController ?? new TaroWebController()
   @State isDebug: boolean = (GlobalThis.getInstance().getContext('context') as common.UIAbilityContext).applicationInfo.debug
-  @State useCache: boolean = true
+  private useCache: boolean = true
   injectObj: InjectObject = TaroHybridManager.getInjectNativeMethod()
   @State storage: Storage = new Storage(GlobalThis.getInstance().getContext('context') as common.UIAbilityContext,
     bundleManager.getBundleInfoForSelfSync(bundleManager.BundleFlag.GET_BUNDLE_INFO_DEFAULT).name)
+
+  private devDomain: string = '';
+  private devUseCache: boolean = false;
 
   // debugLayout相关
   private debugLayoutHeight: number = 300;
   @State debugLayoutVisible: Visibility = Visibility.None
 
   aboutToAppear(): void {
-
+    if(this.isDebug) {
+      this.devDomain = TaroHybridUtils.getSP(`${this.indexHtmlPath}_devdomain`, this.domain) as string
+      this.devUseCache = TaroHybridUtils.getSP(`${this.indexHtmlPath}_useCache`, this.useCache) as boolean
+    }
   }
 
-  webUrl(domain: string, indexHtmlPath: string, taroPath: string){
-    let webUrl = `${domain}${indexHtmlPath}#${taroPath}`
+  webUrl(){
+    let webUrl = `${this.domain}${this.indexHtmlPath}#${this.taroPath}`
+    if (this.isDebug && !this.devUseCache) {
+      webUrl = `${this.devDomain}${this.indexHtmlPath}#${this.taroPath}`
+    }
     return TaroHybridUtils.addQueryParamToHash(webUrl, 'from', 'native')
   }
 
   @Builder
   taroWebLayout(){
     TaroWebContainer({
-      webUrl: this.webUrl(this.domain, this.indexHtmlPath, this.taroPath),
+      webUrl: this.webUrl(),
       webUrlPrefix: `${this.domain}/`,
       // want: this.want, // want信息
       taroWebController: this.taroWebController,
-      useCache: this.useCache,
+      useCache: this.isDebug ? this.devUseCache : this.useCache,
       isFullScreen: false, // 是否全屏显示
       injectObj: this.injectObj,
       showCapsule: false,
@@ -71,18 +80,15 @@ struct TaroHybridCore {
   debugFrameLayout(){
     Column(){
       DebugLayout({
-        devDomain: this.domain,
+        devDomain: this.devDomain,
         indexHtmlPath: this.indexHtmlPath,
         taroPath: this.taroPath,
-        useCache: this.useCache,
+        useCache: this.devUseCache,
         refresh: (domain: string, indexHtmlPath: string, taroPath: string, useCache: boolean)=>{
-          this.useCache = useCache
           this.debugLayoutVisible = this.debugLayoutVisible == Visibility.Visible ? Visibility.None : Visibility.Visible
-          if (useCache) {
-            this.taroWebController.webController.loadUrl(this.webUrl(this.domain, this.indexHtmlPath, this.taroPath))
-          } else {
-            this.taroWebController.webController.loadUrl(this.webUrl(domain, indexHtmlPath, taroPath))
-          }
+          this.devDomain = domain
+          this.devUseCache = useCache
+          this.taroWebController.webController.loadUrl(this.webUrl())
         }
       })
         .height(this.debugLayoutHeight)

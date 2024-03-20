@@ -41,6 +41,8 @@ export interface TaroHybridManagerOptions {
 export class TaroHybridManager {
   private static options: TaroHybridManagerOptions | null = null
   private static builderInstanceMaps: HashMap<string, TaroHybridCoreInstance> = new HashMap();
+  // 回收机制：引用计数
+  private static referenceCountMap: HashMap<string, number> = new HashMap();
 
   static init(options: TaroHybridManagerOptions){
     TaroHybridManager.options = options
@@ -67,6 +69,20 @@ export class TaroHybridManager {
     }
 
     return builderInstance
+  }
+  static appear(indexHtmlPath: string){
+    let count = TaroHybridManager.referenceCountMap.get(indexHtmlPath) ?? 0;
+    TaroHybridManager.referenceCountMap.set(indexHtmlPath, count + 1)
+  }
+  static disappear(indexHtmlPath: string){
+    let count = TaroHybridManager.referenceCountMap.get(indexHtmlPath) ?? 0;
+    if(count > 1) {
+      TaroHybridManager.referenceCountMap.set(indexHtmlPath, count - 1)
+    } else {
+      // 回收
+      TaroHybridManager.referenceCountMap.remove(indexHtmlPath)
+      TaroHybridManager.builderInstanceMaps.remove(indexHtmlPath)
+    }
   }
 
   static getCoreInstance(indexHtmlPath: string): TaroHybridCoreInstance | undefined{

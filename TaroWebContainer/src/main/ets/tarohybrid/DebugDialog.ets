@@ -3,18 +3,17 @@ import { TaroHybridUtils } from './TaroHybridUtils'
 @Component
 export struct DebugLayout {
   @State devDomain: string = 'http://10.253.110.21:10086'
-  @State indexHtmlPath: string = ''
-  @State taroPath: string = ''
+  @Prop indexHtmlPath: string = ''
+  @Prop taroPath: string = ''
   @State useCache: boolean = true
   private scrollerForScroll: Scroller = new Scroller()
   refresh?: (domain: string, indexHtmlPath: string, taroPath: string, useCache: boolean)=>void
 
   aboutToAppear(): void {
-    const storageDevDomain =  TaroHybridUtils.getSP('devDomain')
-    if(storageDevDomain) {
-      this.devDomain = storageDevDomain
-    }
-
+    // const storageDevDomain = TaroHybridUtils.getSP(this.domain)
+    // if(storageDevDomain) {
+    //   this.devDomain = storageDevDomain
+    // }
   }
 
   @Builder
@@ -71,7 +70,8 @@ export struct DebugLayout {
             .width(120)
             .backgroundColor(0xF55A42)
             .onClick(() => {
-              TaroHybridUtils.setSP('devDomain', this.devDomain)
+              TaroHybridUtils.setSP(`${this.indexHtmlPath}_devdomain`, this.devDomain)
+              TaroHybridUtils.setSP(`${this.indexHtmlPath}_useCache`, this.useCache)
               if(this.refresh) {
                 this.refresh(this.devDomain, this.indexHtmlPath, this.taroPath, this.useCache)
               }
