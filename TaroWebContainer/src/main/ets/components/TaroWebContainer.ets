@@ -225,11 +225,13 @@ export struct TaroWebContainer {
     // 加载组件时，url更新
     this.originIndexUrl = this.webUrl;
     this.handleWantInfo();
-    // const context = getContext(this) as common.UIAbilityContext;
-    const context = GlobalThis.getInstance().getContext('context') as common.UIAbilityContext
+    let context = GlobalThis.getInstance().getContext('context') as common.UIAbilityContext;
+    if (!context) {
+      context = getContext(this) as common.UIAbilityContext;
+      GlobalThis.getInstance().setContext('context', context);
+    }
     // 使用UIAbility的context初始化对象
     AdvancedAPI.init(context);
-    // GlobalThis.getInstance().setContext('context', context);
 
     // 创建高阶API适配器，合并注入的对象
     this.adapter = new ApiAdapter();
