@@ -885,8 +885,5 @@ export class NativeApi {
         wbLogger.error('JsBridgeNative', `Failed to clear data is ${err.code},message is ${err.message}`)
       }
     }
-
   }
 }
-
-
