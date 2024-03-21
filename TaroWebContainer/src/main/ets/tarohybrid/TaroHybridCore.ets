@@ -70,7 +70,6 @@ struct TaroHybridCore {
       isFullScreen: false, // 是否全屏显示
       injectObj: this.injectObj,
       showCapsule: false,
-      storage: this.storage
     })
       .width('100%')
       .height('100%')
