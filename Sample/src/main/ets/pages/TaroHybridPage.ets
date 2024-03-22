@@ -37,7 +37,11 @@ struct TaroHybridPage {
     this.pageState = HostPageState.PageOnHide
   }
   onBackPress(): boolean | void {
-    return TaroHybridManager.onBack(this.indexHtmlPath)
+    const instance = TaroHybridManager.getCoreInstance(this.indexHtmlPath)
+    if (!instance) {
+      return false;
+    }
+    return TaroHybridManager.onBack(instance.builderData.taroWebController)
   }
 
   build() {

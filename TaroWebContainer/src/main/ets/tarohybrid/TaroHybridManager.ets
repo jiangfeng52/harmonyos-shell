@@ -103,29 +103,29 @@ export class TaroHybridManager {
   }
 
 
-  static onBack(indexHtmlPath: string): boolean {
-    const instance = TaroHybridManager.getCoreInstance(indexHtmlPath)
-    if (!instance) {
-      return false;
-    }
-    const data = instance.builderData
+  static onBack(taroWebController: TaroWebController): boolean {
+    // const instance = TaroHybridManager.getCoreInstance(indexHtmlPath)
+    // if (!instance) {
+    //   return false;
+    // }
+    // const data = instance.builderData
 
-    let controller = data.taroWebController;
-    let curUrl = controller.webController.getUrl();
+    // let controller = data.taroWebController;
+    let curUrl = taroWebController.webController.getUrl();
 
     if (curUrl?.endsWith('?from=native')) {  //web回退到原生
       // Web先返回
-      if (controller.accessBackward()) {
+      if (taroWebController.accessBackward()) {
         setTimeout(()=>{
-          controller.backward();
+          taroWebController.backward();
         }, 200)
       }
       // 回退到原生
       return false;
     }
 
-    if (controller?.accessBackward()) { // web回退
-      controller?.backward();
+    if (taroWebController?.accessBackward()) { // web回退
+      taroWebController?.backward();
       // 保留在当前Web页面
       return true;
     }
