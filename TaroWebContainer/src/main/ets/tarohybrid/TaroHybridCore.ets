@@ -33,7 +33,7 @@ struct TaroHybridCore {
   @State taroWebController: TaroWebController = TaroHybridManager.getCoreInstance(this.indexHtmlPath)?.builderData.taroWebController ?? new TaroWebController()
   @State isDebug: boolean = (GlobalThis.getInstance().getContext('context') as common.UIAbilityContext).applicationInfo.debug
   private useCache: boolean = true
-  // 是否开启osChannel ，开启时部分api支持osChannel ,默认不开启
+  // 是否开启osChannel ，开启时部分api支持osChannel(TaroWeb组件中需要放开webLite属性) ; 默认不开启，不开启时不影响jsb正常使用
   private useOsChannel: boolean = false
   injectObj: InjectObject = TaroHybridManager.getInjectNativeMethod()
   @State storage: Storage = new Storage(GlobalThis.getInstance().getContext('context') as common.UIAbilityContext,

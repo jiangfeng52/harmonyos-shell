@@ -239,6 +239,6 @@ export struct TaroWeb {
       .onRefreshAccessedHistory(() => {
         this.onRefreshAccessedHistory && this.onRefreshAccessedHistory();
       })
-      .webLite(true)
+      // .webLite(true)  // 需要 osChannel sdk
   }
 }
