@@ -8,6 +8,7 @@ import { DebugLayout } from './DebugDialog';
 import { TaroHybridManager } from './TaroHybridManager';
 import { TaroHybridUtils } from './TaroHybridUtils';
 import bundleManager from '@ohos.bundle.bundleManager';
+import router from '@ohos.router';
 
 export interface TaroHybridCoreBuilderData {
   domain: string
@@ -44,6 +45,13 @@ struct TaroHybridCore {
   private debugLayoutHeight: number = 300;
   @State debugLayoutVisible: Visibility = Visibility.None
 
+  private navigationBarBackPressed: (taroWebController: TaroWebController)=>void = (taroWebController: TaroWebController)=>{
+    const hasHandled = TaroHybridManager.onBack(taroWebController)
+    if(!hasHandled) {
+      router.back()
+    }
+  }
+
   aboutToAppear(): void {
     if(this.isDebug) {
       this.devDomain = TaroHybridUtils.getSP(`${this.indexHtmlPath}_devdomain`, this.domain) as string
@@ -70,6 +78,8 @@ struct TaroHybridCore {
       isFullScreen: false, // 是否全屏显示
       injectObj: this.injectObj,
       showCapsule: false,
+      storage: this.storage,
+      onNavigationBarBackPressed: this.navigationBarBackPressed
     })
       .width('100%')
       .height('100%')

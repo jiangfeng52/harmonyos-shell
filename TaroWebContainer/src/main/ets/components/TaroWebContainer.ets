@@ -107,12 +107,13 @@ export struct TaroWebContainer {
     this.navigationBarData.loading = false;
   }
 
-  onNavigationBarBackPressed = ()=>{
-    if (Number(router.getLength()) > 1) {
-      router.back();
-      return;
-    }
+  onNavigationBarBackPressed?: (taroWebController: TaroWebController)=>void
 
+  defaultNavigationBarBackPressed = ()=>{
+    if(this.onNavigationBarBackPressed) {
+      this.onNavigationBarBackPressed(this.taroWebController)
+      return ;
+    }
     if(this.taroWebController.accessBackward()) {
       wbLogger.debug(CONTAINER_TAG, 'backWord:webViewController')
       this.taroWebController.backward();
@@ -189,7 +190,7 @@ export struct TaroWebContainer {
       })
       NavigationBar({
         navigationBarData: this.navigationBarData,
-        onBackPressed: this.onNavigationBarBackPressed
+        onBackPressed: this.defaultNavigationBarBackPressed
       })
       if(this.showCapsule) {
         Image($r("app.media.capsule"))
