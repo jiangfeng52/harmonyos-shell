@@ -108,8 +108,9 @@ export struct TaroWeb {
   @Prop webUrl: string;
   @Prop webUrlPrefix: string;
   @Prop useCache: boolean;
+  @Prop useOsChannel: boolean;
   @ObjectLink taroWebController: TaroWebController;
-  apiAdapter: ApiAdapter = new ApiAdapter();
+  apiAdapter: ApiAdapter = new ApiAdapter(this.useOsChannel);
   scriptProxy: Object | undefined = undefined;
   enableWebDebug: boolean = true;
   @Link channel: Channel
@@ -238,5 +239,6 @@ export struct TaroWeb {
       .onRefreshAccessedHistory(() => {
         this.onRefreshAccessedHistory && this.onRefreshAccessedHistory();
       })
+      // .webLite(true)  // 需要 osChannel sdk
   }
 }

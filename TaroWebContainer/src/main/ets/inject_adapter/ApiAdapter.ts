@@ -22,15 +22,17 @@ import common from '@ohos.app.ability.common';
 
 
 export class ApiAdapter {
-  constructor() {
+  constructor(useOsChannel) {
     this.navigationBarHeight = 0;
     this.systemBarHeight = 0;
     this.launchOptions = '';
+    this.useOsChannel = useOsChannel
   }
 
   launchOptions: string
   navigationBarHeight: number
   systemBarHeight: number
+  useOsChannel: boolean
 
   setLaunchOptions(launchOptions: string) {
     this.launchOptions = launchOptions
@@ -44,11 +46,17 @@ export class ApiAdapter {
     this.systemBarHeight = height
   }
 
+  readRawFileSync(relativePath: string, decoder: util.TextDecoder, context: common.UIAbilityContext){
+    let content = context.resourceManager.getRawFileContentSync(relativePath)
+    return decoder.decodeWithStream(content, { stream: false });
+  }
+
   getRunJavaScript(): string {
     let context = GlobalThis.getInstance().getContext('context') as common.UIAbilityContext;
-    let fileContent = context.resourceManager.getRawFileContentSync('app.js')
     let textDecoder = util.TextDecoder.create("utf-8", { ignoreBOM: true });
-    let channelScript = textDecoder.decodeWithStream(fileContent, { stream: false });
+
+    const jsBridgeChannel = this.readRawFileSync('app.js', textDecoder, context)
+    const osChannel = this.readRawFileSync('osChannelApi.js', textDecoder, context)
 
     let result: string = `
       window.addEventListener('unhandledrejection', (event) => {
@@ -58,10 +66,11 @@ export class ApiAdapter {
           var navigationHeight = ${this.navigationBarHeight};
           var systemBarHeight = ${this.systemBarHeight};
           var customLaunchOptions = '${this.launchOptions}';
-          ${channelScript};
+          var isOsChannel = ${this.useOsChannel};
+          ${jsBridgeChannel};
+          ${this.useOsChannel? osChannel : ''};
           adapterInited = true;
       }`
-
     return result
   }
 }
