@@ -37,6 +37,9 @@ struct TaroHybridCore {
   // 是否开启osChannel ，开启时部分api支持osChannel(TaroWeb组件中需要放开webLite属性) ; 默认不开启，不开启时不影响jsb正常使用
   private useOsChannel: boolean = false
   injectObj: InjectObject = TaroHybridManager.getInjectNativeMethod()
+  // 构造时保存kvStore实例到GlobalThis中
+  storage: Storage = new Storage(GlobalThis.getInstance().getContext('context') as common.UIAbilityContext,
+    bundleManager.getBundleInfoForSelfSync(bundleManager.BundleFlag.GET_BUNDLE_INFO_DEFAULT).name)
 
   private devDomain: string = '';
   private devUseCache: boolean = false;
