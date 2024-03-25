@@ -37,8 +37,6 @@ struct TaroHybridCore {
   // 是否开启osChannel ，开启时部分api支持osChannel(TaroWeb组件中需要放开webLite属性) ; 默认不开启，不开启时不影响jsb正常使用
   private useOsChannel: boolean = false
   injectObj: InjectObject = TaroHybridManager.getInjectNativeMethod()
-  @State storage: Storage = new Storage(GlobalThis.getInstance().getContext('context') as common.UIAbilityContext,
-    bundleManager.getBundleInfoForSelfSync(bundleManager.BundleFlag.GET_BUNDLE_INFO_DEFAULT).name)
 
   private devDomain: string = '';
   private devUseCache: boolean = false;
@@ -81,7 +79,6 @@ struct TaroHybridCore {
       isFullScreen: false, // 是否全屏显示
       injectObj: this.injectObj,
       showCapsule: false,
-      storage: this.storage,
       onNavigationBarBackPressed: this.navigationBarBackPressed
     })
       .width('100%')
