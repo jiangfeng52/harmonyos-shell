@@ -17,9 +17,8 @@ ohpm install @hybrid/web-container
 
 - `DevEco Studio NEXT Developer Preview1`, SDK: API11 （可以通过 [HarmonyOS NEXT 开发者
   预览版 Beta 招募][NEXT招募] 申请获得）
-- Taro 版本 3.6.24
-
-上述版本也是最低版本要求
+- Taro 版本 3.6.25
+- @hybrid/web-container 2.0.0-rc.0
 
 ## TaroWebContainer组件使用指南
 1. 使用DevEco Studio开发工具新建应用工程，选择`Empty Ability`模板，使用默认配置。
@@ -33,7 +32,7 @@ ohpm install @hybrid/web-container
   "description": "演示如何使用TaroWebContainer组件",
   "version": "1.0.0",
   "dependencies": {
-    "@hybrid/web-container": "1.0.0"
+    "@hybrid/web-container": "2.0.0-rc.0"
   }
 }
 
