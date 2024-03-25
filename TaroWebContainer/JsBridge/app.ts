@@ -79,7 +79,7 @@ window.Channel = {
    * 给原生暴露的通信方法，原生调用"window.Channel.jsCall(objectId, 'xxx', 'xxxx')"
    */
   jsCall: function (channelType: string, object: any) {
-    console.log(`jsCall channelType=${channelType}, objectJson=${JSON.stringify(object)}`);
+    console.debug(`jsCall channelType=${channelType}, objectJson=${JSON.stringify(object)}`);
     var fun = this.jsCallListeners.get(channelType)
     fun && fun(object)
   }
