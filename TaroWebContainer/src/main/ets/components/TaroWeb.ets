@@ -26,6 +26,7 @@ import { AlbumBackward } from '../interfaces/Media'
 import webView from '@ohos.web.webview';
 import { NativeApi } from '../inject_adapter/NativeApi';
 import { Channel, MethodChannel } from '../inject_adapter/Channel';
+import { setupGlobalInterceptor } from '../utils/GlobalInterceptor'
 
 const TARO_WEB_TAG = 'TaroWeb';
 
@@ -124,6 +125,8 @@ export struct TaroWeb {
     this.taroWebController.addRequestHandler(this.useLocalCacheResource);
 
     this.methodChannel.registerMethods('NativeApi', this.nativeAPI.nativeObj)
+    //advancedApi全局拦截器
+    setupGlobalInterceptor()
   }
 
   aboutToDisappear() {

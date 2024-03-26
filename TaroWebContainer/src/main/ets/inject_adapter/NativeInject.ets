@@ -20,6 +20,7 @@ import Want from '@ohos.app.ability.Want';
 import bundleManager from '@ohos.bundle.bundleManager';
 import fs from '@ohos.file.fs';
 
+
 import {
   CapsuleController,
   ErrorMsg,
@@ -61,9 +62,11 @@ import { LocalUpdateManagerInstance } from '../update/LocalUpdateManager';
 import util from '@ohos.util';
 import { selectMediaAssets } from '../utils/MediaUtil';
 import { MediaItemData, ChooseAlbumResult, chooseAlbumOptions } from '../interfaces/Media';
-
+import { getAuthResults } from '../utils/PermissionMapScopeUtil';
+import { apiCustomDialogManager } from '../samelayer/SameLayerManager';
 
 const NATIVE_TAG = 'NativeInject';
+const subscribePermissionArray: number[] = [];
 
 /**
  * Native注入类，实现一些跟壳工程比较紧密关联的Taro API
@@ -369,7 +372,12 @@ export class NativeInject {
               options.fail({ errMsg: `${apiName}:error` });
             }
           } else {
-            options.fail({ errMsg: `EnableNotification fail` });
+            subscribePermissionArray.push(getAuthResults())
+            if (getAuthResults() === -1 && subscribePermissionArray.length !== 1) {
+              //后续拒绝
+              apiCustomDialogManager.getBuild()?.({ permission: 'ohos.permission.NOTIFICATION_CONTROLLER', name: '通知' } as ESObject)
+            }
+            options.fail({ enableCode });
           }
         } catch (paramError) {
           let enableCode: SubscribeMessageOptions = {

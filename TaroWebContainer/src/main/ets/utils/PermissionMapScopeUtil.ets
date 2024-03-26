@@ -23,6 +23,8 @@ import { AuthSetting, PermissionInfo } from '../interfaces/InjectObject';
 import { wbLogger } from '../utils/Logger';
 
 const PERMISSION_UTIL = 'PermissionUtil';
+// 获取当前权限的授权结果，0表示已授权，-1表示未授权
+let useAuthResults = -1;
 
 /**
  * 应用权限处理实用函数
@@ -115,6 +117,10 @@ const allScopeUseMap: AuthSetting = {
 };
 
 let bundleUsedScopeMap: Map<string, boolean> = new Map<string, boolean>([]);
+
+export function getAuthResults(): number {
+  return useAuthResults
+}
 
 export function getBundleUserPermissions(permissions: Array<PermissionInfo>): Array<PermissionInfo> {
   if (Array.isArray(permissions) && permissions.length === 0) {
@@ -217,11 +223,12 @@ export async function requestPermission(permissions: Permissions[]):Promise<numb
   let context: Context = GlobalThis.getInstance().getContext('context') as Context
   try {
     let permissionRequestResult = await atManager.requestPermissionsFromUser(context, notGranted)
+    useAuthResults = permissionRequestResult.authResults[0]
     authResults.push(...permissionRequestResult.authResults)
   } catch (error) {
     let err: BusinessError = error as BusinessError;
     wbLogger.error(PERMISSION_UTIL, `Failed to request permissions. Code is ${err.code}, message is ${err.message}`);
-    if (authResults.length < permissions.length){
+    if (authResults.length < permissions.length) {
       authResults.push(...new Array(permissions.length - authResults.length).fill(-1))
     }
   }
