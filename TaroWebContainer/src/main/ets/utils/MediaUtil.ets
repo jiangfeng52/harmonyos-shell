@@ -16,8 +16,21 @@ import { ChooseMediaOptions } from '../interfaces/InjectObject';
 import { switchHapSandBoxToInternal } from './InternalPath';
 import camera from '@ohos.multimedia.camera';
 import { BusinessError } from '@ohos.base';
+import { promptAction } from '@kit.ArkUI';
 
 const MEDIA_UTIL = 'MediaUtil';
+let permissionArray: number[] = [];
+
+//通用错误码
+export interface IErrorCode {
+  SUCCESS: number, // 成功
+  USER_REJECT: number, //用户拒绝授权
+}
+
+export const ErrorCode: IErrorCode = {
+  SUCCESS: 0, // 成功
+  USER_REJECT: 201, // 用户拒绝授权
+}
 
 export enum PHOTO_TYPE {
   IMAGE,
@@ -38,6 +51,11 @@ export interface CompressImageParams {
   compressHeight?: number;
 }
 
+export function customPermissionPrompt(apiName: string) {
+  promptAction.showToast({
+    message: `请开启${apiName}权限`
+  })
+}
 
 export async function getPhotoAssetList(): Promise<Array<photoAccessHelper.PhotoAsset>> {
   let context = GlobalThis.getInstance().getContext('context') as common.UIAbilityContext;
@@ -453,9 +471,21 @@ export async function selectMediaAssets(options: ChooseMediaOptions, chooseAlbum
       // 申请读取图库图片的权限
       const permissionsParams: Permissions[] = ['ohos.permission.READ_IMAGEVIDEO']
       const permissionsResults = await requestPermission(permissionsParams);
+      permissionArray.push(...permissionsResults)
+      if (permissionArray[permissionArray.length - 1] === -1) {
+        if (permissionArray.length === 1) {
+          wbLogger.info(TARO_WEB_TAG, '首次询问拒绝');
+        } else {
+          // 后续拒绝
+          customPermissionPrompt('文件')
+        }
+      }
       for (let i = 0; i < permissionsResults.length; i++) {
         if (permissionsResults[i] !== 0) {
-          options.fail({ errMsg: `${apiName}:permission fail` })
+          options.fail({
+            errCode: `${ErrorCode.USER_REJECT}`,
+            errMsg: `${apiName}:permission fail`,
+          })
           return
         }
       }

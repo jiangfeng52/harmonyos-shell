@@ -26,8 +26,15 @@ import { AlbumBackward } from '../interfaces/Media'
 import webView from '@ohos.web.webview';
 import { NativeApi } from '../inject_adapter/NativeApi';
 import { Channel, MethodChannel } from '../inject_adapter/Channel';
+import { getAuthResults } from '../utils/PermissionMapScopeUtil';
+import { as } from '../utils/advancedapi.min';
+import { customPermissionPrompt } from '../utils/MediaUtil';
 
 const TARO_WEB_TAG = 'TaroWeb';
+const locationPermissionArray: number[] = [];
+const playerPermissionArray: number[] = [];
+const phonePermissionArray: number[] = [];
+
 
 export type InterceptRequestHandler = (request: WebResourceRequest) => WebResourceResponse | null;
 
@@ -116,6 +123,71 @@ export struct TaroWeb {
   @Link channel: Channel
   @Link methodChannel: MethodChannel
   private nativeAPI: NativeApi = new NativeApi()
+  phoneContactApi: Array<string> = ['addPhoneContact']
+  locationApi: Array<string> = ['getLocation', 'startLocationUpdate', 'startLocationUpdateBackground']
+  playerApi: Array<string> = ['saveImageToPhotosAlbum']
+
+  setupGlobalInterceptor() {
+    as.addInterceptor({
+      invoke: (args: ESObject) => {
+        wbLogger.info(TARO_WEB_TAG, `[AdvancedAPI] 全局拦截器 invoke args = ` + JSON.stringify(args));
+      },
+      returnValue: (args: ESObject): ESObject => {
+        wbLogger.info(TARO_WEB_TAG, `[AdvancedAPI] 全局拦截器 returnValue args = ` + JSON.stringify(args));
+        return args
+      },
+      success: (args: ESObject) => {
+        wbLogger.info(TARO_WEB_TAG, `[AdvancedAPI] 全局拦截器 success args = ` + JSON.stringify(args));
+      },
+      fail: (err: ESObject) => {
+        wbLogger.info(TARO_WEB_TAG, `[AdvancedAPI] 全局拦截器 fail  ` + JSON.stringify(err));
+        const errCode: string = err?.errCode
+        const moduleName: string = err?.moduleName
+        if (errCode && errCode == '201') {
+          if (moduleName === null || moduleName === undefined) {
+            return
+          }
+
+          if (this.locationApi.includes(moduleName)) {
+            locationPermissionArray.push(getAuthResults())
+            if (locationPermissionArray[locationPermissionArray.length - 1] === -1) {
+              if (locationPermissionArray.length === 1) {
+                wbLogger.info(TARO_WEB_TAG, '首次询问拒绝');
+              } else {
+                // 后续拒绝
+                customPermissionPrompt('定位')
+              }
+            }
+          } else if (this.playerApi.includes(moduleName)) {
+            playerPermissionArray.push(getAuthResults())
+            if (playerPermissionArray[playerPermissionArray.length - 1] === -1) {
+              if (playerPermissionArray.length === 1) {
+                wbLogger.info(TARO_WEB_TAG, '首次询问拒绝');
+              } else {
+                // 后续拒绝
+                customPermissionPrompt('文件')
+              }
+            } 
+          } else if (this.phoneContactApi.includes(moduleName)) {
+            phonePermissionArray.push(getAuthResults())
+            if (phonePermissionArray[phonePermissionArray.length - 1] === -1) {
+              if (phonePermissionArray.length === 1) {
+                wbLogger.info(TARO_WEB_TAG, '首次询问拒绝');
+              } else {
+                // 后续拒绝
+                customPermissionPrompt('通讯录')
+              }
+            } 
+          } else {
+            return
+          }
+        }
+      },
+      complete: (res: ESObject) => {
+        wbLogger.info(TARO_WEB_TAG, `[AdvancedAPI] 全局拦截器 complete ` + JSON.stringify(res));
+      }
+    })
+  }
 
   aboutToAppear() {
     webView.WebviewController.setWebDebuggingAccess(this.enableWebDebug);
@@ -124,6 +196,7 @@ export struct TaroWeb {
     this.taroWebController.addRequestHandler(this.useLocalCacheResource);
 
     this.methodChannel.registerMethods('NativeApi', this.nativeAPI.nativeObj)
+    this.setupGlobalInterceptor()
   }
 
   aboutToDisappear() {

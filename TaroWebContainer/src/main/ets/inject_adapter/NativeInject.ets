@@ -19,6 +19,8 @@ import { BusinessError } from '@ohos.base';
 import Want from '@ohos.app.ability.Want';
 import bundleManager from '@ohos.bundle.bundleManager';
 import fs from '@ohos.file.fs';
+import { customPermissionPrompt } from '../utils/MediaUtil';
+import { getAuthResults } from '../utils/PermissionMapScopeUtil';
 
 import {
   CapsuleController,
@@ -64,6 +66,7 @@ import { MediaItemData, ChooseAlbumResult, chooseAlbumOptions } from '../interfa
 
 
 const NATIVE_TAG = 'NativeInject';
+const subscribePermissionArray: number[] = [];
 
 /**
  * Native注入类，实现一些跟壳工程比较紧密关联的Taro API
@@ -369,7 +372,16 @@ export class NativeInject {
               options.fail({ errMsg: `${apiName}:error` });
             }
           } else {
-            options.fail({ errMsg: `EnableNotification fail` });
+            subscribePermissionArray.push(getAuthResults())
+            if (subscribePermissionArray[subscribePermissionArray.length - 1] === -1) {
+              if (subscribePermissionArray.length === 1) {
+                wbLogger.info(NATIVE_TAG, '首次询问拒绝')
+              } else {
+                //后续拒绝
+                customPermissionPrompt('通知')
+              }
+            }
+            options.fail({ enableCode });
           }
         } catch (paramError) {
           let enableCode: SubscribeMessageOptions = {
