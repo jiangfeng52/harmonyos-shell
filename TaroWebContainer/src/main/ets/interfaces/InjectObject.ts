@@ -200,7 +200,13 @@ export interface NavigationStyle {
   backgroundColor: string;
 }
 
+export interface LocalNativeChangeListener {
+  change: (methodName: string, ...methodArgs: Object[]) => void;
+}
+
 export interface InnerInjectObj {
+  enableCacheMethodNames:()=>string[]
+  obtainNativeChangeListener:(listener: LocalNativeChangeListener | null)=>void
   setNavigationBarColor: (options: NavigationBarOptions) => void;
   showNavigationBarLoading: () => void;
   hideNavigationBarLoading: () => void;

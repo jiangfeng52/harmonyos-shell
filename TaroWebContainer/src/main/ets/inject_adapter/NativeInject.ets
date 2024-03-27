@@ -34,6 +34,7 @@ import {
   ExitMiniProgramOptions,
   SettingOptions,
   NavigationStyle,
+  LocalNativeChangeListener,
 } from '../interfaces/InjectObject';
 import {
   getBundleUsedPermission,
@@ -61,6 +62,7 @@ import { LocalUpdateManagerInstance } from '../update/LocalUpdateManager';
 import util from '@ohos.util';
 import { selectMediaAssets } from '../utils/MediaUtil';
 import { MediaItemData, ChooseAlbumResult, chooseAlbumOptions } from '../interfaces/Media';
+import { NativeChanger } from './NativeDataChanger';
 
 
 const NATIVE_TAG = 'NativeInject';
@@ -118,6 +120,24 @@ export class NativeInject {
 
   public buildInjectObj(context: common.UIAbilityContext): InnerInjectObj {
     return {
+      /**
+       * 获取哪些Api的数据需要缓存。
+       * @return string[] Api的方法名数组
+       */
+      enableCacheMethodNames:()=>{
+        return [
+          "getSystemSetting",
+        ];
+      },
+
+      /**
+       * 系统层获取到监听器。
+       * 1.系统层，保存listener
+       * 2.系统层，监听系统数据变化，发生变化后，调用listener.change(method: string)
+       */
+      obtainNativeChangeListener: (listener: LocalNativeChangeListener | null) => {
+        NativeChanger.setListener(listener);
+      },
       copyFileToSandboxCache: (src: string) => {
         wbLogger.debug('JsBridgeNative', `NativeApi$copyFileToSandboxCache`)
         const context = getContext() as common.UIAbilityContext;
