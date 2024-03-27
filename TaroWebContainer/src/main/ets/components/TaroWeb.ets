@@ -108,9 +108,8 @@ export struct TaroWeb {
   @Prop webUrl: string;
   @Prop webUrlPrefix: string;
   @Prop useCache: boolean;
-  @Prop useOsChannel: boolean;
   @ObjectLink taroWebController: TaroWebController;
-  apiAdapter: ApiAdapter = new ApiAdapter(this.useOsChannel);
+  apiAdapter: ApiAdapter = new ApiAdapter();
   scriptProxy: Object | undefined = undefined;
   enableWebDebug: boolean = true;
   @Link channel: Channel
