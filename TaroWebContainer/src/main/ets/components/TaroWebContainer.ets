@@ -17,6 +17,7 @@ import Want from '@ohos.app.ability.Want';
 import window from '@ohos.window';
 import common from '@ohos.app.ability.common';
 import bundleManager from '@ohos.bundle.bundleManager';
+import wifiManager from '@ohos.wifiManager';
 import  AdvancedAPI from '../utils/advancedapi.min';
 import { NavigationBar, NavigationBarData } from './NavigationBar';
 import { TaroWeb, TaroWebController } from './TaroWeb';
@@ -64,6 +65,7 @@ export struct TaroWebContainer {
   @State systemBarHeight: number = 0;
   @State channel: Channel = new Channel()
   @State methodChannel: MethodChannel = new MethodChannel(this.channel)
+  windowClass: window.Window | undefined = undefined;
 
   // 显示图库
   @State showAlbum: boolean = false;
@@ -235,6 +237,31 @@ export struct TaroWebContainer {
     }
     // 使用UIAbility的context初始化对象
     AdvancedAPI.init(context);
+
+    // wifi状态的监听
+    let recvWifiNotifyFunc = (result:number) => {
+      console.info("Receive wifi state change event: " + result);
+    }
+    wifiManager.on("wifiStateChange", recvWifiNotifyFunc);
+
+    // 屏幕变化(折叠等)的监听
+    try {
+      window.getLastWindow(context, (err: BusinessError, data) => {
+        const errCode: number = err.code;
+        if (errCode) {
+          console.error('Failed to obtain the top window. Cause: ' + JSON.stringify(err));
+          return;
+        }
+        this.windowClass = data;
+        this.windowClass && this.windowClass.on('windowSizeChange', (res) => {
+          console.info('Succeeded in enabling the listener for the window size changes. Data: ' + JSON.stringify(res));
+        });
+        console.info('Succeeded in obtaining the top window. Data: ' + JSON.stringify(data));
+      });
+    } catch (exception) {
+      console.error('Failed to obtain the top window. Cause: ' + JSON.stringify(exception));
+    }
+
 
     // 创建高阶API适配器，合并注入的对象
     this.adapter = new ApiAdapter(this.useOsChannel);
