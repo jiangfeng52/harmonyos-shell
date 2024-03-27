@@ -1,5 +1,6 @@
-import { TaroWebContainer, InjectObject, HostPageState, TaroWebController, Logger, LoggerLevel, wbLogger } from '@hybrid/web-container';
+import { Logger, LoggerLevel } from '@hybrid/web-container';
 import { RouterToTaroHybrid } from './TaroHybridPage';
+import router from '@ohos.router';
 
 let storage = LocalStorage.getShared() // 获取共享的本地存储对象
 
@@ -32,6 +33,15 @@ struct Index {
             indexHtmlPath: "/spa/main/index.html",
             taroPath: "/pages/index/index"
           })
+        })
+      Button('TaroWebContainer组件', { type: ButtonType.Normal, stateEffect: true })
+        .borderRadius(8)
+        .backgroundColor(0x317aff)
+        .height(40)
+        .onClick(()=>{
+          router.pushUrl({
+            url: 'pages/WebContainerPage',
+          }, router.RouterMode.Standard)
         })
     }
     .width('100%')
