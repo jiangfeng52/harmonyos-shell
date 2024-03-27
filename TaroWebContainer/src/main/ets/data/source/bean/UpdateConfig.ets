@@ -1,5 +1,6 @@
 import versionCompare from '../bean/CompareVersion'
-
+import { LocalVersionInfo } from './LocalVersionInfo'
+import HashMap from '@ohos.util.HashMap'
 export class UpdateConfig {
   private static instance: UpdateConfig
   private urlFunc = (version: string) => {
@@ -7,7 +8,7 @@ export class UpdateConfig {
   }
   private initialVersion: string = '0'
   private compareVersionFunc: (a: string, b: string) => boolean = versionCompare
-
+  private minisInfo:HashMap<string,LocalVersionInfo> = new HashMap<string,LocalVersionInfo>()
   private constructor() {
   }
 
@@ -35,4 +36,19 @@ export class UpdateConfig {
     this.initialVersion = initialVersion
     this.compareVersionFunc = compareVersionFunc
   }
+
+  setOrReplaceMiniInfo(name:string,versionInfo:LocalVersionInfo){
+    if (name&&versionInfo) {
+      if (this.minisInfo.hasKey(name)) {
+        this.minisInfo.replace(name, versionInfo);
+      }else{
+        this.minisInfo.set(name,versionInfo)
+      }
+    }
+  }
+
+  getMiniInfo(name:string): LocalVersionInfo | null{
+    return this.minisInfo.get(name)
+  }
+
 }

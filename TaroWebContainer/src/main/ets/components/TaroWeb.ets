@@ -17,10 +17,10 @@ import File from '@ohos.file.fs';
 import { BusinessError } from '@ohos.base';
 import { ApiAdapter } from '../inject_adapter/ApiAdapter';
 import { switchInternalToHapSandBox } from '../utils/InternalPath';
-import { RawUtils } from '../utils/RawUtils';
+import { MiniLocalFileDataSource } from '../data/source/local/MiniLocalFileDataSource';
+import { MiniRawFileDataSource } from '../data/source/local/MiniRawFileDataSource';
 import webview from '@ohos.web.webview';
 import { wbLogger } from '../utils/Logger';
-import { FileUtils } from '../utils/FileUtils';
 import { LocalUpdateManagerInstance } from '../update/LocalUpdateManager';
 import { AlbumBackward } from '../interfaces/Media'
 import webView from '@ohos.web.webview';
@@ -157,22 +157,23 @@ export struct TaroWeb {
       let path: string = url.replace(this.webUrlPrefix, '');
       path = path.split('#')[0]
       wbLogger.debug('TaroWeb', 'intercepter path=%{public}s', path)
-
-      const localLastPath = LocalUpdateManagerInstance.getLastVersionPath()
-      if (localLastPath != '') {
-        wbLogger.debug('TaroWeb', 'useLocalCacheResource path=%{public}s', path)
-        // 走本地缓存
-        if(!path || !FileUtils.fileExist(localLastPath, path)) {
+      let biz = MiniRawFileDataSource.getBizByPath(path)//获取业务标识
+      const lastVerInfo = LocalUpdateManagerInstance.getLastVersionInfo(biz)
+      if (lastVerInfo?.diskCachePath) {// 走本地缓存
+        if(!path || !MiniLocalFileDataSource.fileExist(lastVerInfo?.diskCachePath, path)) {
           return null;
         }
-        return FileUtils.getFileOnResponseWeb(localLastPath, path)
+        wbLogger.debug('TaroWeb', 'useLocalCacheResource path=%{public}s', path)
+        return MiniLocalFileDataSource.getFileOnResponseWeb(lastVerInfo?.diskCachePath, path)
       }
-
-      // 走App内置的Raw缓存
-      if (!path || !RawUtils.rawfileExist(path)) {
-        return null;
+      if(lastVerInfo?.rawCachePath){// 走App内置的Raw缓存
+        let rawPath = MiniRawFileDataSource.rawfileExist(lastVerInfo.rawCachePath,path)
+        if (!path || rawPath.trim() === '') {
+          return null;
+        }
+        wbLogger.debug('TaroWeb', 'useRawCacheResource path=%{public}s', rawPath)
+        return MiniRawFileDataSource.getRawfileOnResponseWeb(rawPath)
       }
-      return RawUtils.getRawfileOnResponseWeb(path)
     }
     return null;
   }

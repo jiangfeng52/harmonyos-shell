@@ -1,7 +1,7 @@
 import request from '@ohos.request'
 import { wbLogger } from '../../../utils/Logger';
 import { NetworkTask, NetworkTaskStatus } from '../bean/NetworkTask';
-import { MiniLocalFileDataSource } from '../local/MiniLocalFileDataSource';
+import { FileUtils } from '../../../utils/FileUtils';
 
 export class MiniNetworkDataSource {
   constructor() {
@@ -29,13 +29,13 @@ export class MiniNetworkDataSource {
           })
           downloadTask.on('fail', (err: number) => {
             wbLogger.debug("UpdateManager", '%{public}s download error, errCode is %{public}s', url, err.toString())
-            MiniLocalFileDataSource.delTempFile(tempPath)
+            FileUtils.delTempFile(tempPath)
             resolve(null)
           })
         })
         .catch((err: Object) => {
           wbLogger.debug("UpdateManager", '%{public}s download error, err is %{public}s', url, err.toString())
-          MiniLocalFileDataSource.delTempFile(tempPath)
+          FileUtils.delTempFile(tempPath)
           resolve(null)
         })
     })
