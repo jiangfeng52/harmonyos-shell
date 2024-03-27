@@ -3,6 +3,7 @@
     "pages/Index",
     "pages/Capsule",
     "pages/Developer",
-    "pages/TaroHybridPage"
+    "pages/TaroHybridPage",
+    "pages/WebContainerPage"
   ]
 }
