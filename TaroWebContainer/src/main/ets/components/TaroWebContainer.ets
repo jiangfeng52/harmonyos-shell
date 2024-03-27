@@ -49,7 +49,6 @@ export struct TaroWebContainer {
   @Prop webUrlPrefix: string;
   // 使用缓存
   @Prop useCache: boolean = true;
-  @Prop useOsChannel: boolean = false;
   // 显示胶囊
   @Prop showCapsule: boolean = true;
   // 胶囊按钮点击后跳转的页面
@@ -181,7 +180,6 @@ export struct TaroWebContainer {
         webUrl: this.webUrl,
         webUrlPrefix: this.webUrlPrefix,
         useCache: this.useCache,
-        useOsChannel: this.useOsChannel,
         apiAdapter: this.adapter,
         taroWebController: this.taroWebController,
         onTitleReceive: this.onTitleReceive,
@@ -237,7 +235,7 @@ export struct TaroWebContainer {
     AdvancedAPI.init(context);
 
     // 创建高阶API适配器，合并注入的对象
-    this.adapter = new ApiAdapter(this.useOsChannel);
+    this.adapter = new ApiAdapter();
     const nativeInject = new NativeInject(this.navigationBarData, this.capsuleOptions, this.capsuleController);
     this.taroWebController.setAlbumBackward(this.albumBackward);
     nativeInject.setChooseAlbumCallback(this.chooseAlbumCallback);
