@@ -34,7 +34,7 @@ import {
   ExitMiniProgramOptions,
   SettingOptions,
   NavigationStyle,
-  LocalNativeChangeListener,
+  NativeDataChangeListener,
 } from '../interfaces/InjectObject';
 import {
   getBundleUsedPermission,
@@ -62,7 +62,7 @@ import { LocalUpdateManagerInstance } from '../update/LocalUpdateManager';
 import util from '@ohos.util';
 import { selectMediaAssets } from '../utils/MediaUtil';
 import { MediaItemData, ChooseAlbumResult, chooseAlbumOptions } from '../interfaces/Media';
-import { NativeChanger } from './NativeDataChanger';
+import { nativeUpdater } from './NativeDataUpdater';
 
 
 const NATIVE_TAG = 'NativeInject';
@@ -135,8 +135,8 @@ export class NativeInject {
        * 1.系统层，保存listener
        * 2.系统层，监听系统数据变化，发生变化后，调用listener.change(method: string)
        */
-      obtainNativeChangeListener: (listener: LocalNativeChangeListener | null) => {
-        NativeChanger.setListener(listener);
+      obtainNativeChangeListener: (listener: NativeDataChangeListener | null) => {
+        nativeUpdater.setListener(listener);
       },
       copyFileToSandboxCache: (src: string) => {
         wbLogger.debug('JsBridgeNative', `NativeApi$copyFileToSandboxCache`)
