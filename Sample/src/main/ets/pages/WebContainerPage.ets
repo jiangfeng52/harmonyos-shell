@@ -4,6 +4,7 @@ import { TaroWebContainer, InjectObject, HostPageState, TaroWebController, Logge
 
 const WEB_CONTAINER_PAGE_TAG = 'WebContainerPage';
 let storage = LocalStorage.getShared() // 获取共享的本地存储对象
+const TAG = 'WebContainerPage';
 
 @Entry(storage)
 @Component
@@ -14,7 +15,7 @@ struct WebContainerPage {
 
   // 用户可以自定义对象注入到Web环境中，使用native.sayHello格式进行调用
   nativeObj: InjectObject = {
-    sayHello: () => console.log('Hello World'),
+    sayHello: () => wbLogger.info(TAG, 'sayHello %{public}s', 'Hello World'),
   }
 
   onBackPress() {
