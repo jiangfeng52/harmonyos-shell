@@ -4,59 +4,69 @@ import { wbLogger } from '../../../utils/Logger'
 import fs from '@ohos.file.fs'
 import { LocalVersionInfo } from '../bean/LocalVersionInfo'
 import { UpdateConfig } from '../bean/UpdateConfig'
+import { FileUtils } from '../../../utils/FileUtils'
+import common from '@ohos.app.ability.common';
+import { ArrayList } from '@kit.ArkTS'
 
-
+const DISK_PATH = 'update'
 export class MiniLocalFileDataSource {
   constructor() {
   }
 
-  getLastMiniVersion(context: Context): LocalVersionInfo {
-    let miniPath = `${context.filesDir}/update`
-    let localVersionInfo = new LocalVersionInfo(UpdateConfig.getInstance().getInitialVersion())
-    if (!fs.accessSync(miniPath) || !fs.statSync(miniPath).isDirectory()) {
-      return localVersionInfo
-    }
-    let filenames = fs.listFileSync(miniPath, { recursion: false, listNum: 0 })
-    const versionCompareFunc = UpdateConfig.getInstance().getCompareVersionFunc()
-    if (filenames.length > 0) {
-      filenames.sort((a, b) => {
-        if (versionCompareFunc(a, b)) {
-          //正序排列
-          return 1
+  readDiskLastMiniBizInfo(context: Context, biz:string): LocalVersionInfo {
+    let miniPath = this.getLocalPath(context)
+    let localVersionInfo = new LocalVersionInfo(UpdateConfig.getInstance().getInitialVersion(),biz)
+    let files = fs.listFileSync(miniPath, { recursion: false, listNum: 0 })
+    if (files && files?.length != 0) {
+      let filenames = new Array<string>()
+      for (let index = 0; index < files.length; index++) {
+        const element = files[index];
+        if (element.startsWith(biz)) {
+          filenames.push(element)
         }
-        return -1
-      })
-      if (filenames.length === 3) {
-        //保证在下载前只有两个版本
-        MiniLocalFileDataSource.delTempFile(`${miniPath}/${filenames[0]}`)
       }
-      localVersionInfo.localVersion = filenames[filenames.length-1]
-      localVersionInfo.path = `${miniPath}/${filenames[filenames.length-1]}`
-      return localVersionInfo
+      wbLogger.debug("LocalUpdateManager", `filenames length is ${filenames.length}`)
+      let filesLength = filenames.length
+      if (filesLength==1) {
+        let splits = FileUtils.checkMiniFileNameFormat(filenames[0])
+        if (splits) {
+          localVersionInfo.localVersion = splits[1]
+          localVersionInfo.diskCachePath = `${miniPath}/${filenames[0]}`
+        }
+        return localVersionInfo
+      }else if (filenames.length > 1) {
+        const versionCompareFunc = UpdateConfig.getInstance().getCompareVersionFunc()
+        filenames.sort((a, b) => {
+          if (versionCompareFunc(a, b)) {
+            //正序排列
+            return 1
+          }
+          return -1
+        })
+        if (filenames.length === 2) {
+          //保证在下载前只有一个版本
+          FileUtils.delTempFile(`${miniPath}/${filenames[0]}`)
+        }
+        let splits = filenames[filenames.length-1].split('@');
+        if (splits&&splits?.length>1) {
+          localVersionInfo.localVersion = splits[1]
+        }else{
+          localVersionInfo.localVersion = '0'
+        }
+        localVersionInfo.diskCachePath = `${miniPath}/${filenames[filenames.length-1]}`
+        return localVersionInfo
+      }
     }
     return localVersionInfo
   }
 
-  static delTempFile(tempPath: string) {
-    if (!fs.accessSync(tempPath)) {
-      return
-    }
-    fs.unlinkSync(tempPath)
-  }
 
-  getLocalPath(context: Context, version: number): string {
-    let miniPath = `${context.filesDir}/update`
-
-    if (!fs.accessSync(miniPath) || !fs.statSync(miniPath).isDirectory()) {
+  getLocalPath(context: Context):string{
+    let miniPath = `${context.filesDir}/${DISK_PATH}`
+    if (!fs.accessSync(miniPath)) {
       fs.mkdirSync(miniPath)
     }
-
-    let versionPath = `${miniPath}/${version.toString()}`
-    if (!fs.accessSync(versionPath) || !fs.statSync(versionPath).isDirectory()) {
-      fs.mkdirSync(versionPath)
-    }
-
-    return versionPath
+    return miniPath
   }
 
   saveAndUnzip(context: Context, version: number, filePath: string): Promise<string> {
@@ -67,8 +77,9 @@ export class MiniLocalFileDataSource {
           memLevel: zlib.MemLevel.MEM_LEVEL_DEFAULT,
           strategy: zlib.CompressStrategy.COMPRESS_STRATEGY_DEFAULT_STRATEGY
         }
-
-        let savePath = this.getLocalPath(context, version)
+        //TODO-JasonZhang 设置解压路径
+        let savePath = ""
+        // let savePath = this.getLocalPath(context, version)
 
         zlib.decompressFile(filePath, savePath, options, (errData) => {
           if (errData !== null) {
@@ -76,16 +87,85 @@ export class MiniLocalFileDataSource {
           } else {
             wbLogger.debug("UpdateManager", '%{public}s decompressFile success. decompressPath is %{public}s', filePath, savePath)
           }
-          MiniLocalFileDataSource.delTempFile(filePath)
+          FileUtils.delTempFile(filePath)
           resolve(errData == null ? savePath : '')
         })
       } catch (errData) {
         let code = (errData as BusinessError).code;
         let message = (errData as BusinessError).message;
         wbLogger.debug("UpdateManager", '%{public}s decompressFile failed. code is %{public}d, message is %{public}s', filePath, code, message)
-        MiniLocalFileDataSource.delTempFile(filePath)
+        FileUtils.delTempFile(filePath)
         resolve('')
       }
     })
   }
+  /**
+   * 获取缓存空间目录
+   * @param context
+   * @returns
+   */
+  static getDiskPath(context: common.Context): string {
+    let path = `${context.filesDir}/update`
+    return path;
+  }
+
+  static fileExist(dir: string, fileRelatePath: string): boolean {
+    let filePath = ''
+    if (fileRelatePath.startsWith("/")) {
+      filePath = `${dir}${fileRelatePath}`
+    }else{
+      filePath = `${dir}/${fileRelatePath}`
+    }
+    return fs.accessSync(filePath)
+  }
+
+  static getFileOnResponseWeb(dir: string, fileRelatePath: string): WebResourceResponse {
+    let filePath = `${dir}/${fileRelatePath}`
+
+    const file = fs.openSync(filePath, fs.OpenMode.READ_ONLY);
+    const fd: number = file.fd;
+
+    const responseWeb = new WebResourceResponse();
+    const headers: Array<Header> = [
+      {
+        headerKey: "Connection",
+        headerValue: "keep-alive"
+      },
+      {
+        headerKey: "Cache-Control",
+        headerValue: "no-cache"
+      }
+    ]
+    let mimeType: string;
+    if (filePath.endsWith('.js')) {
+      mimeType = "application/javascript";
+    }
+    else if (filePath.endsWith('.css')) {
+      mimeType = "text/css";
+    }
+    else if (filePath.endsWith('.html') || filePath.endsWith(".htm")) {
+      mimeType = "text/html";
+    }
+    else if (filePath.endsWith('.jpg') || filePath.endsWith('.jpeg')) {
+      mimeType = "image/jpeg";
+    }
+    else if (filePath.endsWith('.png')) {
+      mimeType = "image/png";
+    }
+    else if (filePath.endsWith('.txt')) {
+      mimeType = "text/plain";
+    }
+    else {
+      mimeType = "application/octet-stream"; // 默认二进制流
+    }
+    responseWeb.setResponseHeader(headers)
+    responseWeb.setResponseData(fd);
+    responseWeb.setResponseEncoding('utf-8')
+    responseWeb.setResponseMimeType(mimeType)
+    responseWeb.setResponseIsReady(true)
+    responseWeb.setResponseCode(200);
+    responseWeb.setReasonMessage('OK');
+    return responseWeb
+  }
+
 }

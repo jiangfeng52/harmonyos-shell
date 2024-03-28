@@ -7,15 +7,6 @@ export default {
   plugins: [customPluginFunction()]         /* Custom plugin to extend the functionality of Hvigor. */
 }
 
-function writeFileToRawfileSync(source,target) {
-  let rawFileContent = fs.readFileSync(source, 'utf8')
-  const content = transformSync(rawFileContent, {
-    presets: ["@babel/preset-env"],
-    plugins: ["@babel/plugin-transform-typescript"],
-  })
-  fs.writeFileSync(target, content.code)
-}
-
 export function customPluginFunction(str?: string) {
   return {
     pluginId: 'CustomPluginID',
@@ -25,15 +16,16 @@ export function customPluginFunction(str?: string) {
         name: 'tsToJsModule',
         run: (taskContext) => {
           const path = require('path');
-          writeFileToRawfileSync(
-            path.join(taskContext.modulePath, "JsBridge", "app.ts"),
-            path.join(taskContext.modulePath, "src", "main", "resources", "rawfile", "app.js")
-          )
-          // write osChannelApi
-          writeFileToRawfileSync(
-            path.join(taskContext.modulePath, "OsChannel", "osChannelApi.ts"),
-            path.join(taskContext.modulePath, "src", "main", "resources", "rawfile", "osChannelApi.js")
-          )
+          let appFilePath = path.join(taskContext.modulePath, "JsBridge", "app.ts")
+
+          let rawFileContent = fs.readFileSync(appFilePath, 'utf8')
+          const result = transformSync(rawFileContent, {
+            presets: ["@babel/preset-env"],
+            plugins: ["@babel/plugin-transform-typescript"],
+          })
+
+          let outputFilePath = path.join(taskContext.modulePath, "src", "main", "resources", "rawfile", "app.js")
+          fs.writeFileSync(outputFilePath, result.code)
         },
         // 确认自定义任务插入位置
         postDependencies: ['default@PreBuild']
