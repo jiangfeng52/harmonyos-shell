@@ -1,9 +1,13 @@
 export class LocalVersionInfo {
   localVersion: string
-  path: string
+  diskCachePath: string
+  biz: string
+  rawCachePath : string
 
-  constructor(localVersion: string = '-1', path: string = '') {
+  constructor(localVersion: string = '-1',biz : string='',diskCachePath: string = '',rawCachePath : string='') {
     this.localVersion = localVersion
-    this.path = path
+    this.diskCachePath = diskCachePath
+    this.biz = biz
+    this.rawCachePath = rawCachePath
   }
 }

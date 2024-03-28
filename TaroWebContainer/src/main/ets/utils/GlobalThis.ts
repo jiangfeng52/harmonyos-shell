@@ -25,6 +25,8 @@ export class GlobalThis {
   private static instance: GlobalThis;
   private _uiContexts = new Map<string, Context>();
   private _kvStore = new Map<string, distributedKVStore.SingleKVStore>()
+  private _RawFile = 'mps'
+  private _diskUpdateEnable = true;
 
   public static getInstance(): GlobalThis {
     if (!GlobalThis.instance) {
@@ -48,5 +50,17 @@ export class GlobalThis {
   setKvStore(key: string, value: distributedKVStore.SingleKVStore): void {
     this._kvStore.set(key, value);
   }
+  setRawFile(rawFileName:string){
+    this._RawFile = rawFileName
+  }
+  getRawFile(){
+    return this._RawFile
+  }
+  setDiskUpdateEnable(value) {
+    this._diskUpdateEnable = value;
+  }
 
+  getDiskUpdateEnable() {
+    return this._diskUpdateEnable;
+  }
 }

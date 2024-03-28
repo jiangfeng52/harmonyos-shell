@@ -17,4 +17,12 @@ export class MiniConfigRepository {
     }
     return miniConfig
   }
+  async fetchMiniListConfig(localVersion: string): Promise<MiniConfig> {
+    const networkTask: NetworkTask<MiniConfig> = await this.miniConfigNetworkDataSource.fetchMiniConfig(localVersion)
+    const miniConfig: MiniConfig = networkTask.data ?? new MiniConfig(false)
+    if (!miniConfig.miniDownloadUrl) {
+      miniConfig.hasUpdate = false
+    }
+    return miniConfig
+  }
 }
