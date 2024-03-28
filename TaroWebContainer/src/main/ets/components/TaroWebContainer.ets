@@ -35,6 +35,8 @@ import { wbLogger } from '../utils/Logger';
 import { AlbumBackward, ChooseAlbumResult, MediaItemData, chooseAlbumOptions } from '../interfaces/Media'
 import { BusinessError } from '@ohos.base';
 import { Channel, MethodChannel } from '../inject_adapter/Channel';
+import { wifiManager } from '@kit.ConnectivityKit';
+import { NativeDataType, nativeUpdater } from '../inject_adapter/NativeDataUpdater';
 
 const CONTAINER_TAG = 'TaroWebContainer';
 
@@ -275,6 +277,22 @@ export struct TaroWebContainer {
       this.adapter!.setSystemBarHeight(this.systemBarHeight);
     })
     this.appearDone = true;
+
+    this.initListener()
+
+  }
+
+  initListener() {
+    // wifi状态的监听
+    wifiManager.on("wifiStateChange", (result: number) => {
+      //0: inactive, 1: active, 2: activating, 3: de-activating
+      wbLogger.debug(CONTAINER_TAG, "wifiStateChange:" + result)
+      if (result === 1) {
+        nativeUpdater.update(NativeDataType.wifiEnabled, true)
+      } else if (result === 0) {
+        nativeUpdater.update(NativeDataType.wifiEnabled, false)
+      }
+    });
   }
 
   onPageStateUpdated(): void {
