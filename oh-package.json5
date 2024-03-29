@@ -4,9 +4,8 @@
     "@ohos/hypium": "1.0.15",
     "@ohos/hamock": "1.0.0-rc"
   },
-  "name": "TaroHarmonyosShell",
+  "name": "taro-harmonyos-shell",
   "description": "A customized TaroWebContainer implementation designed to provide an running environment for the Taro project\u0027s mpharmony platform product",
-  "repository": {},
   "version": "1.0.0",
   "dependencies": {}
 }
