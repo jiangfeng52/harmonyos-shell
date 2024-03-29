@@ -17,7 +17,6 @@ import window from '@ohos.window';
 import common from '@ohos.app.ability.common';
 import { BusinessError } from '@ohos.base';
 import Want from '@ohos.app.ability.Want';
-import { wbLogger } from '@hybrid/web-container';
 import bundleManager from '@ohos.bundle.bundleManager';
 import fs from '@ohos.file.fs';
 
