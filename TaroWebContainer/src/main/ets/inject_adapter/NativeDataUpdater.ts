@@ -26,6 +26,8 @@ export class NativeDataType {
   public static wifiEnabled: NativeApiPair = new NativeApiPair("getSystemSetting", [], "wifiEnabled")
   /** getSystemSetting - 设备方向 */
   public static deviceOrientation: NativeApiPair = new NativeApiPair("getSystemSetting", [], "deviceOrientation")
+  /** getWindowInfo - 所有数据更新 */
+  public static allWindowInfo: NativeApiPair = new NativeApiPair("getWindowInfo", [])
 }
 
 

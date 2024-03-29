@@ -127,6 +127,7 @@ export class NativeInject {
       enableCacheMethodNames:()=>{
         return [
           "getSystemSetting",
+          "getWindowInfo"
         ];
       },
 
