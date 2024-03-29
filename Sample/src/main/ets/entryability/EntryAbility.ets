@@ -1,6 +1,9 @@
 import UIAbility from '@ohos.app.ability.UIAbility';
 import window from '@ohos.window';
 import Want from '@ohos.app.ability.Want';
+import wifiManager from '@ohos.wifiManager';
+import access from '@ohos.bluetooth.access';
+import geoLocationManager from '@ohos.geoLocationManager';
 import { GlobalThis, LocalUpdateManagerInstance, TaroHybridManager, wbLogger } from '@hybrid/web-container';
 import common from '@ohos.app.ability.common';
 import { TaroHybridNativeMethods } from '../pages/TaroHybridNativeMethods';
@@ -18,6 +21,9 @@ export default class EntryAbility extends UIAbility {
 
   onDestroy() {
     wbLogger.info(ABILITY_TAG, '%{public}s', 'Ability onDestroy');
+    wifiManager.off("wifiStateChange");
+    access.off('stateChange');
+    geoLocationManager.off("locationEnabledChange");
   }
 
   onNewWant(want: Want) {
