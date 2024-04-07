@@ -41,6 +41,7 @@ import { BusinessError } from '@ohos.base';
 import { Channel, MethodChannel } from '../inject_adapter/Channel';
 import { wifiManager } from '@kit.ConnectivityKit';
 import { NativeDataType, nativeUpdater } from '../inject_adapter/NativeDataUpdater';
+import { mediaquery } from '@kit.ArkUI';
 
 const CONTAINER_TAG = 'TaroWebContainer';
 
@@ -343,6 +344,13 @@ export struct TaroWebContainer {
       nativeUpdater.update(NativeDataType.locationEnabled, state)
     });
 
+    // 横竖屏的监听
+    mediaquery.matchMediaSync('(orientation: landscape)')
+      .on("change", (mediaQueryResult: mediaquery.MediaQueryResult) => {
+        let matches = mediaQueryResult.matches as boolean
+        wbLogger.debug(CONTAINER_TAG, "orientation: landscape:" + matches)
+        nativeUpdater.update(NativeDataType.deviceOrientation, matches ? "landscape" : "portrait")
+      })
   }
 
   onPageStateUpdated(): void {
