@@ -26,6 +26,8 @@ import { AlbumBackward } from '../interfaces/Media'
 import webView from '@ohos.web.webview';
 import { NativeApi } from '../inject_adapter/NativeApi';
 import { Channel, MethodChannel } from '../inject_adapter/Channel';
+import { sameLayerManager } from '../utils/SameLayerManager';
+import { NativeVideoBuilder } from './sameLayer/nativeComponents/Video/Video';
 
 const TARO_WEB_TAG = 'TaroWeb';
 
@@ -102,12 +104,12 @@ export class TaroWebController {
  */
 @Component
 export struct TaroWeb {
-
   onTitleReceive?: (title: string) => void;
   onRefreshAccessedHistory?: () => void;
   @Prop webUrl: string;
   @Prop webUrlPrefix: string;
   @Prop useCache: boolean;
+  @State componentIdArr: Array<string> = []
   @ObjectLink taroWebController: TaroWebController;
   apiAdapter: ApiAdapter = new ApiAdapter();
   scriptProxy: Object | undefined = undefined;
@@ -123,6 +125,10 @@ export struct TaroWeb {
     this.taroWebController.addRequestHandler(this.useLocalCacheResource);
 
     this.methodChannel.registerMethods('NativeApi', this.nativeAPI.nativeObj)
+
+    if (!sameLayerManager.isAlreadyRegistered('video')) {
+      sameLayerManager.registerNativeComponentBuilders('video', NativeVideoBuilder)
+    }
   }
 
   aboutToDisappear() {
@@ -150,7 +156,6 @@ export struct TaroWeb {
     }
     return null;
   }
-
   useLocalCacheResource: InterceptRequestHandler = (request) => {
     const url = request.getRequestUrl();
     if (url && this.useCache && this.webUrlPrefix) {
@@ -158,17 +163,17 @@ export struct TaroWeb {
       let path: string = url.replace(this.webUrlPrefix, '');
       path = path.split('#')[0]
       wbLogger.debug('TaroWeb', 'intercepter path=%{public}s', path)
-      let biz = MiniRawFileDataSource.getBizByPath(path)//获取业务标识
+      let biz = MiniRawFileDataSource.getBizByPath(path) //获取业务标识
       const lastVerInfo = LocalUpdateManagerInstance.getLastVersionInfo(biz)
-      if (lastVerInfo?.diskCachePath) {// 走本地缓存
-        if(!path || !MiniLocalFileDataSource.fileExist(lastVerInfo?.diskCachePath, path)) {
+      if (lastVerInfo?.diskCachePath) { // 走本地缓存
+        if (!path || !MiniLocalFileDataSource.fileExist(lastVerInfo?.diskCachePath, path)) {
           return null;
         }
         wbLogger.debug('TaroWeb', 'useLocalCacheResource path=%{public}s', path)
         return MiniLocalFileDataSource.getFileOnResponseWeb(lastVerInfo?.diskCachePath, path)
       }
-      if(lastVerInfo?.rawCachePath){// 走App内置的Raw缓存
-        let rawPath = MiniRawFileDataSource.rawfileExist(lastVerInfo.rawCachePath,path)
+      if (lastVerInfo?.rawCachePath) { // 走App内置的Raw缓存
+        let rawPath = MiniRawFileDataSource.rawfileExist(lastVerInfo.rawCachePath, path)
         if (!path || rawPath.trim() === '') {
           return null;
         }
@@ -180,65 +185,82 @@ export struct TaroWeb {
   }
 
   build() {
-    Web({ src: this.webUrl, controller: this.taroWebController.webController })
-      .fileAccess(true)
-      .domStorageAccess(true)
-      .mixedMode(MixedMode.All)
-      .databaseAccess(true)
-      .geolocationAccess(true)
-      .javaScriptAccess(true)
-      .javaScriptProxy({
-        object: {
-          nativeMethod: (channelType: string, objectJson: string) => {
-            wbLogger.debug('nativeApi', `channelType ${channelType} objectJson(${objectJson})`)
-            return this.channel.call(channelType, objectJson) as object
+    Stack() {
+      ForEach(this.componentIdArr, (componentId: string) => {
+        NodeContainer(sameLayerManager.getNodeController(componentId))
+      }, (componentId: string) => componentId)
+      Web({ src: this.webUrl, controller: this.taroWebController.webController })
+        .enableNativeEmbedMode(true)
+        .onNativeEmbedLifecycleChange((embed) => {
+          sameLayerManager.handleNativeEmbedLifecycleChange(embed, () => {
+            this.componentIdArr.push(embed.info?.id!)
+          }, () => {
+            this.componentIdArr.splice(this.componentIdArr.indexOf(embed.info?.id!), 1)
+          })
+        })
+        .onNativeEmbedGestureEvent((touch) => {
+          sameLayerManager.handleNativeEmbedGestureEvent(touch, this.componentIdArr)
+        })
+        .fileAccess(true)
+        .domStorageAccess(true)
+        .mixedMode(MixedMode.All)
+        .databaseAccess(true)
+        .geolocationAccess(true)
+        .javaScriptAccess(true)
+        .javaScriptProxy({
+          object: {
+            nativeMethod: (channelType: string, objectJson: string) => {
+              wbLogger.debug('nativeApi', `channelType ${channelType} objectJson(${objectJson})`)
+              return this.channel.call(channelType, objectJson) as object
+            },
+            transferSameLayerArgs: sameLayerManager.transferSameLayerArgs
           },
-        },
-        name: 'JSBridge',
-        methodList: ['nativeMethod'],
-        controller: this.taroWebController.webController,
-      })
-      .onConsole((event) => {
-        wbLogger.debug(TARO_WEB_TAG, `${event?.message.getMessage()}`)
-        return false
-      })
-      .zoomAccess(false)
-      .horizontalScrollBarAccess(false)
-      .onPageBegin(() => {
-        try {
-          this.taroWebController.webController.runJavaScript(
-            this.apiAdapter.getRunJavaScript(),
-            (error, result) => {
-              if (error) {
-                wbLogger.error(TARO_WEB_TAG, `Run JavaScript error: ${JSON.stringify(error)}`)
-                return;
-              }
-              if (result) {
-                wbLogger.info(TARO_WEB_TAG, `The asFinish() return value is: ${result}`)
-              }
-            });
-        } catch (error) {
-          wbLogger.error(TARO_WEB_TAG, `runJavaScript error: ${(error as BusinessError).message}`);
-        }
-      })
-      .onInterceptRequest((event) => { // 当web组件加载url之前触发该回调，用于拦截url并返回响应数据。
-        const request = event?.request;
-        if (!request) {
-          return null;
-        }
-        return this.taroWebController.interceptRequest(request);
-      })
-      .onSslErrorEventReceive((event) => { // 通知用户加载资源时发生SSL错误
-        wbLogger.info(TARO_WEB_TAG, `onSslErrorEventReceive:${event.error}`)
-        event.handler.handleConfirm() // 通知Web组件继续使用SSL证书
-        return true
-      })
-      .onTitleReceive((event) => {
-        this.onTitleReceive && this.onTitleReceive(event?.title ?? '')
-      })
-      .onRefreshAccessedHistory(() => {
-        this.onRefreshAccessedHistory && this.onRefreshAccessedHistory();
-      })
+          name: 'JSBridge',
+          methodList: ['nativeMethod', 'transferSameLayerArgs'],
+          controller: this.taroWebController.webController,
+        })
+        .onConsole((event) => {
+          wbLogger.debug(TARO_WEB_TAG, `${event?.message.getMessage()}`)
+          return false
+        })
+        .zoomAccess(false)
+        .horizontalScrollBarAccess(false)
+        .onPageBegin(() => {
+          try {
+            this.taroWebController.webController.runJavaScript(
+              this.apiAdapter.getRunJavaScript(),
+              (error, result) => {
+                if (error) {
+                  wbLogger.error(TARO_WEB_TAG, `Run JavaScript error: ${JSON.stringify(error)}`)
+                  return;
+                }
+                if (result) {
+                  wbLogger.info(TARO_WEB_TAG, `The asFinish() return value is: ${result}`)
+                }
+              });
+          } catch (error) {
+            wbLogger.error(TARO_WEB_TAG, `runJavaScript error: ${(error as BusinessError).message}`);
+          }
+        })
+        .onInterceptRequest((event) => { // 当web组件加载url之前触发该回调，用于拦截url并返回响应数据。
+          const request = event?.request;
+          if (!request) {
+            return null;
+          }
+          return this.taroWebController.interceptRequest(request);
+        })
+        .onSslErrorEventReceive((event) => { // 通知用户加载资源时发生SSL错误
+          wbLogger.info(TARO_WEB_TAG, `onSslErrorEventReceive:${event.error}`)
+          event.handler.handleConfirm() // 通知Web组件继续使用SSL证书
+          return true
+        })
+        .onTitleReceive((event) => {
+          this.onTitleReceive && this.onTitleReceive(event?.title ?? '')
+        })
+        .onRefreshAccessedHistory(() => {
+          this.onRefreshAccessedHistory && this.onRefreshAccessedHistory();
+        })
       // .webLite(true)  // 需要 osChannel sdk
+    }
   }
 }

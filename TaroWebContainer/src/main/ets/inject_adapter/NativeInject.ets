@@ -280,7 +280,7 @@ export class NativeInject {
                 subscriptionsSetting.mainSwitch = false
               })
             }).catch((err: Error) => {
-              console.log('requestSubscribeMessage', JSON.stringify(err))
+              wbLogger.debug(NATIVE_TAG, 'requestSubscribeMessage %{public}s', JSON.stringify(err))
             })
             const subscribeCode = await getMassageList()
             subscriptionsSetting.itemSettings = subscribeCode.massageList
@@ -341,7 +341,7 @@ export class NativeInject {
                 subscriptionsSetting.mainSwitch = false
               })
             }).catch((err: Error) => {
-              console.log('requestSubscribeMessage', JSON.stringify(err))
+              wbLogger.debug(NATIVE_TAG, 'requestSubscribeMessage %{public}s', JSON.stringify(err))
             })
             const subscribeCode = await getMassageList()
             subscriptionsSetting.itemSettings = subscribeCode.massageList
@@ -383,7 +383,7 @@ export class NativeInject {
           const enableCode = await enableNotification();
           if (enableCode.errMsg === 'success') {
             const addSlotCode = await addNotificationManagerSlot(options)
-            console.log('requestSubscribeMessage', JSON.stringify(addSlotCode))
+            wbLogger.debug(NATIVE_TAG, 'requestSubscribeMessage %{public}s', JSON.stringify(addSlotCode))
             if (addSlotCode.errMsg == 'success') {
               options.success({ errMsg: `${apiName}:ok` });
             } else {
