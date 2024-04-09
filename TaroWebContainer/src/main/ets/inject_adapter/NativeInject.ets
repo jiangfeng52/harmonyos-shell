@@ -63,6 +63,7 @@ import util from '@ohos.util';
 import { selectMediaAssets } from '../utils/MediaUtil';
 import { MediaItemData, ChooseAlbumResult, chooseAlbumOptions } from '../interfaces/Media';
 import { nativeUpdater } from './NativeDataUpdater';
+import { TaroHybridManager } from '../tarohybrid/TaroHybridManager';
 
 
 const NATIVE_TAG = 'NativeInject';
@@ -125,10 +126,16 @@ export class NativeInject {
        * @return string[] Api的方法名数组
        */
       enableCacheMethodNames:()=>{
-        return [
+
+        let resArr: Array<string> = []
+        // 添加shell内部默认的实现
+        resArr.push(...[
           "getSystemSetting",
           "getWindowInfo"
-        ];
+        ])
+        // 添加外部扩展的实现
+        resArr.push(...TaroHybridManager.getCacheSyncMethods().convertToArray())
+        return resArr
       },
 
       /**

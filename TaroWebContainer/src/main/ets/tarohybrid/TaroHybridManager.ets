@@ -6,6 +6,7 @@ import { TaroHybridUtils } from './TaroHybridUtils';
 import { GlobalThis } from '../utils/GlobalThis';
 import { TaroWebController } from '../components/TaroWeb';
 import { InjectObject } from '../interfaces/InjectObject';
+import { ArrayList } from '@kit.ArkTS';
 
 export class TaroHybridCoreInstance {
   private builderNode: BuilderNode<TaroHybridCoreBuilderData[]> | undefined
@@ -43,6 +44,19 @@ export class TaroHybridManager {
   private static builderInstanceMaps: HashMap<string, TaroHybridCoreInstance> = new HashMap();
   // 回收机制：引用计数
   private static referenceCountMap: HashMap<string, number> = new HashMap();
+
+  // 用于保存需要使用缓存的同步方法
+  private static cacheSyncMethods: ArrayList<string> = new ArrayList()
+
+  static setCacheSyncMethods(list: ArrayList<string>) {
+    list.forEach((v) => {
+      TaroHybridManager.cacheSyncMethods.add(v)
+    })
+  }
+
+  static getCacheSyncMethods(): ArrayList<string> {
+    return TaroHybridManager.cacheSyncMethods
+  }
 
   static init(options: TaroHybridManagerOptions){
     TaroHybridManager.options = options
