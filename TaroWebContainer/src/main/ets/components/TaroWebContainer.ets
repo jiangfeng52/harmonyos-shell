@@ -85,6 +85,8 @@ export struct TaroWebContainer {
   @Prop webUrlPrefix: string;
   // 使用缓存
   @Prop useCache: boolean = true;
+  // 导航栏初始化visible值
+  @Prop navigationInitVisible: boolean = true;
   // 显示胶囊
   @Prop showCapsule: boolean = true;
   // 胶囊按钮点击后跳转的页面
@@ -261,6 +263,7 @@ export struct TaroWebContainer {
   aboutToAppear() {
     // 加载组件时，url更新
     this.originIndexUrl = this.webUrl;
+    this.navigationBarData.visible = this.navigationInitVisible
     this.handleWantInfo();
     let context = GlobalThis.getInstance().getContext('context') as common.UIAbilityContext;
     if (!context) {

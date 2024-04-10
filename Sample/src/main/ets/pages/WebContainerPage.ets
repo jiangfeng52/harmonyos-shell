@@ -65,6 +65,7 @@ struct WebContainerPage {
         taroWebController: this.taroWebController,
         isFullScreen: false, // 是否全屏显示
         injectObj: this.nativeObj, // 注入对象
+        navigationInitVisible: true, // 导航栏是否显示
       })
         .width('100%')
         .height('100%')

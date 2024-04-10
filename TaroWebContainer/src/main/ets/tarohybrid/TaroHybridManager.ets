@@ -7,6 +7,7 @@ import { GlobalThis } from '../utils/GlobalThis';
 import { TaroWebController } from '../components/TaroWeb';
 import { InjectObject } from '../interfaces/InjectObject';
 import { ArrayList } from '@kit.ArkTS';
+import { wbLogger } from '../utils/Logger';
 
 export class TaroHybridCoreInstance {
   private builderNode: BuilderNode<TaroHybridCoreBuilderData[]> | undefined
@@ -28,8 +29,24 @@ export class TaroHybridCoreInstance {
           wrapBuilder<TaroHybridCoreBuilderData[]>(TaroHybridCoreBuilder),
           this.builderData
         )
+      wbLogger.debug(
+        'TaroHybrid',
+        '%{public}s create BuilderNode',
+        [this.builderData.indexHtmlPath]);
     }
     return this.builderNode
+  }
+
+  dispose(){
+    if (this.builderNode) {
+      this.builderNode.dispose()
+      this.builderNode = undefined
+
+      wbLogger.debug(
+        'TaroHybrid',
+        '%{public}s dispose BuilderNode',
+        [this.builderData.indexHtmlPath]);
+    }
   }
 }
 
@@ -95,7 +112,8 @@ export class TaroHybridManager {
     } else {
       // 回收
       TaroHybridManager.referenceCountMap.remove(indexHtmlPath)
-      TaroHybridManager.builderInstanceMaps.remove(indexHtmlPath)
+      const instance = TaroHybridManager.builderInstanceMaps.remove(indexHtmlPath)
+      instance.dispose()
     }
   }
 
