@@ -47,7 +47,7 @@ struct TaroHybridCore {
   @State debugLayoutVisible: Visibility = Visibility.None
 
   private navigationBarBackPressed: (taroWebController: TaroWebController)=>void = (taroWebController: TaroWebController)=>{
-    const hasHandled = TaroHybridManager.onBack(taroWebController)
+    const hasHandled = TaroHybridManager.onBack(taroWebController, this.indexHtmlPath, this.taroPath)
     if(!hasHandled) {
       router.back()
     }

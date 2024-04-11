@@ -121,7 +121,7 @@ export class TaroHybridManager {
   }
 
 
-  static onBack(taroWebController: TaroWebController): boolean {
+  static onBack(taroWebController: TaroWebController, indexHtmlPath: string, rootTaroPage: string): boolean {
     // const instance = TaroHybridManager.getCoreInstance(indexHtmlPath)
     // if (!instance) {
     //   return false;
@@ -129,7 +129,16 @@ export class TaroHybridManager {
     // const data = instance.builderData
 
     // let controller = data.taroWebController;
+
+    const rootPagePath = `${indexHtmlPath}#${rootTaroPage}`
+
     let curUrl = taroWebController.webController.getUrl();
+
+    // 当前如果是根页面，即使accessBackward = true，也不返回了，模拟原生的体验
+    if(curUrl.includes(rootPagePath)) {
+      // 回退到原生
+      return false;
+    }
 
     if (curUrl?.endsWith('?from=native')) {  //web回退到原生
       // Web先返回
