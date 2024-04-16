@@ -62,7 +62,7 @@ class EmbedNodeController extends NodeController {
     }
     // 未定义根节点则创建
     if (!this.rootNode) {
-      const builder = sameLayerArgsMap.get(this.componentId);
+      const builder = nativeComponentBuilderMap.get(this.embedType);
       const originalArgs = sameLayerArgsMap.get(this.componentId);
       if (builder && originalArgs) {
           this.rootNode = new BuilderNode<[Object]>(uiContext, { surfaceId: this.surfaceId, type: this.renderType });
@@ -148,8 +148,6 @@ class SameLayerManager {
     if (embed.status == NativeEmbedStatus.CREATE) {
       wbLogger.info(TAG, 'onNativeEmbedLifecycleChange CREATE')
       const nodeController = new EmbedNodeController();
-      wbLogger.info(TAG, embed.info.width.toString())
-      wbLogger.info(TAG, embed.info.height.toString())
       nodeController.setRenderParams({
         embedId: embed.embedId as string,
         embedType: embed.info.type,
