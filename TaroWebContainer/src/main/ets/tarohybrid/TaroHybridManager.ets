@@ -12,12 +12,13 @@ export class TaroHybridCoreInstance {
   private builderNode: BuilderNode<TaroHybridCoreBuilderData[]> | undefined
   builderData: TaroHybridCoreBuilderData
 
-  constructor(domain: string, indexHtmlPath: string, taroPath: string) {
+  constructor(domain: string, indexHtmlPath: string, taroPath: string, injectObj: InjectObject) {
     this.builderData = {
       domain: domain,
       indexHtmlPath: indexHtmlPath,
       taroPath: taroPath,
-      taroWebController: new TaroWebController()
+      taroWebController: new TaroWebController(),
+      injectObj: injectObj
     }
   }
 
@@ -52,7 +53,7 @@ export class TaroHybridCoreInstance {
 export interface TaroHybridManagerOptions {
   uiAbilityContex: common.UIAbilityContext
   domain: string
-  injectNativeMethod: (uiAbilityContext: common.UIAbilityContext) => InjectObject
+  injectNativeMethod: (indexHtmlPath: string, uiAbilityContext: common.UIAbilityContext) => InjectObject
 }
 
 export class TaroHybridManager {
@@ -65,9 +66,6 @@ export class TaroHybridManager {
     TaroHybridManager.options = options
     GlobalThis.getInstance().setContext('context', options.uiAbilityContex);
   }
-  static getInjectNativeMethod(): InjectObject{
-    return TaroHybridManager?.options?.injectNativeMethod(GlobalThis.getInstance().getContext('context') as common.UIAbilityContext) ?? {}
-  }
 
   static preLoader(uiContext: UIContext, indexHtmlPath: string, taroPath: string){
     const instance = TaroHybridManager.getOrCreateCoreInstance(indexHtmlPath, taroPath)
@@ -79,7 +77,8 @@ export class TaroHybridManager {
       builderInstance = new TaroHybridCoreInstance(
         TaroHybridManager?.options?.domain??'',
         indexHtmlPath,
-        taroPath
+        taroPath,
+        TaroHybridManager?.options?.injectNativeMethod(indexHtmlPath, GlobalThis.getInstance().getContext('context') as common.UIAbilityContext) ?? {}
       )
       // 一定要先保存到Map里，再build
       TaroHybridManager.builderInstanceMaps.set(indexHtmlPath, builderInstance)

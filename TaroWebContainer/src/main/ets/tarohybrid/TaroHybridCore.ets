@@ -15,6 +15,7 @@ export interface TaroHybridCoreBuilderData {
   indexHtmlPath: string
   taroPath: string
   taroWebController: TaroWebController
+  injectObj: InjectObject
 }
 
 @Builder
@@ -34,7 +35,7 @@ struct TaroHybridCore {
   @State taroWebController: TaroWebController = TaroHybridManager.getCoreInstance(this.indexHtmlPath)?.builderData.taroWebController ?? new TaroWebController()
   @State isDebug: boolean = (GlobalThis.getInstance().getContext('context') as common.UIAbilityContext).applicationInfo.debug
   private useCache: boolean = true
-  injectObj: InjectObject = TaroHybridManager.getInjectNativeMethod()
+  injectObj: InjectObject = TaroHybridManager.getCoreInstance(this.indexHtmlPath)?.builderData.injectObj ?? {}
   // 构造时保存kvStore实例到GlobalThis中
   storage: Storage = new Storage(GlobalThis.getInstance().getContext('context') as common.UIAbilityContext,
     bundleManager.getBundleInfoForSelfSync(bundleManager.BundleFlag.GET_BUNDLE_INFO_DEFAULT).name)
