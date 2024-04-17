@@ -55,16 +55,13 @@ struct TaroHybridCore {
 
   aboutToAppear(): void {
     if(this.isDebug) {
-      this.devDomain = TaroHybridUtils.getSP(`${this.indexHtmlPath}_devdomain`, this.domain) as string
+      this.devDomain = TaroHybridUtils.getSP(`${this.indexHtmlPath}_devdomain`, '') as string
       this.devUseCache = TaroHybridUtils.getSP(`${this.indexHtmlPath}_useCache`, this.useCache) as boolean
     }
   }
 
   webUrl(){
     let webUrl = `${this.domain}${this.indexHtmlPath}#${this.taroPath}`
-    if (this.isDebug && !this.devUseCache) {
-      webUrl = `${this.devDomain}${this.indexHtmlPath}#${this.taroPath}`
-    }
     return TaroHybridUtils.addQueryParamToHash(webUrl, 'from', 'native')
   }
 
@@ -73,6 +70,7 @@ struct TaroHybridCore {
     TaroWebContainer({
       webUrl: this.webUrl(),
       webUrlPrefix: `${this.domain}/`,
+      devDomain:this.devDomain,
       // want: this.want, // want信息
       taroWebController: this.taroWebController,
       useCache: this.isDebug ? this.devUseCache : this.useCache,

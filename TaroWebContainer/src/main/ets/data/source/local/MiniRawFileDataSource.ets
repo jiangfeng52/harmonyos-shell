@@ -117,6 +117,45 @@ export class MiniRawFileDataSource {
     return ''
   }
 
+  static getResponseWebFromFd(file: string, responseWeb : WebResourceResponse): WebResourceResponse{
+
+    let mimeType: string = MiniRawFileDataSource.getMimetype(file);
+
+    responseWeb.setResponseData(FileUtils.getFdFromUriOrSandBoxPath(file));
+    responseWeb.setResponseEncoding('utf-8')
+    responseWeb.setResponseMimeType(mimeType)
+    responseWeb.setResponseIsReady(true)
+    responseWeb.setResponseCode(200);
+    responseWeb.setReasonMessage('OK');
+    return responseWeb
+  }
+
+  private static getMimetype(file: string) {
+    let mimeType: string;
+    if (file.endsWith('.js')) {
+      mimeType = "application/javascript";
+    }
+    else if (file.endsWith('.css')) {
+      mimeType = "text/css";
+    }
+    else if (file.endsWith('.html') || file.endsWith(".htm")) {
+      mimeType = "text/html";
+    }
+    else if (file.endsWith('.jpg') || file.endsWith('.jpeg')) {
+      mimeType = "image/jpeg";
+    }
+    else if (file.endsWith('.png')) {
+      mimeType = "image/png";
+    }
+    else if (file.endsWith('.txt')) {
+      mimeType = "text/plain";
+    }
+    else {
+      mimeType = "application/octet-stream"; // 默认二进制流
+    }
+    return mimeType;
+  }
+
   static getRawfileOnResponseWeb(file: string): WebResourceResponse{
     const responseWeb = new WebResourceResponse();
     const headers: Array<Header> = [
@@ -129,28 +168,7 @@ export class MiniRawFileDataSource {
         headerValue:"no-cache"
       }
     ]
-    let mimeType: string;
-    if (file.endsWith('.js')) {
-      mimeType = "application/javascript";
-    }
-    else if(file.endsWith('.css')){
-      mimeType = "text/css";
-    }
-    else if(file.endsWith('.html') || file.endsWith(".htm")) {
-      mimeType = "text/html";
-    }
-    else if(file.endsWith('.jpg') || file.endsWith('.jpeg')){
-      mimeType = "image/jpeg";
-    }
-    else if(file.endsWith('.png')){
-      mimeType = "image/png";
-    }
-    else if(file.endsWith('.txt')){
-      mimeType = "text/plain";
-    }
-    else {
-      mimeType = "application/octet-stream"; // 默认二进制流
-    }
+    let mimeType: string = MiniRawFileDataSource.getMimetype(file);
     responseWeb.setResponseHeader(headers)
     responseWeb.setResponseData($rawfile(file));
     responseWeb.setResponseEncoding('utf-8')
