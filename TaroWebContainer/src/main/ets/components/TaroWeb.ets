@@ -28,6 +28,7 @@ import { NativeApi } from '../inject_adapter/NativeApi';
 import { Channel, MethodChannel } from '../inject_adapter/Channel';
 import { sameLayerManager } from '../utils/SameLayerManager';
 import { NativeVideoBuilder } from './sameLayer/nativeComponents/Video/Video';
+import { setupGlobalInterceptor } from '../utils/GlobalInterceptor';
 
 const TARO_WEB_TAG = 'TaroWeb';
 
@@ -129,6 +130,9 @@ export struct TaroWeb {
     if (!sameLayerManager.isAlreadyRegistered('video')) {
       sameLayerManager.registerNativeComponentBuilders('video', NativeVideoBuilder)
     }
+
+    //涉及advancdApi全局拦截器
+    setupGlobalInterceptor()
   }
 
   aboutToDisappear() {
