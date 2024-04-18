@@ -10,8 +10,7 @@ import image from '@ohos.multimedia.image'
 import bundleManager from '@ohos.bundle.bundleManager';
 import { CompressorResponseCode, CompressQuality, VideoCompressor } from '@ohos/videocompressor';
 import { IMediaData, MediaFile, ChooseAlbumResult, ChooseMediaResults, MediaItemData, chooseAlbumOptions } from '../interfaces/Media'
-import { requestPermission } from '../utils/PermissionMapScopeUtil';
-import { Permissions } from '@ohos.abilityAccessCtrl';
+import picker from '@ohos.file.picker';
 import { ChooseMediaOptions } from '../interfaces/InjectObject';
 import { switchHapSandBoxToInternal } from './InternalPath';
 import camera from '@ohos.multimedia.camera';
@@ -398,6 +397,9 @@ export async function selectMediaAssets(options: ChooseMediaOptions, chooseAlbum
     // 如果mediaType的项多于2项或者包含mix, 则拉起的摄像头允许拍照和录像
     const photoType = (options.mediaType.length >= 2 || (options.mediaType || []).includes('mix')) ?
     PHOTO_TYPE.IMAGE_VIDEO : (options.mediaType[0] === 'image' ? PHOTO_TYPE.IMAGE : PHOTO_TYPE.VIDEO)
+    options.sizeType ||= ['original', 'compressed'];
+    options.sizeType = Array.from(new Set(options.sizeType));
+    let useOriginal = (options.sizeType.length === 2) || (options.sizeType[0] === 'original');
 
     if (options.sourceType === 'camera') {
       let chosenUris: string[] = [];
@@ -422,9 +424,6 @@ export async function selectMediaAssets(options: ChooseMediaOptions, chooseAlbum
           height: assetType === 'video' ? Number(asset && asset.get(photoAccessHelper.PhotoKeys.HEIGHT) || 0) : 0,
         }
       ]
-      options.sizeType ||= ['original', 'compressed'];
-      options.sizeType = Array.from(new Set(options.sizeType));
-      let useOriginal = (options.sizeType.length === 2) || (options.sizeType[0] === 'original');
 
       // chooseImage在设置sizeType=['original', 'compressed']时，拍照的场景下弹出原图设置界面
       if (apiName === 'chooseImage' && options.sizeType.length === 2 && assetType === 'image') {
@@ -450,48 +449,43 @@ export async function selectMediaAssets(options: ChooseMediaOptions, chooseAlbum
         errMsg: `${apiName}:ok`
       })
     } else {
-      // 申请读取图库图片的权限
-      const permissionsParams: Permissions[] = ['ohos.permission.READ_IMAGEVIDEO']
-      const permissionsResults = await requestPermission(permissionsParams);
-      for (let i = 0; i < permissionsResults.length; i++) {
-        if (permissionsResults[i] !== 0) {
-          options.fail({ errMsg: `${apiName}:permission fail` })
-          return
-        }
-      }
-      // 获取图库的数量
-      const list = await getPhotoAssetList();
-      const filteredMedia = filterPhotoVideo(list, photoType);
-      if (!filteredMedia) {
-        options.fail({ errMsg: `${apiName}:get uri fail` })
-        return
-      }
-
-      // 打开图库组件进行选择
+      let PhotoSelectOptions = new picker.PhotoSelectOptions();
+      PhotoSelectOptions.MIMEType = coverMediaType(options.mediaType);
+      PhotoSelectOptions.maxSelectNumber = options.count;
+      let photoPicker = new picker.PhotoViewPicker();
+      let PhotoSelectResult: picker.PhotoSelectResult = await photoPicker.select(PhotoSelectOptions)
+      const context = GlobalThis.getInstance().getContext('context') as common.UIAbilityContext;
+      let phAccessHelper = photoAccessHelper.getPhotoAccessHelper(context);
       const mediaItemList: MediaItemData[] = []
-      for (const asset of filteredMedia) {
-        let duration: number = 0;
-        if (asset.photoType === photoAccessHelper.PhotoType.VIDEO) {
-          duration = Number(asset.get(photoAccessHelper.PhotoKeys.DURATION));
+      for (const uri of PhotoSelectResult.photoUris) {
+        let predicates: dataSharePredicates.DataSharePredicates = new dataSharePredicates.DataSharePredicates();
+        predicates.equalTo('uri', uri);
+        let fetchOption: photoAccessHelper.FetchOptions = {
+          fetchColumns: ['title', 'width', 'height'],
+          predicates: predicates
+        };
+        let fetchResult: photoAccessHelper.FetchResult<photoAccessHelper.PhotoAsset> = await phAccessHelper.getAssets(fetchOption);
+        let assertCount: number = await fetchResult.getCount();
+        if(assertCount > 0){
+          let asset: photoAccessHelper.PhotoAsset = await fetchResult.getFirstObject();
+          let duration: number = 0;
+          if (asset.photoType === photoAccessHelper.PhotoType.VIDEO) {
+            duration = Number(asset.get(photoAccessHelper.PhotoKeys.DURATION));
+          }
+          const mediaData: IMediaData = {
+            originPath: asset.uri,
+            type: asset.photoType === photoAccessHelper.PhotoType.IMAGE ? 'image' : 'video',
+            duration: duration,
+            originSize: Number(asset.get(photoAccessHelper.PhotoKeys.TITLE)),
+            height: Number(asset.get(photoAccessHelper.PhotoKeys.HEIGHT)),
+            width: Number(asset.get(photoAccessHelper.PhotoKeys.WIDTH)),
+          }
+          mediaItemList.push(new MediaItemData(mediaData))
         }
-        const mediaData: IMediaData = {
-          originPath: asset.uri,
-          type: asset.photoType === photoAccessHelper.PhotoType.IMAGE ? 'image' : 'video',
-          duration: duration,
-          originSize: Number(asset.get(photoAccessHelper.PhotoKeys.SIZE)),
-          height: Number(asset.get(photoAccessHelper.PhotoKeys.HEIGHT)),
-          width: Number(asset.get(photoAccessHelper.PhotoKeys.WIDTH)),
-        }
-        mediaItemList.push(new MediaItemData(mediaData))
       }
 
       try {
-        const chooseInfo = await chooseAlbumCallback({
-          count: options.count || 9,
-          sizeType: options.sizeType || ['original', 'compressed'],
-          mediaType: options.mediaType,
-        }, mediaItemList)
-        const ret = await getChooseMediaRet(chooseInfo.tempFiles, chooseInfo.isOriginal)
+        const ret = await getChooseMediaRet(mediaItemList, useOriginal)
         options.success({
           tempFilePaths: ret.tempFilePaths,
           tempFiles: ret.tempFiles,
@@ -505,6 +499,19 @@ export async function selectMediaAssets(options: ChooseMediaOptions, chooseAlbum
   } catch (err) {
     options.fail({ errMsg: `${err}` })
   }
+}
+
+function coverMediaType(options: string[]){
+  if(options.includes('media') && options.includes('video')){
+    return picker.PhotoViewMIMETypes.IMAGE_VIDEO_TYPE
+  }
+  if(!options.includes('media') && options.includes('video')){
+    return picker.PhotoViewMIMETypes.VIDEO_TYPE
+  }
+  if(options.includes('media') && !options.includes('video')){
+    return picker.PhotoViewMIMETypes.IMAGE_TYPE
+  }
+  return picker.PhotoViewMIMETypes.IMAGE_VIDEO_TYPE
 }
 
 export function getThumbnailPixelMap(originPath: string): Promise<PixelMap> {
