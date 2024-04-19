@@ -22,6 +22,32 @@ export class FileUtils {
     throw new Error('file is not exist')
   }
 
+  static getMimetype(fileName: string) {
+    let mimeType: string;
+    if (fileName.endsWith('.js')) {
+      mimeType = "application/javascript";
+    }
+    else if (fileName.endsWith('.css')) {
+      mimeType = "text/css";
+    }
+    else if (fileName.endsWith('.html') || fileName.endsWith(".htm")) {
+      mimeType = "text/html";
+    }
+    else if (fileName.endsWith('.jpg') || fileName.endsWith('.jpeg')) {
+      mimeType = "image/jpeg";
+    }
+    else if (fileName.endsWith('.png')) {
+      mimeType = "image/png";
+    }
+    else if (fileName.endsWith('.txt')) {
+      mimeType = "text/plain";
+    }
+    else {
+      mimeType = "application/octet-stream"; // 默认二进制流
+    }
+    return mimeType;
+  }
+
   static getFileStatFromUri(path: string) {
     const tempFile = fs.openSync(path, fs.OpenMode.READ_ONLY);
     return fs.statSync(tempFile.fd);

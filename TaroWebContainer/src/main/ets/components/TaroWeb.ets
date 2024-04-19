@@ -109,7 +109,6 @@ export struct TaroWeb {
   handleDebugRequestHost?: (request: WebResourceRequest) => WebResourceResponse | null;
   onRefreshAccessedHistory?: () => void;
   @Prop webUrl: string;
-  @Prop devDomain: string;
   @Prop webUrlPrefix: string;
   @Prop useCache: boolean;
   @State componentIdArr: Array<string> = []

@@ -47,8 +47,6 @@ export struct TaroWebContainer {
   @Prop webUrl: string;
   // 资源url的前缀
   @Prop webUrlPrefix: string;
-  //映射到测试环境定义的host
-  @Prop devDomain: string;
   // 使用缓存
   @Prop useCache: boolean = true;
   // 导航栏初始化visible值
@@ -185,7 +183,6 @@ export struct TaroWebContainer {
       TaroWeb({
         webUrl: this.webUrl,
         webUrlPrefix: this.webUrlPrefix,
-        devDomain: this.devDomain,
         handleDebugRequestHost: this.handleDebugRequestHost,
         useCache: this.useCache,
         apiAdapter: this.adapter,

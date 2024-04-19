@@ -1,4 +1,5 @@
 import http from '@ohos.net.http'
+import { FileUtils } from '../../../utils/FileUtils';
 import { wbLogger } from '../../../utils/Logger';
 import { MiniRawFileDataSource } from '../local/MiniRawFileDataSource';
 
@@ -28,7 +29,7 @@ export class DebugRequestHostHandlerDataSource {
         wbLogger.debug("CrossOrigin", 'download succeed: %{public}s ', url)
         let ret : DebugHttpResult | null = null
         if (data.result instanceof ArrayBuffer){
-          ret = new DebugHttpResult(data.result,MiniRawFileDataSource.getMimetype(url))
+          ret = new DebugHttpResult(data.result,FileUtils.getMimetype(url))
         }
         resolve(ret)
       }).catch((err: Error) => {

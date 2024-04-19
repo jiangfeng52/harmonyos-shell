@@ -116,7 +116,6 @@ struct TaroHybridCore {
     TaroWebContainer({
       webUrl: this.webUrl(),
       webUrlPrefix: `${this.domain}/`,
-      devDomain:this.devDomain,
       // want: this.want, // want信息
       taroWebController: this.taroWebController,
       useCache: this.isDebug ? this.devUseCache : this.useCache,
