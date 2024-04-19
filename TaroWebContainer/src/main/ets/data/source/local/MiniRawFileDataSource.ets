@@ -130,7 +130,7 @@ export class MiniRawFileDataSource {
     return responseWeb
   }
 
-  private static getMimetype(file: string) {
+  public static getMimetype(file: string) {
     let mimeType: string;
     if (file.endsWith('.js')) {
       mimeType = "application/javascript";

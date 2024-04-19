@@ -9,6 +9,8 @@ import { TaroHybridManager } from './TaroHybridManager';
 import { TaroHybridUtils } from './TaroHybridUtils';
 import bundleManager from '@ohos.bundle.bundleManager';
 import router from '@ohos.router';
+import { wbLogger } from '../utils/Logger';
+import { DebugRequestHostHandlerDataSource } from '../data/source/network/DebugRequestHostHandlerDataSource';
 
 export interface TaroHybridCoreBuilderData {
   domain: string
@@ -47,6 +49,8 @@ struct TaroHybridCore {
   private debugLayoutHeight: number = 300;
   @State debugLayoutVisible: Visibility = Visibility.None
 
+  private debugRequestHostHandlerDataSource : DebugRequestHostHandlerDataSource = new DebugRequestHostHandlerDataSource()
+
   private navigationBarBackPressed: (taroWebController: TaroWebController)=>void = (taroWebController: TaroWebController)=>{
     const hasHandled = TaroHybridManager.onBack(taroWebController, this.indexHtmlPath, this.taroPath)
     if(!hasHandled) {
@@ -66,6 +70,47 @@ struct TaroHybridCore {
     return TaroHybridUtils.addQueryParamToHash(webUrl, 'from', 'native')
   }
 
+  private handleDebugRequestHost = (request: WebResourceRequest) =>  {
+
+    if(!this.isDebug){
+      return null
+    }
+
+    const url = request.getRequestUrl();
+    wbLogger.debug("CrossOrigin","拦截器收到的request: "+url);
+
+    if ( url.search(this.domain) != -1 ) {
+      let actualRequestUrl = url.replace(this.domain,this.devDomain)
+      //去掉Fragment部分
+      actualRequestUrl = actualRequestUrl.split('#')[0]
+      let responseWeb = new WebResourceResponse();
+      let headers = request.getRequestHeader()
+      responseWeb.setResponseHeader(headers)
+      responseWeb.setResponseIsReady(false)
+
+
+      // 本地请求数据，将结果包装成WebResourceResponse返回
+      this.debugRequestHostHandlerDataSource.getResource(headers,actualRequestUrl).then(ret => {
+        if(ret.result == null){
+          responseWeb.setResponseCode(0);
+          responseWeb.setReasonMessage('http.get resource failed');
+        }else{
+          responseWeb.setResponseCode(200);
+          responseWeb.setReasonMessage('OK');
+        }
+        responseWeb.setResponseData(ret.result);
+        responseWeb.setResponseEncoding('utf-8')
+        responseWeb.setResponseMimeType(ret.mimeType)
+        responseWeb.setResponseIsReady(true)
+        return responseWeb
+      })
+
+      return responseWeb
+    }
+
+    return null;
+  }
+
   @Builder
   taroWebLayout(){
     TaroWebContainer({
@@ -78,7 +123,8 @@ struct TaroHybridCore {
       isFullScreen: false, // 是否全屏显示
       injectObj: this.injectObj,
       showCapsule: false,
-      onNavigationBarBackPressed: this.navigationBarBackPressed
+      onNavigationBarBackPressed: this.navigationBarBackPressed,
+      handleDebugRequestHost:this.handleDebugRequestHost
     })
       .width('100%')
       .height('100%')

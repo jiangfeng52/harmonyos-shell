@@ -28,9 +28,7 @@ import { NativeApi } from '../inject_adapter/NativeApi';
 import { Channel, MethodChannel } from '../inject_adapter/Channel';
 import { sameLayerManager } from '../utils/SameLayerManager';
 import { NativeVideoBuilder } from './sameLayer/nativeComponents/Video/Video';
-import { CORSHelperDataSource } from '../data/source/network/CORSHelperDataSource';
-import { uri } from '@kit.ArkTS';
-import { common } from '@kit.AbilityKit';
+
 
 const TARO_WEB_TAG = 'TaroWeb';
 
@@ -108,6 +106,7 @@ export class TaroWebController {
 @Component
 export struct TaroWeb {
   onTitleReceive?: (title: string) => void;
+  handleDebugRequestHost?: (request: WebResourceRequest) => WebResourceResponse | null;
   onRefreshAccessedHistory?: () => void;
   @Prop webUrl: string;
   @Prop devDomain: string;
@@ -126,7 +125,6 @@ export struct TaroWeb {
     webView.WebviewController.setWebDebuggingAccess(this.enableWebDebug);
     this.taroWebController.hasBindedTaroWeb = true
     this.taroWebController.addRequestHandler(this.handleInternalResource);
-    this.taroWebController.addRequestHandler(this.handleCrossOrigin);
     this.taroWebController.addRequestHandler(this.useLocalCacheResource);
 
     this.methodChannel.registerMethods('NativeApi', this.nativeAPI.nativeObj)
@@ -186,57 +184,10 @@ export struct TaroWeb {
         return MiniRawFileDataSource.getRawfileOnResponseWeb(rawPath)
       }
     }
-    return null;
-  }
-
-
-  /**
-   * 添加拦截器，处理跨域问题
-   * 1.useCache不处理
-   * 2.相同host本地下载并返回
-   */
-  handleCrossOrigin: InterceptRequestHandler = (request) => {
-
-    const url = request.getRequestUrl();
-    wbLogger.debug("CrossOrigin","拦截器收到的request: "+url);
-    //使用缓存的情况不处理
-    if (url && this.useCache ) {
-      return null
+    //如果不使用缓存，则使用
+    if(this.handleDebugRequestHost != null){
+      return this.handleDebugRequestHost(request)
     }
-
-    if (url.search(this.webUrlPrefix) != -1 ) {
-      let actualRequestUrl = ''
-      //重新拼接请求地址
-      try {
-        let uriObj = new uri.URI(url)
-        let port = ''
-        if(uriObj.port != '-1'){
-          port = ":" + uriObj.port
-        }
-        let query = ''
-        if(uriObj.query != null){
-          query = "?" + uriObj.query
-        }
-        actualRequestUrl =  this.devDomain + port + uriObj.path + query
-      } catch (e) {
-        console.error(e)
-        return null
-      }
-
-      let responseWeb = new WebResourceResponse();
-
-      responseWeb.setResponseHeader(request.getRequestHeader())
-      responseWeb.setResponseIsReady(false)
-
-      // 本地请求数据，将结果包装成WebResourceResponse返回
-      new CORSHelperDataSource().downloadResource(getContext(this) as common.UIAbilityContext, actualRequestUrl).then(rawPath => {
-
-        return  MiniRawFileDataSource.getResponseWebFromFd(rawPath,responseWeb)
-      })
-
-      return responseWeb
-    }
-
     return null;
   }
 

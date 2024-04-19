@@ -85,6 +85,8 @@ export struct TaroWebContainer {
   // 路由控制器
   @Link taroWebController: TaroWebController;
 
+  handleDebugRequestHost?: (request: WebResourceRequest) => WebResourceResponse | null;
+
   // 用户自定义的注入对象
   injectObj: InjectObject | undefined;
   // 是否全屏显示应用
@@ -184,6 +186,7 @@ export struct TaroWebContainer {
         webUrl: this.webUrl,
         webUrlPrefix: this.webUrlPrefix,
         devDomain: this.devDomain,
+        handleDebugRequestHost: this.handleDebugRequestHost,
         useCache: this.useCache,
         apiAdapter: this.adapter,
         taroWebController: this.taroWebController,
