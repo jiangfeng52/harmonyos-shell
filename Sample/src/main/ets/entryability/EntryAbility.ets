@@ -39,7 +39,7 @@ export default class EntryAbility extends UIAbility {
       TaroHybridManager.init({
         uiAbilityContex: this.context,
         domain: 'https://harmonymini.58.com',
-        injectNativeMethod: (uiAbilityContext: common.UIAbilityContext) => {
+        injectNativeMethod: (indexHtmlPath: string, uiAbilityContext: common.UIAbilityContext) => {
           return new TaroHybridNativeMethods(uiAbilityContext).nativeObj
         }
       })
