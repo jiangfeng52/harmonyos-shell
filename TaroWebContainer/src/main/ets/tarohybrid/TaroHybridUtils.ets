@@ -1,14 +1,14 @@
-import Url from '@ohos.url';
 import dataPreferences from '@ohos.data.preferences';
+import preferences from '@ohos.data.preferences';
 import { GlobalThis } from '../utils/GlobalThis';
 import common from '@ohos.app.ability.common';
 import { BusinessError } from '@kit.BasicServicesKit';
-import preferences from '@ohos.data.preferences';
+import { URL } from '../utils/URL';
 
 export class TaroHybridUtils {
   static addQueryParamToHash(urlString: string, paramName: string, paramValue: string): string {
     // 解析基础URL
-    const url = Url.URL.parseURL(urlString);
+    const url = new URL(urlString);
 
     // 判断hash中是否已经有查询参数，并在适当位置添加新参数
     if (url.hash.includes('?')) {
