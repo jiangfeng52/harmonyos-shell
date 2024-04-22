@@ -36,7 +36,7 @@ export struct DebugLayout {
       Column() {
         this.inputListItem('domain', this.devDomain ?? '' , (value: string)=>{
           this.devDomain = value
-        },true,"http://10.253.68.221:10086")
+        },true,"http://ip:port")
 
         Divider().strokeWidth('0.5vp').color('#0D000000').margin({top: '4vp', bottom: '4vp'})
 
