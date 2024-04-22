@@ -27,7 +27,7 @@ import webView from '@ohos.web.webview';
 import { NativeApi } from '../inject_adapter/NativeApi';
 import { Channel, MethodChannel } from '../inject_adapter/Channel';
 import { sameLayerManager } from '../utils/SameLayerManager';
-import { NativeVideoBuilder } from './sameLayer/nativeComponents/Video/Video';
+import { NativeVideoBuilder } from './SameLayer/NativeComponents/Video/Video';
 
 const TARO_WEB_TAG = 'TaroWeb';
 
