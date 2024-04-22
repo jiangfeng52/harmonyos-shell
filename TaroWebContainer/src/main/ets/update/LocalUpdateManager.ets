@@ -27,7 +27,7 @@ class LocalUpdateManager extends UpdateManager {
   updateMiniOnLaunch(context: AppContext.UIAbilityContext) {
     this.reset(context)
     wbLogger.debug('LocalUpdateManager',`update start`);
-    this.updateAllMini(context,this.miniRepository.getMiniRawList(context)).then((result: Array<LocalVersionInfo>) => {
+    this.updateAllMini(context).then((result: Array<LocalVersionInfo>) => {
       if (result) {
         wbLogger.debug('LocalUpdateManager',`update success ${result}`);
       }
@@ -35,10 +35,11 @@ class LocalUpdateManager extends UpdateManager {
       wbLogger.error('LocalUpdateManager','update Error :', error);
     })
   }
-  async updateAllMini(context: AppContext.UIAbilityContext,miniList:Array<string>) : Promise<Array<LocalVersionInfo>>{
-    return new Promise((resolve, reject) => {
+  async updateAllMini(context: AppContext.UIAbilityContext) : Promise<Array<LocalVersionInfo>>{
+    return new Promise(async (resolve, reject) => {
       let miniArray = new Array<LocalVersionInfo>()
       try {
+        const miniList = await this.miniRepository.getMiniRawList(context)
         if (miniList) {
           for (let index = 0; index < miniList.length; index++) {
             const element = miniList[index];

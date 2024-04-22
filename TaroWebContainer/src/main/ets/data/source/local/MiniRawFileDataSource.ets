@@ -34,9 +34,9 @@ export class MiniRawFileDataSource {
     return `${rawFile}/${fileName}`
   }
 
-  getRawMiniList(context: common.Context): Array<string>{
+  getRawMiniList(context: common.Context): Promise<string[]>{
     let rawFile = GlobalThis.getInstance().getRawFile();
-    return context.resourceManager.getRawFileListSync(rawFile);
+    return context.resourceManager.getRawFileList(rawFile);
   }
   /**
    * 递归读取Raw文件目录，并拷贝文件

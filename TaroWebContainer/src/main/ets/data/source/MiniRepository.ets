@@ -34,7 +34,7 @@ export class MiniRepository {
     return this.miniRawFileDataSource.copyMiniRawUnzipDisk(context,versionInfo)
   }
 
-  getMiniRawList(context: common.Context) : Array<string>{
+  getMiniRawList(context: common.Context) : Promise<string[]>{
     return this.miniRawFileDataSource.getRawMiniList(context)
   }
 
