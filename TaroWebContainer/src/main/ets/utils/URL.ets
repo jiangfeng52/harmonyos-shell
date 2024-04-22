@@ -1,5 +1,5 @@
 export class URL {
-  protocol: string = ''
+  protocol: string = 'https'
   hostname: string = ''
   port: number | null = null
   path: string = ''
