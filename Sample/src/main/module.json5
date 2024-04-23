@@ -183,7 +183,8 @@
         ],
         "backgroundModes": [
           "audioPlayback"
-        ]
+        ],
+        "srcEntry": "./ets/entryability/EntryAbility.ets"
       }
     ]
   }

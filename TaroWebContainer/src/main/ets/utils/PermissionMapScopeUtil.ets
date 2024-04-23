@@ -115,6 +115,13 @@ const allScopeUseMap: AuthSetting = {
 };
 
 let bundleUsedScopeMap: Map<string, boolean> = new Map<string, boolean>([]);
+//获取当前权限弹窗状态
+let dialogShowIf = false
+
+export interface GetPermissionResult {
+  authResults: number[],
+  dialogShowIf: boolean
+}
 
 export function getBundleUserPermissions(permissions: Array<PermissionInfo>): Array<PermissionInfo> {
   if (Array.isArray(permissions) && permissions.length === 0) {
@@ -195,7 +202,7 @@ async function checkAccessToken(permission: Permissions): Promise<abilityAccessC
   return grantStatus;
 }
 
-export async function requestPermission(permissions: Permissions[]):Promise<number[]> {
+export async function requestPermission(permissions: Permissions[]): Promise<GetPermissionResult> {
   let notGranted: Permissions[] = [];
   let atManager = abilityAccessCtrl.createAtManager();
   let authResults: number[] = [];
@@ -211,13 +218,14 @@ export async function requestPermission(permissions: Permissions[]):Promise<numb
     notGranted.push(permission[1])
   }
   if (notGranted.length === 0) {
-    return authResults
+    return { authResults, dialogShowIf }
   }
 
   let context: Context = GlobalThis.getInstance().getContext('context') as Context
   try {
     let permissionRequestResult = await atManager.requestPermissionsFromUser(context, notGranted)
     authResults.push(...permissionRequestResult.authResults)
+    dialogShowIf = permissionRequestResult.dialogShownResults ? permissionRequestResult.dialogShownResults[0] : false
   } catch (error) {
     let err: BusinessError = error as BusinessError;
     wbLogger.error(PERMISSION_UTIL, `Failed to request permissions. Code is ${err.code}, message is ${err.message}`);
@@ -225,7 +233,7 @@ export async function requestPermission(permissions: Permissions[]):Promise<numb
       authResults.push(...new Array(permissions.length - authResults.length).fill(-1))
     }
   }
-  return authResults
+  return { authResults, dialogShowIf }
 }
 
 

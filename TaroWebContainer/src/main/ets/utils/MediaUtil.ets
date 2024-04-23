@@ -16,8 +16,20 @@ import { ChooseMediaOptions } from '../interfaces/InjectObject';
 import { switchHapSandBoxToInternal } from './InternalPath';
 import camera from '@ohos.multimedia.camera';
 import { BusinessError } from '@ohos.base';
+import { apiCustomDialogManager } from './ApiCustomDialogManager'
 
 const MEDIA_UTIL = 'MediaUtil';
+
+//通用错误码
+export interface IErrorCode {
+  SUCCESS: number, // 成功
+  USER_REJECT: number, //用户拒绝授权
+}
+
+export const ErrorCode: IErrorCode = {
+  SUCCESS: 0, // 成功
+  USER_REJECT: 201, // 用户拒绝授权
+}
 
 export enum PHOTO_TYPE {
   IMAGE,
@@ -38,6 +50,10 @@ export interface CompressImageParams {
   compressHeight?: number;
 }
 
+interface chooseCameraBack {
+  options: ChooseMediaOptions;
+  isFail: boolean;
+}
 
 export async function getPhotoAssetList(): Promise<Array<photoAccessHelper.PhotoAsset>> {
   let context = GlobalThis.getInstance().getContext('context') as common.UIAbilityContext;
@@ -385,7 +401,7 @@ export async function selectMediaAssets(options: ChooseMediaOptions, chooseAlbum
   const apiName = options.apiName;
   try {
     if (options.count && typeof (options.count) !== 'number') {
-      options.fail({ errMsg: `${apiName}:fail parameter count:Expected Number with value NaN` })
+      options.fail({ errMsg: `${apiName}:fail parameter count:Expected Number with value NaN` });
       return;
     }
     if (options.count === undefined || options.count < 1) {
@@ -399,112 +415,154 @@ export async function selectMediaAssets(options: ChooseMediaOptions, chooseAlbum
     const photoType = (options.mediaType.length >= 2 || (options.mediaType || []).includes('mix')) ?
     PHOTO_TYPE.IMAGE_VIDEO : (options.mediaType[0] === 'image' ? PHOTO_TYPE.IMAGE : PHOTO_TYPE.VIDEO)
 
+    let isFail = false;
     if (options.sourceType === 'camera') {
-      let chosenUris: string[] = [];
-      let maxDuration = options.maxDuration || 10;
-      maxDuration = maxDuration > 60 ? 60 : maxDuration;
-      maxDuration = maxDuration < 3 ? 3 : maxDuration;
-      chosenUris = await getCameraUris(photoType, maxDuration, options.camera);
-      if (chosenUris.length === 0) {
-        options.fail({ errMsg: `${apiName}:fail to pull up camera app` })
-        return
+      const chooseCameraBack = await chooseCamera(options, photoType, apiName, isFail, chooseAlbumCallback)
+      isFail = chooseCameraBack.isFail
+      options = chooseCameraBack.options
+      if (isFail) {
+        return;
       }
-      const captureUrl = chosenUris[0]
-      const asset = await getAssetByUri(captureUrl)
-      const assetType = asset?.photoType === photoAccessHelper.PhotoType.IMAGE ? 'image' : 'video';
-      const mediaList: IMediaData[] = [
-        {
-          originPath: captureUrl,
-          type: assetType,
-          originSize: Number(asset && asset.get(photoAccessHelper.PhotoKeys.SIZE) || 0), //asset获取SIZE得到undefined时设置为0
-          duration: assetType === 'video' ? Number(asset && asset.get(photoAccessHelper.PhotoKeys.DURATION) || 0) : 0,
-          width: assetType === 'video' ? Number(asset && asset.get(photoAccessHelper.PhotoKeys.WIDTH) || 0) : 0,
-          height: assetType === 'video' ? Number(asset && asset.get(photoAccessHelper.PhotoKeys.HEIGHT) || 0) : 0,
-        }
-      ]
-      options.sizeType ||= ['original', 'compressed'];
-      options.sizeType = Array.from(new Set(options.sizeType));
-      let useOriginal = (options.sizeType.length === 2) || (options.sizeType[0] === 'original');
-
-      // chooseImage在设置sizeType=['original', 'compressed']时，拍照的场景下弹出原图设置界面
-      if (apiName === 'chooseImage' && options.sizeType.length === 2 && assetType === 'image') {
-        const mediaItemData = new MediaItemData(mediaList[0]);
-        mediaItemData.isSelected = true;
-        try {
-          const chooseInfo = await chooseAlbumCallback({
-            count: 1,
-            sizeType: ['original', 'compressed'],
-            mediaType: ['image'],
-          }, [mediaItemData], true);
-          useOriginal = chooseInfo.isOriginal;
-        } catch (err) {
-          options.fail({ errMsg: 'cancel' });
-          return;
-        }
-      }
-      const ret = await getChooseMediaRet(mediaList, useOriginal);
-      options.success({
-        tempFilePaths: ret.tempFilePaths,
-        tempFiles: ret.tempFiles,
-        type: ret.type,
-        errMsg: `${apiName}:ok`
-      })
     } else {
       // 申请读取图库图片的权限
-      const permissionsParams: Permissions[] = ['ohos.permission.READ_IMAGEVIDEO']
-      const permissionsResults = await requestPermission(permissionsParams);
-      for (let i = 0; i < permissionsResults.length; i++) {
-        if (permissionsResults[i] !== 0) {
-          options.fail({ errMsg: `${apiName}:permission fail` })
-          return
-        }
+      const applyPermissionBack = await applyPermission(options, apiName, isFail);
+      isFail = applyPermissionBack.isFail;
+      options = applyPermissionBack.options;
+      if (isFail) {
+        return;
       }
-      // 获取图库的数量
-      const list = await getPhotoAssetList();
-      const filteredMedia = filterPhotoVideo(list, photoType);
-      if (!filteredMedia) {
-        options.fail({ errMsg: `${apiName}:get uri fail` })
-        return
-      }
-
-      // 打开图库组件进行选择
-      const mediaItemList: MediaItemData[] = []
-      for (const asset of filteredMedia) {
-        let duration: number = 0;
-        if (asset.photoType === photoAccessHelper.PhotoType.VIDEO) {
-          duration = Number(asset.get(photoAccessHelper.PhotoKeys.DURATION));
-        }
-        const mediaData: IMediaData = {
-          originPath: asset.uri,
-          type: asset.photoType === photoAccessHelper.PhotoType.IMAGE ? 'image' : 'video',
-          duration: duration,
-          originSize: Number(asset.get(photoAccessHelper.PhotoKeys.SIZE)),
-          height: Number(asset.get(photoAccessHelper.PhotoKeys.HEIGHT)),
-          width: Number(asset.get(photoAccessHelper.PhotoKeys.WIDTH)),
-        }
-        mediaItemList.push(new MediaItemData(mediaData))
-      }
-
-      try {
-        const chooseInfo = await chooseAlbumCallback({
-          count: options.count || 9,
-          sizeType: options.sizeType || ['original', 'compressed'],
-          mediaType: options.mediaType,
-        }, mediaItemList)
-        const ret = await getChooseMediaRet(chooseInfo.tempFiles, chooseInfo.isOriginal)
-        options.success({
-          tempFilePaths: ret.tempFilePaths,
-          tempFiles: ret.tempFiles,
-          type: ret.type,
-        })
-      } catch (err) {
-        options.fail({ errMsg: 'cancel' })
+      const chooseMediaBack = await chooseMedia(options, photoType, apiName, isFail, chooseAlbumCallback);
+      isFail = chooseMediaBack.isFail;
+      options = chooseMediaBack.options;
+      if (isFail) {
         return;
       }
     }
   } catch (err) {
     options.fail({ errMsg: `${err}` })
   }
+}
+
+async function chooseCamera(options: ChooseMediaOptions, photoType: PHOTO_TYPE, apiName: string, isFail: boolean, chooseAlbumCallback: ChooseAlbumCallback): Promise<chooseCameraBack> {
+  let chosenUris: string[] = [];
+  let maxDuration = options.maxDuration || 10;
+  maxDuration = maxDuration > 60 ? 60 : maxDuration;
+  maxDuration = maxDuration < 3 ? 3 : maxDuration;
+  chosenUris = await getCameraUris(photoType, maxDuration, options.camera);
+  if (chosenUris.length === 0) {
+    options.fail({ errMsg: `${apiName}:fail to pull up camera app` })
+    isFail = true
+    return { options, isFail };
+  }
+  const captureUrl = chosenUris[0]
+  const asset = await getAssetByUri(captureUrl)
+  const assetType = asset?.photoType === photoAccessHelper.PhotoType.IMAGE ? 'image' : 'video';
+  const mediaList: IMediaData[] = [
+    {
+      originPath: captureUrl,
+      type: assetType,
+      originSize: Number(asset && asset.get(photoAccessHelper.PhotoKeys.SIZE) || 0), //asset获取SIZE得到undefined时设置为0
+      duration: assetType === 'video' ? Number(asset && asset.get(photoAccessHelper.PhotoKeys.DURATION) || 0) : 0,
+      width: assetType === 'video' ? Number(asset && asset.get(photoAccessHelper.PhotoKeys.WIDTH) || 0) : 0,
+      height: assetType === 'video' ? Number(asset && asset.get(photoAccessHelper.PhotoKeys.HEIGHT) || 0) : 0,
+    }
+  ]
+  options.sizeType ||= ['original', 'compressed'];
+  options.sizeType = Array.from(new Set(options.sizeType));
+  let useOriginal = (options.sizeType.length === 2) || (options.sizeType[0] === 'original');
+
+  // chooseImage在设置sizeType=['original', 'compressed']时，拍照的场景下弹出原图设置界面
+  if (apiName === 'chooseImage' && options.sizeType.length === 2 && assetType === 'image') {
+    const mediaItemData = new MediaItemData(mediaList[0]);
+    mediaItemData.isSelected = true;
+    try {
+      const chooseInfo = await chooseAlbumCallback({
+        count: 1,
+        sizeType: ['original', 'compressed'],
+        mediaType: ['image'],
+      }, [mediaItemData], true);
+      useOriginal = chooseInfo.isOriginal;
+    } catch (err) {
+      options.fail({ errMsg: 'cancel' });
+      return { options, isFail };
+    }
+  }
+  const ret = await getChooseMediaRet(mediaList, useOriginal);
+  options.success({
+    tempFilePaths: ret.tempFilePaths,
+    tempFiles: ret.tempFiles,
+    type: ret.type,
+    errMsg: `${apiName}:ok`
+  })
+  return { options, isFail };
+}
+
+async function applyPermission(options: ChooseMediaOptions, apiName: string, isFail: boolean): Promise<chooseCameraBack> {
+  const permissionsParams: Permissions[] = ['ohos.permission.READ_IMAGEVIDEO']
+  const permissionsResults = await requestPermission(permissionsParams);
+  if (permissionsResults.authResults[0] === -1 && !permissionsResults.dialogShowIf) {
+    // 后续拒绝
+    apiCustomDialogManager.getHandler()?.({ permission: 'ohos.permission.READ_IMAGEVIDEO', name: '文件' } as ESObject)
+  }
+  for (let i = 0; i < permissionsResults.authResults.length; i++) {
+    if (permissionsResults.authResults[i] !== 0) {
+      options.fail({
+        errCode: `${ErrorCode.USER_REJECT}`,
+        errMsg: `${apiName}:permission fail`,
+      })
+      isFail = true;
+      return { options, isFail };
+    }
+  } 
+  return { options, isFail };
+}
+
+async function chooseMedia(options: ChooseMediaOptions, photoType: PHOTO_TYPE, apiName: string, isFail: boolean, chooseAlbumCallback: ChooseAlbumCallback): Promise<chooseCameraBack> {
+  // 获取图库的数量
+  const list = await getPhotoAssetList();
+  const filteredMedia = filterPhotoVideo(list, photoType);
+  if (!filteredMedia) {
+    options.fail({ errMsg: `${apiName}:get uri fail` })
+    isFail = true
+    return { options, isFail };
+  }
+
+  // 打开图库组件进行选择
+  const mediaItemList: MediaItemData[] = []
+  for (const asset of filteredMedia) {
+    let duration: number = 0;
+    if (asset.photoType === photoAccessHelper.PhotoType.VIDEO) {
+      duration = Number(asset.get(photoAccessHelper.PhotoKeys.DURATION));
+    }
+    const mediaData: IMediaData = {
+      originPath: asset.uri,
+      type: asset.photoType === photoAccessHelper.PhotoType.IMAGE ? 'image' : 'video',
+      duration: duration,
+      originSize: Number(asset.get(photoAccessHelper.PhotoKeys.SIZE)),
+      height: Number(asset.get(photoAccessHelper.PhotoKeys.HEIGHT)),
+      width: Number(asset.get(photoAccessHelper.PhotoKeys.WIDTH)),
+    }
+    mediaItemList.push(new MediaItemData(mediaData))
+  }
+
+  try {
+    const chooseInfo = await chooseAlbumCallback({
+      count: options.count || 9,
+      sizeType: options.sizeType || ['original', 'compressed'],
+      mediaType: options.mediaType || ['image', 'video'],
+    }, mediaItemList)
+    const ret = await getChooseMediaRet(chooseInfo.tempFiles, chooseInfo.isOriginal)
+    options.success({
+      tempFilePaths: ret.tempFilePaths,
+      tempFiles: ret.tempFiles,
+      type: ret.type,
+    })
+  } catch (err) {
+     options.fail({ errMsg: 'cancel' })
+     isFail = true
+    return { options, isFail };
+  }
+  return { options, isFail };
 }
 
 export function getThumbnailPixelMap(originPath: string): Promise<PixelMap> {

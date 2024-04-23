@@ -1,11 +1,17 @@
 import common from '@ohos.app.ability.common';
 import { RouterToTaroHybrid } from './TaroHybridPage';
-import { InjectObject } from '@hybrid/web-container/Index';
-
+import { InjectObject, apiCustomDialogManager } from '@hybrid/web-container/Index';
+import { promptAction } from '@kit.ArkUI';
 
 interface HarmonyNavigateToOptions {
   indexHtmlPath?: string,
   taroPath?: string
+}
+
+const customPermissionPrompt = (permissionName: ESObject) => {
+  promptAction.showToast({
+    message: `请开启${permissionName.name}权限`
+  })
 }
 
 export class TaroHybridNativeMethods {
@@ -25,4 +31,6 @@ export class TaroHybridNativeMethods {
     }
   };
 }
+
+apiCustomDialogManager.registerHandler(customPermissionPrompt)
 
