@@ -161,13 +161,13 @@
     "abilities": [
       {
         "name": "EntryAbility",
-        "srcEntrance": "./ets/entryability/EntryAbility.ets",
+        "srcEntry": "./ets/entryability/EntryAbility.ets",
         "description": "$string:EntryAbility_desc",
         "icon": "$media:icon",
         "label": "$string:EntryAbility_label",
         "startWindowIcon": "$media:icon",
         "startWindowBackground": "$color:start_window_background",
-        "visible": true,
+        "exported": true,
         "skills": [
           {
             "entities": [
@@ -181,7 +181,6 @@
         "backgroundModes": [
           "audioPlayback"
         ],
-        "srcEntry": "./ets/entryability/EntryAbility.ets"
       }
     ]
   }
