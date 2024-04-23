@@ -10,7 +10,8 @@ import { TaroHybridUtils } from './TaroHybridUtils';
 import bundleManager from '@ohos.bundle.bundleManager';
 import router from '@ohos.router';
 import { wbLogger } from '../utils/Logger';
-import { InterceptUtils } from '../utils/InterceptUtils';
+import { FileUtils } from '../utils/FileUtils';
+import { http } from '@kit.NetworkKit';
 
 export interface TaroHybridCoreBuilderData {
   domain: string
@@ -28,6 +29,7 @@ export function TaroHybridCoreBuilder(builderData: TaroHybridCoreBuilderData) {
     taroPath: builderData.taroPath
   })
 }
+const HTTP_TIMEOUT = 3000;
 
 @Component
 struct TaroHybridCore {
@@ -81,7 +83,29 @@ struct TaroHybridCore {
       //去掉Fragment部分
       actualRequestUrl = actualRequestUrl.split('#')[0]
 
-      return InterceptUtils.getWebResourceResponse(actualRequestUrl,request)
+      let responseWeb = new WebResourceResponse();
+      responseWeb.setResponseHeader(request.getRequestHeader())
+      responseWeb.setResponseIsReady(false)
+      FileUtils.getFileResponseFromUrl(actualRequestUrl,HTTP_TIMEOUT,http.HttpDataType.ARRAY_BUFFER).then(ret => {
+        wbLogger.debug("CrossOrigin", 'download result : %{public}s ,code:%{public}s', actualRequestUrl,`${ret.responseCode}`)
+        responseWeb.setResponseCode(ret.responseCode);
+        responseWeb.setReasonMessage(ret.result === http.ResponseCode.OK ? 'OK' : 'http.get resource failed');
+        if (ret.result instanceof ArrayBuffer) {
+          responseWeb.setResponseData(ret.result);
+        }
+        responseWeb.setResponseEncoding('utf-8')
+        responseWeb.setResponseMimeType(FileUtils.getMimetype(actualRequestUrl))
+        responseWeb.setResponseIsReady(true)
+        return responseWeb
+      }).catch((err: Error) => {
+        wbLogger.debug("CrossOrigin", 'download error: %{public}s , err is %{public}s', actualRequestUrl, err.message)
+        responseWeb.setResponseCode(0);
+        responseWeb.setReasonMessage(err.message);
+        responseWeb.setResponseIsReady(true)
+        return responseWeb
+      });
+
+      return responseWeb
     }
 
     return null;
