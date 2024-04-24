@@ -15,4 +15,5 @@ export { TaroHybridManager } from './src/main/ets/tarohybrid/TaroHybridManager'
 export { TaroHybrid } from './src/main/ets/tarohybrid/TaroHybrid'
 export { Storage } from './src/main/ets/utils/Storage'
 export { sameLayerManager } from './src/main/ets/utils/SameLayerManager'
-export { apiCustomDialogManager } from './src/main/ets/utils/ApiCustomDialogManager'
+
+

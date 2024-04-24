@@ -16,20 +16,8 @@ import { ChooseMediaOptions } from '../interfaces/InjectObject';
 import { switchHapSandBoxToInternal } from './InternalPath';
 import camera from '@ohos.multimedia.camera';
 import { BusinessError } from '@ohos.base';
-import { apiCustomDialogManager } from './ApiCustomDialogManager'
 
 const MEDIA_UTIL = 'MediaUtil';
-
-//通用错误码
-export interface IErrorCode {
-  SUCCESS: number, // 成功
-  USER_REJECT: number, //用户拒绝授权
-}
-
-export const ErrorCode: IErrorCode = {
-  SUCCESS: 0, // 成功
-  USER_REJECT: 201, // 用户拒绝授权
-}
 
 export enum PHOTO_TYPE {
   IMAGE,
@@ -500,14 +488,9 @@ async function chooseCamera(options: ChooseMediaOptions, photoType: PHOTO_TYPE, 
 async function applyPermission(options: ChooseMediaOptions, apiName: string, isFail: boolean): Promise<chooseCameraBack> {
   const permissionsParams: Permissions[] = ['ohos.permission.READ_IMAGEVIDEO']
   const permissionsResults = await requestPermission(permissionsParams);
-  if (permissionsResults.authResults[0] === -1 && !permissionsResults.dialogShowIf) {
-    // 后续拒绝
-    apiCustomDialogManager.getHandler()?.({ permission: 'ohos.permission.READ_IMAGEVIDEO', name: '文件' } as ESObject)
-  }
-  for (let i = 0; i < permissionsResults.authResults.length; i++) {
-    if (permissionsResults.authResults[i] !== 0) {
+  for (let i = 0; i < permissionsResults.length; i++) {
+    if (permissionsResults[i] !== 0) {
       options.fail({
-        errCode: `${ErrorCode.USER_REJECT}`,
         errMsg: `${apiName}:permission fail`,
       })
       isFail = true;
