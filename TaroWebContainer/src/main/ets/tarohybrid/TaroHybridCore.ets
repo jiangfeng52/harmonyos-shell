@@ -8,7 +8,6 @@ import { DebugLayout } from './DebugDialog';
 import { TaroHybridManager } from './TaroHybridManager';
 import { TaroHybridUtils } from './TaroHybridUtils';
 import bundleManager from '@ohos.bundle.bundleManager';
-import router from '@ohos.router';
 import { wbLogger } from '../utils/Logger';
 import { FileUtils } from '../utils/FileUtils';
 import { http } from '@kit.NetworkKit';
@@ -46,6 +45,7 @@ struct TaroHybridCore {
 
   private devDomain: string = '';
   private devUseCache: boolean = false;
+  private isRoot: boolean = TaroHybridManager.isRootContainer(this.indexHtmlPath)
 
   // debugLayout相关
   private debugLayoutHeight: number = 300;
@@ -53,7 +53,7 @@ struct TaroHybridCore {
   private navigationBarBackPressed: (taroWebController: TaroWebController)=>void = (taroWebController: TaroWebController)=>{
     const hasHandled = TaroHybridManager.onBack(taroWebController, this.indexHtmlPath, this.taroPath)
     if(!hasHandled) {
-      router.back()
+      TaroHybridManager.nativeBack()
     }
   }
 
@@ -123,7 +123,8 @@ struct TaroHybridCore {
       injectObj: this.injectObj,
       showCapsule: false,
       onNavigationBarBackPressed: this.navigationBarBackPressed,
-      hookInterceptorWithoutCache:this.hookInterceptorWithoutCache
+      hookInterceptorWithoutCache:this.hookInterceptorWithoutCache,
+      isRoot: this.isRoot
     })
       .width('100%')
       .height('100%')

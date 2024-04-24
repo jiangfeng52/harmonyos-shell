@@ -53,7 +53,9 @@ export class TaroHybridCoreInstance {
 export interface TaroHybridManagerOptions {
   uiAbilityContex: common.UIAbilityContext
   domain: string
-  injectNativeMethod: (indexHtmlPath: string, uiAbilityContext: common.UIAbilityContext) => InjectObject
+  injectNativeMethod: (indexHtmlPath: string, uiAbilityContext: common.UIAbilityContext) => InjectObject,
+  rootIndexHtmlPath?: string,
+  nativeBack: ()=>void
 }
 
 export class TaroHybridManager {
@@ -65,6 +67,15 @@ export class TaroHybridManager {
   static init(options: TaroHybridManagerOptions){
     TaroHybridManager.options = options
     GlobalThis.getInstance().setContext('context', options.uiAbilityContex);
+  }
+
+  static isRootContainer(indexHtmlPath: string){
+    const rootIndexHtmlPath = TaroHybridManager.options?.rootIndexHtmlPath
+    if(!rootIndexHtmlPath) {
+      // 默认情况，如果没有设置rootIndexHtmlPath，默认都是true
+      return true
+    }
+    return indexHtmlPath === rootIndexHtmlPath
   }
 
   static preLoader(uiContext: UIContext, indexHtmlPath: string, taroPath: string){
@@ -119,6 +130,9 @@ export class TaroHybridManager {
     data.taroWebController.loadUrl(webUrl);
   }
 
+  static nativeBack(){
+    TaroHybridManager.options?.nativeBack()
+  }
 
   static onBack(taroWebController: TaroWebController, indexHtmlPath: string, rootTaroPage: string): boolean {
     // const instance = TaroHybridManager.getCoreInstance(indexHtmlPath)
