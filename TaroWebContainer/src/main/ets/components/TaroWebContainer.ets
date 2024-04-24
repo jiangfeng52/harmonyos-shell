@@ -30,7 +30,6 @@ import { GlobalThis } from '../utils/GlobalThis';
 import { getBundleInfoPermissions } from '../utils/PermissionMapScopeUtil';
 import { HostPageState } from '../interfaces/HostPageState';
 import { RouterUtils } from '../utils/RouterUtils';
-import router from '@ohos.router';
 import { wbLogger } from '../utils/Logger';
 import { AlbumBackward, ChooseAlbumResult, MediaItemData, chooseAlbumOptions } from '../interfaces/Media'
 import { BusinessError } from '@ohos.base';
@@ -82,6 +81,8 @@ export struct TaroWebContainer {
 
   // 路由控制器
   @Link taroWebController: TaroWebController;
+
+  hookInterceptorWithoutCache?: (request: WebResourceRequest) => WebResourceResponse | null;
 
   // 用户自定义的注入对象
   injectObj: InjectObject | undefined;
@@ -181,6 +182,7 @@ export struct TaroWebContainer {
       TaroWeb({
         webUrl: this.webUrl,
         webUrlPrefix: this.webUrlPrefix,
+        hookInterceptorWithoutCache: this.hookInterceptorWithoutCache,
         useCache: this.useCache,
         apiAdapter: this.adapter,
         taroWebController: this.taroWebController,

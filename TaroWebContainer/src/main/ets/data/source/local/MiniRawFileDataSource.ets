@@ -129,28 +129,7 @@ export class MiniRawFileDataSource {
         headerValue:"no-cache"
       }
     ]
-    let mimeType: string;
-    if (file.endsWith('.js')) {
-      mimeType = "application/javascript";
-    }
-    else if(file.endsWith('.css')){
-      mimeType = "text/css";
-    }
-    else if(file.endsWith('.html') || file.endsWith(".htm")) {
-      mimeType = "text/html";
-    }
-    else if(file.endsWith('.jpg') || file.endsWith('.jpeg')){
-      mimeType = "image/jpeg";
-    }
-    else if(file.endsWith('.png')){
-      mimeType = "image/png";
-    }
-    else if(file.endsWith('.txt')){
-      mimeType = "text/plain";
-    }
-    else {
-      mimeType = "application/octet-stream"; // 默认二进制流
-    }
+    let mimeType: string = FileUtils.getMimetype(file);
     responseWeb.setResponseHeader(headers)
     responseWeb.setResponseData($rawfile(file));
     responseWeb.setResponseEncoding('utf-8')

@@ -142,6 +142,9 @@
         "name": "ohos.permission.ACCESS_BIOMETRIC"
       },
       {
+        "name": 'ohos.permission.STORE_PERSISTENT_DATA'
+      },
+      {
         "name": "ohos.permission.MICROPHONE",
         "reason": "$string:microphone_reason",
         "usedScene": {

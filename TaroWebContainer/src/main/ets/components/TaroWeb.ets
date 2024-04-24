@@ -30,6 +30,7 @@ import { sameLayerManager } from '../utils/SameLayerManager';
 import { setupGlobalInterceptor } from '../utils/GlobalInterceptor';
 import { NativeVideoBuilder } from './SameLayer/NativeComponents/Video/Video';
 
+
 const TARO_WEB_TAG = 'TaroWeb';
 
 export type InterceptRequestHandler = (request: WebResourceRequest) => WebResourceResponse | null;
@@ -106,6 +107,7 @@ export class TaroWebController {
 @Component
 export struct TaroWeb {
   onTitleReceive?: (title: string) => void;
+  hookInterceptorWithoutCache?: (request: WebResourceRequest) => WebResourceResponse | null;
   onRefreshAccessedHistory?: () => void;
   @Prop webUrl: string;
   @Prop webUrlPrefix: string;
@@ -160,7 +162,13 @@ export struct TaroWeb {
     }
     return null;
   }
+
   useLocalCacheResource: InterceptRequestHandler = (request) => {
+    //如果不使用缓存，则使用
+    if(!this.useCache && this.hookInterceptorWithoutCache != null){
+      return this.hookInterceptorWithoutCache(request)
+    }
+    //优先使用本地缓存，再使用RawFile缓存，没有则直接网络请求
     const url = request.getRequestUrl();
     if (url && this.useCache && this.webUrlPrefix) {
       // const path: string | undefined = url?.replace(this.webUrlPrefix, '');
