@@ -64,6 +64,7 @@ export struct TaroWebContainer {
   @State systemBarHeight: number = 0;
   @State channel: Channel = new Channel()
   @State methodChannel: MethodChannel = new MethodChannel(this.channel)
+  @Prop isRoot: boolean = true
 
   // 显示图库
   @State showAlbum: boolean = false;
@@ -104,7 +105,12 @@ export struct TaroWebContainer {
 
   onTitleReceive = (title: string)=>{
     this.navigationBarData.title = title
-    this.navigationBarData.canBackward = this.taroWebController.accessBackward();
+    if (this.isRoot) {
+      this.navigationBarData.canBackward = this.taroWebController.accessBackward();
+    } else {
+      // 多容器时，当不是第1个容器，即使Web不能返回，也应该显示返回按钮
+      this.navigationBarData.canBackward = true
+    }
   }
   onRefreshAccessedHistory = ()=>{
     this.navigationBarData.loading = false;
