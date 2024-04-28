@@ -34,6 +34,7 @@ import {
   ExitMiniProgramOptions,
   SettingOptions,
   NavigationStyle,
+  ChooseMediumOptions
 } from '../interfaces/InjectObject';
 import {
   getBundleUsedPermission,
@@ -60,6 +61,7 @@ import { switchHapSandBoxToInternal, switchInternalToHapSandBox } from '../utils
 import { LocalUpdateManagerInstance } from '../update/LocalUpdateManager';
 import util from '@ohos.util';
 import { selectMediaAssets } from '../utils/MediaUtil';
+import { selectMediumAssets } from '../utils/MediumUtil';
 import { MediaItemData, ChooseAlbumResult, chooseAlbumOptions } from '../interfaces/Media';
 
 
@@ -417,6 +419,10 @@ export class NativeInject {
       chooseMediaAssets: (options: ChooseMediaOptions) => {
         wbLogger.debug('JsBridgeNative', `NativeApi$chooseMediaAssets`)
         selectMediaAssets(options, this.chooseAlbumCallback!)
+      },
+      chooseMediumAssets: (options: ChooseMediumOptions) => {
+        wbLogger.debug('JsBridgeNative', `NativeApi$chooseMediumAssets`)
+        selectMediumAssets(options)
       },
       exitMiniProgram: (options?: ExitMiniProgramOptions) => {
         wbLogger.debug('JsBridgeNative', `NativeApi$exitMiniProgram`)

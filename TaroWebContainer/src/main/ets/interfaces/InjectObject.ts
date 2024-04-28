@@ -219,6 +219,7 @@ export interface InnerInjectObj {
   setCapsuleState: (visible: boolean) => void;
   getCapsuleState: () => CapsuleState;
   chooseMediaAssets: (options: ChooseMediaOptions) => void;
+  chooseMediumAssets: (options: ChooseMediumOptions) => void;
   exitMiniProgram: (options: ExitMiniProgramOptions) => void;
 }
 
@@ -236,6 +237,12 @@ export interface ChooseMediaOptions {
   apiName: string;
   success: Function;
   fail: Function;
+}
+
+export interface ChooseMediumOptions extends ChooseMediaOptions{
+  takingSupported?: boolean,
+  editSupported?: boolean,
+  searchSupported?: boolean,
 }
 
 export interface ExitMiniProgramOptions {
