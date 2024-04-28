@@ -324,7 +324,11 @@ export struct TaroWebContainer {
     })
     this.appearDone = true;
 
-    this.initListener(context)
+    //this.initListener(context)
+    nativeUpdater.init(context)
+    // TODO test测试注册
+    nativeUpdater.registerSystemInfo()
+
 
   }
 

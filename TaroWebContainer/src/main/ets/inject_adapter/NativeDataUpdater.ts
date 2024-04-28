@@ -1,4 +1,7 @@
 import { NativeDataChangeListener } from '../interfaces/InjectObject';
+import { common } from '@kit.AbilityKit';
+import { wifiManager } from '@kit.ConnectivityKit';
+import { wbLogger } from '../utils/Logger';
 
 export class NativeApiPair {
   /*方法名*/
@@ -30,16 +33,67 @@ export class NativeDataType {
   public static allWindowInfo: NativeApiPair = new NativeApiPair("getWindowInfo", [])
 }
 
+export interface NativeRegister {
+  /*方法名*/
+  method: string;
+  /*方法入参*/
+  args: any[];
+  /*更新的方法*/
+  updater: (context: common.UIAbilityContext | null, listener: NativeDataChangeListener | null) => void;
+}
 
 class NativeDataUpdater {
   private _listener: NativeDataChangeListener | null = null;
+  private _registers: NativeRegister[] = []
+  private _context: common.UIAbilityContext | null = null;
 
-  public getListener(): NativeDataChangeListener | null {
-    return this._listener;
+  public init(context:common.UIAbilityContext){
+    this._context = context
   }
 
-  public setListener(listener: NativeDataChangeListener | null) {
+  public registerListener(listener: NativeDataChangeListener | null) {
     this._listener = listener
+    this.registerTaro()
+  }
+
+  private registerTaro(){
+    // 方法名全部要注册
+    this._registers.forEach((re)=>{
+      this._listener?.register(re.method)
+    })
+  }
+
+  public register(r: NativeRegister) {
+    this._registers.push(r)
+    r.updater(this._context,this._listener)
+    this._listener?.register(r.method)
+  }
+
+  public unregister(r:NativeRegister){
+    const index = this._registers.indexOf(r)
+    if (index > -1) {
+      this._registers.splice(index, 1)
+      this._listener?.unregister(r.method)
+    }
+  }
+
+  public registerSystemInfo(){
+    this.register({
+      method:"getSystemSetting",
+      args:[],
+      updater:(context:common.UIAbilityContext|null,cListener: NativeDataChangeListener | null)=>{
+        // wifi状态的监听
+        wifiManager.on("wifiStateChange", (result: number) => {
+          //0: inactive, 1: active, 2: activating, 3: de-activating
+          wbLogger.debug("WIFI改变", "wifiStateChange:" + result)
+          if (result === 1) {
+            this.update(NativeDataType.wifiEnabled, true)
+          } else if (result === 0) {
+            this.update(NativeDataType.wifiEnabled, false)
+          }
+        });
+      }
+    })
   }
 
   /**

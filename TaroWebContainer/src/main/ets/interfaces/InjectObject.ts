@@ -211,12 +211,21 @@ export interface NativeDataChangeListener {
    * @param update        数据更新（不传，则更新整个方法的缓存数据）
    */
   change: (methodName: string, methodArgs: any[], update?: (old: any) => any) => void
+  /**
+   * 注册
+   * @param methodName    要注册的方法名
+   */
+  register: (methodName: string) => void
+  /**
+   * 解注册
+   * @param methodName    要解注册的方法名
+   */
+  unregister:(methodName: string) => void
 
 }
 
 export interface InnerInjectObj {
-  enableCacheMethodNames:()=>string[]
-  obtainNativeChangeListener:(listener: NativeDataChangeListener | null)=>void
+  registerNativeListener: (listener: NativeDataChangeListener | null) => void
   setNavigationBarColor: (options: NavigationBarOptions) => void;
   showNavigationBarLoading: () => void;
   hideNavigationBarLoading: () => void;

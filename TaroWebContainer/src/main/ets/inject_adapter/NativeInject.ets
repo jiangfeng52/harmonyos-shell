@@ -121,31 +121,10 @@ export class NativeInject {
 
   public buildInjectObj(context: common.UIAbilityContext): InnerInjectObj {
     return {
-      /**
-       * 获取哪些Api的数据需要缓存。
-       * @return string[] Api的方法名数组
-       */
-      enableCacheMethodNames:()=>{
-
-        let resArr: Array<string> = []
-        // 添加shell内部默认的实现
-        resArr.push(...[
-          "getSystemSetting",
-          "getWindowInfo"
-        ])
-        // 添加外部扩展的实现
-        resArr.push(...TaroHybridManager.getCacheSyncMethods().convertToArray())
-        return resArr
+      registerNativeListener:(listener: NativeDataChangeListener | null)=>{
+        nativeUpdater.registerListener(listener)
       },
 
-      /**
-       * 系统层获取到监听器。
-       * 1.系统层，保存listener
-       * 2.系统层，监听系统数据变化，发生变化后，调用listener.change(method: string)
-       */
-      obtainNativeChangeListener: (listener: NativeDataChangeListener | null) => {
-        nativeUpdater.setListener(listener);
-      },
       copyFileToSandboxCache: (src: string) => {
         wbLogger.debug('JsBridgeNative', `NativeApi$copyFileToSandboxCache`)
         const context = getContext() as common.UIAbilityContext;
