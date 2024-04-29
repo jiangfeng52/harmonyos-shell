@@ -62,7 +62,7 @@ import { LocalUpdateManagerInstance } from '../update/LocalUpdateManager';
 import util from '@ohos.util';
 import { selectMediaAssets } from '../utils/MediaUtil';
 import { MediaItemData, ChooseAlbumResult, chooseAlbumOptions } from '../interfaces/Media';
-import { nativeUpdater } from './NativeDataUpdater';
+import { nativeCacheManager } from './NativeCacheManager';
 import { TaroHybridManager } from '../tarohybrid/TaroHybridManager';
 
 
@@ -122,7 +122,7 @@ export class NativeInject {
   public buildInjectObj(context: common.UIAbilityContext): InnerInjectObj {
     return {
       registerNativeListener:(listener: NativeDataChangeListener | null)=>{
-        nativeUpdater.registerListener(listener)
+        nativeCacheManager.registerNativeListener(listener)
       },
 
       copyFileToSandboxCache: (src: string) => {

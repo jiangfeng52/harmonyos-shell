@@ -15,10 +15,6 @@
 
 import Want from '@ohos.app.ability.Want';
 import window from '@ohos.window';
-import access from '@ohos.bluetooth.access';
-import geoLocationManager from '@ohos.geoLocationManager';
-import abilityAccessCtrl from '@ohos.abilityAccessCtrl';
-import { Permissions } from '@ohos.abilityAccessCtrl';
 import common from '@ohos.app.ability.common';
 import bundleManager from '@ohos.bundle.bundleManager';
 import  AdvancedAPI from '../utils/advancedapi.min';
@@ -34,45 +30,14 @@ import { GlobalThis } from '../utils/GlobalThis';
 import { getBundleInfoPermissions } from '../utils/PermissionMapScopeUtil';
 import { HostPageState } from '../interfaces/HostPageState';
 import { RouterUtils } from '../utils/RouterUtils';
-import router from '@ohos.router';
 import { wbLogger } from '../utils/Logger';
 import { AlbumBackward, ChooseAlbumResult, MediaItemData, chooseAlbumOptions } from '../interfaces/Media'
 import { BusinessError } from '@ohos.base';
 import { Channel, MethodChannel } from '../inject_adapter/Channel';
-import { wifiManager } from '@kit.ConnectivityKit';
-import { NativeDataType, nativeUpdater } from '../inject_adapter/NativeDataUpdater';
-import { mediaquery } from '@kit.ArkUI';
+import { nativeCacheManager } from '../inject_adapter/NativeCacheManager';
+import { registerGetSystemSetting, registerGetWindowInfo } from '../inject_adapter/NativeCacheRegisters';
 
 const CONTAINER_TAG = 'TaroWebContainer';
-
-const permissions: Array<Permissions> = ['ohos.permission.ACCESS_BLUETOOTH'];
-function reqPermissionsFromUser(permissions: Array<Permissions>, context: common.UIAbilityContext): void {
-  let atManager: abilityAccessCtrl.AtManager = abilityAccessCtrl.createAtManager();
-  // requestPermissionsFromUser会判断权限的授权状态来决定是否唤起弹窗
-  atManager.requestPermissionsFromUser(context, permissions).then((data) => {
-    let grantStatus: Array<number> = data.authResults;
-    let length: number = grantStatus.length;
-    for (let i = 0; i < length; i++) {
-      if (grantStatus[i] === 0) {
-        // 用户授权，可以继续访问目标操作
-        access.on('stateChange', (data: access.BluetoothState) => {
-          wbLogger.debug(CONTAINER_TAG, "bluetoothStateChange:" + JSON.stringify(data))
-          if(data === access.BluetoothState.STATE_OFF){
-            nativeUpdater.update(NativeDataType.bluetoothEnabled, false)
-          }else if(data === access.BluetoothState.STATE_ON) {
-            nativeUpdater.update(NativeDataType.bluetoothEnabled, true)
-          }
-        });
-      } else {
-        // 用户拒绝授权，提示用户必须授权才能访问当前页面的功能，并引导用户到系统设置中打开相应的权限
-        return;
-      }
-    }
-    // 授权成功
-  }).catch((err: BusinessError) => {
-    wbLogger.debug(CONTAINER_TAG, `Failed to request permissions from user. Code is ${err.code}, message is ${err.message}`)
-  })
-}
 
 /**
  * TaroWebContainer组件，包含定制的Web组件和自定义导航栏
@@ -312,52 +277,14 @@ export struct TaroWebContainer {
       this.adapter!.setLaunchOptions(this.launchOptions);
       this.adapter!.setNavigationBarHeight(this.systemBarHeight + this.navigationBarData.titleHeight + this.navigationBarData.paddingBottom);
       this.adapter!.setSystemBarHeight(this.systemBarHeight);
-      // 屏幕的监听
-      try {
-        windowClass && windowClass.on('windowSizeChange', (data) => {
-          wbLogger.debug(CONTAINER_TAG, "windowScreenChange:" + JSON.stringify(data))
-          nativeUpdater.update(NativeDataType.allWindowInfo)
-        });
-      } catch (exception) {
-        wbLogger.debug(CONTAINER_TAG, "windowScreenChange failed Cause:" + JSON.stringify(exception))
-      }
+
     })
     this.appearDone = true;
 
-    //this.initListener(context)
-    nativeUpdater.init(context)
-    // TODO test测试注册
-    nativeUpdater.registerSystemInfo()
+    nativeCacheManager.init(context)
+    registerGetWindowInfo()
+    registerGetSystemSetting()
 
-
-  }
-
-  initListener(context:common.UIAbilityContext) {
-    // wifi状态的监听
-    wifiManager.on("wifiStateChange", (result: number) => {
-      //0: inactive, 1: active, 2: activating, 3: de-activating
-      wbLogger.debug(CONTAINER_TAG, "wifiStateChange:" + result)
-      if (result === 1) {
-        nativeUpdater.update(NativeDataType.wifiEnabled, true)
-      } else if (result === 0) {
-        nativeUpdater.update(NativeDataType.wifiEnabled, false)
-      }
-    });
-    // 蓝牙状态的监听
-    reqPermissionsFromUser(permissions, context);
-    // 地理位置的系统开关监听
-    geoLocationManager.on('locationEnabledChange', (state: boolean):void => {
-      wbLogger.debug(CONTAINER_TAG, "locationEnabledChange:" + JSON.stringify(state))
-      nativeUpdater.update(NativeDataType.locationEnabled, state)
-    });
-
-    // 横竖屏的监听
-    mediaquery.matchMediaSync('(orientation: landscape)')
-      .on("change", (mediaQueryResult: mediaquery.MediaQueryResult) => {
-        let matches = mediaQueryResult.matches as boolean
-        wbLogger.debug(CONTAINER_TAG, "orientation: landscape:" + matches)
-        nativeUpdater.update(NativeDataType.deviceOrientation, matches ? "landscape" : "portrait")
-      })
   }
 
   onPageStateUpdated(): void {
