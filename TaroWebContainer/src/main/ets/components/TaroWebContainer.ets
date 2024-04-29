@@ -48,6 +48,8 @@ export struct TaroWebContainer {
   @Prop webUrlPrefix: string;
   // 使用缓存
   @Prop useCache: boolean = true;
+  // 使用H5暗黑模式跟随系统变化
+  @Prop useDarkMode: boolean = false;
   // 导航栏初始化visible值
   @Prop navigationInitVisible: boolean = true;
   // 显示胶囊
@@ -190,6 +192,7 @@ export struct TaroWebContainer {
         webUrlPrefix: this.webUrlPrefix,
         hookInterceptorWithoutCache: this.hookInterceptorWithoutCache,
         useCache: this.useCache,
+        useDarkMode: this.useDarkMode,
         apiAdapter: this.adapter,
         taroWebController: this.taroWebController,
         onTitleReceive: this.onTitleReceive,

@@ -7,6 +7,7 @@ export struct TaroHybrid {
   private taroHybridCoreController: TaroWebNodeController | null = null;
   @Prop indexHtmlPath: string
   @Prop taroPath: string
+  @Prop userDark: boolean
   // 同步宿主页面的状态
   @Prop @Watch('onPageStateUpdated') pageState: HostPageState;
 
@@ -24,7 +25,7 @@ export struct TaroHybrid {
   }
 
   aboutToAppear(): void {
-    const instance = TaroHybridManager.getOrCreateCoreInstance(this.indexHtmlPath, this.taroPath)
+    const instance = TaroHybridManager.getOrCreateCoreInstance(this.indexHtmlPath, this.taroPath,this.userDark)
     this.taroHybridCoreController = new TaroWebNodeController(instance)
     TaroHybridManager.appear(this.indexHtmlPath)
   }

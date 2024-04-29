@@ -51,7 +51,8 @@ export default class EntryAbility extends UIAbility {
       TaroHybridManager.preLoader(
         windowStage.getMainWindowSync().getUIContext(),
         "/spa/main/index.html",
-        "/pages/index/index"
+        "/pages/index/index",
+         true
       )
       if (err.code) {
         wbLogger.error(ABILITY_TAG, 'testTag', 'Failed to load the content. Cause: %{public}s', JSON.stringify(err) ?? '');

@@ -16,6 +16,7 @@ export interface TaroHybridCoreBuilderData {
   domain: string
   indexHtmlPath: string
   taroPath: string
+  useDarkMode: boolean
   taroWebController: TaroWebController
   injectObj: InjectObject
 }
@@ -25,7 +26,8 @@ export function TaroHybridCoreBuilder(builderData: TaroHybridCoreBuilderData) {
   TaroHybridCore({
     domain: builderData.domain,
     indexHtmlPath: builderData.indexHtmlPath,
-    taroPath: builderData.taroPath
+    taroPath: builderData.taroPath,
+    useDarkMode: builderData.useDarkMode
   })
 }
 const HTTP_TIMEOUT = 3000;
@@ -38,6 +40,7 @@ struct TaroHybridCore {
   @State taroWebController: TaroWebController = TaroHybridManager.getCoreInstance(this.indexHtmlPath)?.builderData.taroWebController ?? new TaroWebController()
   @State isDebug: boolean = (GlobalThis.getInstance().getContext('context') as common.UIAbilityContext).applicationInfo.debug
   private useCache: boolean = true
+  private  useDarkMode: boolean = false
   injectObj: InjectObject = TaroHybridManager.getCoreInstance(this.indexHtmlPath)?.builderData.injectObj ?? {}
   // 构造时保存kvStore实例到GlobalThis中
   storage: Storage = new Storage(GlobalThis.getInstance().getContext('context') as common.UIAbilityContext,
@@ -119,6 +122,7 @@ struct TaroHybridCore {
       // want: this.want, // want信息
       taroWebController: this.taroWebController,
       useCache: this.isDebug ? this.devUseCache : this.useCache,
+      useDarkMode: this.useDarkMode,
       isFullScreen: false, // 是否全屏显示
       injectObj: this.injectObj,
       showCapsule: false,
