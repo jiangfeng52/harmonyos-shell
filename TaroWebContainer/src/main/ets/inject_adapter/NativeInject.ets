@@ -34,7 +34,8 @@ import {
   ExitMiniProgramOptions,
   SettingOptions,
   NavigationStyle,
-  ChooseMediumOptions
+  ChooseMediumOptions,
+  NativeDataChangeListener
 } from '../interfaces/InjectObject';
 import {
   getBundleUsedPermission,
@@ -63,6 +64,7 @@ import util from '@ohos.util';
 import { selectMediaAssets } from '../utils/MediaUtil';
 import { selectMediumAssets } from '../utils/MediumUtil';
 import { MediaItemData, ChooseAlbumResult, chooseAlbumOptions } from '../interfaces/Media';
+import { nativeCacheManager } from './NativeCacheManager';
 
 
 const NATIVE_TAG = 'NativeInject';
@@ -120,6 +122,10 @@ export class NativeInject {
 
   public buildInjectObj(context: common.UIAbilityContext): InnerInjectObj {
     return {
+      registerNativeListener:(listener: NativeDataChangeListener | null)=>{
+        nativeCacheManager.registerNativeListener(listener)
+      },
+
       copyFileToSandboxCache: (src: string) => {
         wbLogger.debug('JsBridgeNative', `NativeApi$copyFileToSandboxCache`)
         const context = getContext() as common.UIAbilityContext;
