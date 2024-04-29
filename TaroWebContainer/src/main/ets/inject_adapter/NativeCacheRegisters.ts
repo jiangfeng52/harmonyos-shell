@@ -12,19 +12,15 @@ import { BusinessError } from '@kit.BasicServicesKit';
  */
 export function registerGetSystemSetting() {
 
-  let TAG = "getSystemSetting"
-  /** 蓝牙的系统开关 */
-  let bluetoothEnabled: NativeApiPair = new NativeApiPair("getSystemSetting", [], "bluetoothEnabled")
-  /** 地理位置的系统开关 */
-  let locationEnabled: NativeApiPair = new NativeApiPair("getSystemSetting", [], "locationEnabled")
-  /** Wi-Fi 的系统开关 */
-  let wifiEnabled: NativeApiPair = new NativeApiPair("getSystemSetting", [], "wifiEnabled")
-  /** 设备方向 */
-  let deviceOrientation: NativeApiPair = new NativeApiPair("getSystemSetting", [], "deviceOrientation")
+  const pair: NativeApiPair = {
+    method: "getSystemSetting",
+    args: []
+  }
+  const TAG = pair.method
 
   nativeCacheManager.register({
-    method: "getSystemSetting",
-    args: [],
+    method: pair.method,
+    args: pair.args,
     updater: (context: common.UIAbilityContext | null, listener: NativeDataChangeListener | null) => {
       try {
         // wifi状态的监听
@@ -32,16 +28,16 @@ export function registerGetSystemSetting() {
           //0: inactive, 1: active, 2: activating, 3: de-activating
           wbLogger.debug(TAG, "wifiStateChange:" + result)
           if (result === 1) {
-            nativeCacheManager.update(wifiEnabled, true)
+            nativeCacheManager.update(pair)
           } else if (result === 0) {
-            nativeCacheManager.update(wifiEnabled, false)
+            nativeCacheManager.update(pair)
           }
         });
 
         // 地理位置的系统开关监听
         geoLocationManager.on('locationEnabledChange', (state: boolean): void => {
           wbLogger.debug(TAG, "locationEnabledChange:" + JSON.stringify(state))
-          nativeCacheManager.update(locationEnabled, state)
+          nativeCacheManager.update(pair)
         });
 
         // 横竖屏的监听
@@ -49,7 +45,7 @@ export function registerGetSystemSetting() {
           .on("change", (mediaQueryResult: mediaquery.MediaQueryResult) => {
             let matches = mediaQueryResult.matches as boolean
             wbLogger.debug(TAG, "orientation: landscape:" + matches)
-            nativeCacheManager.update(deviceOrientation, matches ? "landscape" : "portrait")
+            nativeCacheManager.update(pair)
           })
 
         // 蓝牙的监听
@@ -65,9 +61,9 @@ export function registerGetSystemSetting() {
               access.on('stateChange', (data: access.BluetoothState) => {
                 wbLogger.debug(TAG, "bluetoothStateChange:" + JSON.stringify(data))
                 if (data === access.BluetoothState.STATE_OFF) {
-                  nativeCacheManager.update(bluetoothEnabled, false)
+                  nativeCacheManager.update(pair)
                 } else if (data === access.BluetoothState.STATE_ON) {
-                  nativeCacheManager.update(bluetoothEnabled, true)
+                  nativeCacheManager.update(pair)
                 }
               });
             } else {
@@ -90,12 +86,16 @@ export function registerGetSystemSetting() {
  * 注册NativeApi方法"getWindowInfo"的监听
  */
 export function registerGetWindowInfo() {
-  let TAG = "getWindowInfo"
-  /**  所有数据更新 */
-  const allWindowInfo: NativeApiPair = new NativeApiPair("getWindowInfo", [])
-  nativeCacheManager.register({
+
+  const pair: NativeApiPair = {
     method: "getWindowInfo",
-    args: [],
+    args: []
+  }
+  const TAG = pair.method
+
+  nativeCacheManager.register({
+    method: pair.method,
+    args: pair.args,
     updater: (context: common.UIAbilityContext | null, cListener: NativeDataChangeListener | null) => {
       try {
         window.getLastWindow(context).then((windowClass) => {
@@ -103,7 +103,7 @@ export function registerGetWindowInfo() {
           try {
             windowClass && windowClass.on('windowSizeChange', (data) => {
               wbLogger.debug(TAG, "windowScreenChange:" + JSON.stringify(data))
-              nativeCacheManager.update(allWindowInfo)
+              nativeCacheManager.update(pair)
             });
           } catch (exception) {
             wbLogger.debug(TAG, "windowScreenChange failed Cause:" + JSON.stringify(exception))
@@ -112,6 +112,26 @@ export function registerGetWindowInfo() {
       } catch (e) {
         wbLogger.debug(TAG, `registerGetWindowInfo发生错误`)
       }
+    }
+  })
+}
+
+/**
+ * 注册NativeApi方法"getDeviceInfo"的监听
+ */
+export function registerGetDeviceInfo() {
+
+  const pair: NativeApiPair = {
+    method: "getDeviceInfo",
+    args: []
+  }
+  const TAG = pair.method
+
+  nativeCacheManager.register({
+    method: pair.method,
+    args: pair.args,
+    updater: (context: common.UIAbilityContext | null, cListener: NativeDataChangeListener | null) => {
+      // 无需更新数据
     }
   })
 }

@@ -35,41 +35,22 @@ class NativeCacheManager {
 
   /**
    * 通过执行该方法，调用了listener的change方法->taro层接收到回调->taro重新请求最新数据。
-   * @param p 更新的数据类型
-   * @param v 要更新的值，可选。如不传，则整个方法中的数据执行更新
+   *
+   * @param p
    */
-  public update(p: NativeApiPair, v?: any) {
-    if (p.field && v != undefined) {
-      // 颗粒度更低的字段级更新。
-      this._listener?.change(p.method, p.args, (old) => {
-        if (old !== undefined && p.field && p.field in old) {
-          old[p.field] = v
-        }
-        return old
-      })
-    } else {
-      this._listener?.change(p.method, p.args)
-    }
+  public update(p: NativeApiPair) {
+    this._listener?.change(p.method, p.args)
   }
 }
 
 export const nativeCacheManager = new NativeCacheManager()
 
-export class NativeApiPair {
+export interface NativeApiPair {
   /*方法名*/
-  public method: string;
+  method: string;
 
   /*方法入参*/
-  public args: any[];
-
-  /*返回数据的字段*/
-  public field?: string;
-
-  constructor(method: string, args: any[], field?: string) {
-    this.method = method;
-    this.args = args
-    this.field = field;
-  }
+  args: any[];
 }
 
 export interface NativeRegister {

@@ -35,7 +35,9 @@ import { AlbumBackward, ChooseAlbumResult, MediaItemData, chooseAlbumOptions } f
 import { BusinessError } from '@ohos.base';
 import { Channel, MethodChannel } from '../inject_adapter/Channel';
 import { nativeCacheManager } from '../inject_adapter/NativeCacheManager';
-import { registerGetSystemSetting, registerGetWindowInfo } from '../inject_adapter/NativeCacheRegisters';
+import {
+  registerGetDeviceInfo,
+  registerGetSystemSetting, registerGetWindowInfo } from '../inject_adapter/NativeCacheRegisters';
 
 const CONTAINER_TAG = 'TaroWebContainer';
 
@@ -292,6 +294,7 @@ export struct TaroWebContainer {
     nativeCacheManager.init(context)
     registerGetWindowInfo()
     registerGetSystemSetting()
+    registerGetDeviceInfo()
 
   }
 
