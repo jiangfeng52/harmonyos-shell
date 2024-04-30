@@ -48,6 +48,8 @@ export struct TaroWebContainer {
   @Prop webUrlPrefix: string;
   // 使用缓存
   @Prop useCache: boolean = true;
+  // 是否强制反色适配深色模式
+  @Prop forceDarkAccess: boolean;
   // 导航栏初始化visible值
   @Prop navigationInitVisible: boolean = true;
   // 显示胶囊
@@ -196,7 +198,8 @@ export struct TaroWebContainer {
         onRefreshAccessedHistory: this.onRefreshAccessedHistory,
         enableWebDebug: this.enableWebDebug,
         channel: this.channel,
-        methodChannel: this.methodChannel
+        methodChannel: this.methodChannel,
+        forceDarkAccess: this.forceDarkAccess
       })
       NavigationBar({
         navigationBarData: this.navigationBarData,
