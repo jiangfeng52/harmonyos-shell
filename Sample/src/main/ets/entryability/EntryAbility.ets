@@ -46,13 +46,13 @@ export default class EntryAbility extends UIAbility {
         rootIndexHtmlPath: "/spa/main/index.html",
         nativeBack: ()=>{
           router.back()
-        }
+        },
+        forceDarkAccess: true
       })
       TaroHybridManager.preLoader(
         windowStage.getMainWindowSync().getUIContext(),
         "/spa/main/index.html",
-        "/pages/index/index",
-        true
+        "/pages/index/index"
       )
       if (err.code) {
         wbLogger.error(ABILITY_TAG, 'testTag', 'Failed to load the content. Cause: %{public}s', JSON.stringify(err) ?? '');

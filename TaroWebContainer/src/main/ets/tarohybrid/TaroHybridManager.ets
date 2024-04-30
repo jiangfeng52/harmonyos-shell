@@ -56,7 +56,8 @@ export interface TaroHybridManagerOptions {
   domain: string
   injectNativeMethod: (indexHtmlPath: string, uiAbilityContext: common.UIAbilityContext) => InjectObject,
   rootIndexHtmlPath?: string,
-  nativeBack: ()=>void
+  nativeBack: ()=>void,
+  forceDarkAccess: boolean
 }
 
 export class TaroHybridManager {
@@ -79,11 +80,11 @@ export class TaroHybridManager {
     return indexHtmlPath === rootIndexHtmlPath
   }
 
-  static preLoader(uiContext: UIContext, indexHtmlPath: string, taroPath: string, forceDarkAccess: boolean = false){
-    const instance = TaroHybridManager.getOrCreateCoreInstance(indexHtmlPath, taroPath, forceDarkAccess)
+  static preLoader(uiContext: UIContext, indexHtmlPath: string, taroPath: string){
+    const instance = TaroHybridManager.getOrCreateCoreInstance(indexHtmlPath, taroPath)
     instance.getBuilderNode(uiContext)
   }
-  static getOrCreateCoreInstance(indexHtmlPath: string, taroPath: string, forceDarkAccess: boolean): TaroHybridCoreInstance{
+  static getOrCreateCoreInstance(indexHtmlPath: string, taroPath: string): TaroHybridCoreInstance{
     let builderInstance = TaroHybridManager.builderInstanceMaps.get(indexHtmlPath)
     if (!builderInstance){
       builderInstance = new TaroHybridCoreInstance(
@@ -91,7 +92,7 @@ export class TaroHybridManager {
         indexHtmlPath,
         taroPath,
         TaroHybridManager?.options?.injectNativeMethod(indexHtmlPath, GlobalThis.getInstance().getContext('context') as common.UIAbilityContext) ?? {},
-        forceDarkAccess
+        TaroHybridManager?.options?.forceDarkAccess?? false
       )
       // 一定要先保存到Map里，再build
       TaroHybridManager.builderInstanceMaps.set(indexHtmlPath, builderInstance)

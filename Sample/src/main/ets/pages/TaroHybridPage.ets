@@ -53,8 +53,7 @@ struct TaroHybridPage {
         TaroHybrid({
           indexHtmlPath: this.indexHtmlPath,
           taroPath: this.taroPath,
-          pageState: this.pageState,
-          forceDarkAccess: true
+          pageState: this.pageState
         })
       }
     }
