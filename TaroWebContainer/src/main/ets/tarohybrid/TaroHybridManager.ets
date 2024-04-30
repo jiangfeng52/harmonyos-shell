@@ -12,13 +12,14 @@ export class TaroHybridCoreInstance {
   private builderNode: BuilderNode<TaroHybridCoreBuilderData[]> | undefined
   builderData: TaroHybridCoreBuilderData
 
-  constructor(domain: string, indexHtmlPath: string, taroPath: string, injectObj: InjectObject) {
+  constructor(domain: string, indexHtmlPath: string, taroPath: string, injectObj: InjectObject, forceDarkAccess: boolean) {
     this.builderData = {
       domain: domain,
       indexHtmlPath: indexHtmlPath,
       taroPath: taroPath,
       taroWebController: new TaroWebController(),
-      injectObj: injectObj
+      injectObj: injectObj,
+      forceDarkAccess: forceDarkAccess
     }
   }
 
@@ -78,18 +79,19 @@ export class TaroHybridManager {
     return indexHtmlPath === rootIndexHtmlPath
   }
 
-  static preLoader(uiContext: UIContext, indexHtmlPath: string, taroPath: string){
-    const instance = TaroHybridManager.getOrCreateCoreInstance(indexHtmlPath, taroPath)
+  static preLoader(uiContext: UIContext, indexHtmlPath: string, taroPath: string, forceDarkAccess: boolean = false){
+    const instance = TaroHybridManager.getOrCreateCoreInstance(indexHtmlPath, taroPath, forceDarkAccess)
     instance.getBuilderNode(uiContext)
   }
-  static getOrCreateCoreInstance(indexHtmlPath: string, taroPath: string): TaroHybridCoreInstance{
+  static getOrCreateCoreInstance(indexHtmlPath: string, taroPath: string, forceDarkAccess: boolean): TaroHybridCoreInstance{
     let builderInstance = TaroHybridManager.builderInstanceMaps.get(indexHtmlPath)
     if (!builderInstance){
       builderInstance = new TaroHybridCoreInstance(
         TaroHybridManager?.options?.domain??'',
         indexHtmlPath,
         taroPath,
-        TaroHybridManager?.options?.injectNativeMethod(indexHtmlPath, GlobalThis.getInstance().getContext('context') as common.UIAbilityContext) ?? {}
+        TaroHybridManager?.options?.injectNativeMethod(indexHtmlPath, GlobalThis.getInstance().getContext('context') as common.UIAbilityContext) ?? {},
+        forceDarkAccess
       )
       // 一定要先保存到Map里，再build
       TaroHybridManager.builderInstanceMaps.set(indexHtmlPath, builderInstance)

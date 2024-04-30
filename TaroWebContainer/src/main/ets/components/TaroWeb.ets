@@ -111,6 +111,8 @@ export struct TaroWeb {
   @Prop webUrl: string;
   @Prop webUrlPrefix: string;
   @Prop useCache: boolean;
+  // 是否强制反色适配深色模式
+  @Prop forceDarkAccess: boolean;
   @State componentIdArr: Array<string> = []
   @ObjectLink taroWebController: TaroWebController;
   apiAdapter: ApiAdapter = new ApiAdapter();
@@ -268,6 +270,8 @@ export struct TaroWeb {
         .onRefreshAccessedHistory(() => {
           this.onRefreshAccessedHistory && this.onRefreshAccessedHistory();
         })
+        .darkMode(WebDarkMode.Auto)
+        .forceDarkAccess(this.forceDarkAccess)
       // .webLite(true)  // 需要 osChannel sdk
     }
   }
