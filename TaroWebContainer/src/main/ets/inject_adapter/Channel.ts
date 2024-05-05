@@ -54,7 +54,7 @@ export class MethodChannel {
   private channel: Channel
 
   // TODO-ly 改为装饰器实现
-  registerMethod(methodName: string, fun: (arg: any, objectId?: number)=>any) {
+  registerMethod(methodName: string, fun: (arg: any, callInstanceParam?: any)=>any) {
     if(this.methodPools.has(methodName)){
       return
     }
@@ -85,7 +85,7 @@ export class MethodChannel {
       return undefined;
     }
 
-    const {isFun, properties, funs, stubId, objectId} = arg
+    const {isFun, properties, funs, stubId, callInstanceParam} = arg
 
     let argProxy;
     if (stubId == -1) { // 没有回调函数
@@ -120,7 +120,7 @@ export class MethodChannel {
       // arg为对象
       argProxy = argObject;
     }
-    return fun.call(null, argProxy, objectId)
+    return fun.call(null, argProxy, callInstanceParam)
   }
 }
 

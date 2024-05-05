@@ -221,11 +221,11 @@ export struct TaroWeb {
               wbLogger.debug('nativeApi', `channelType ${channelType} objectJson(${objectJson})`)
               return this.channel.call(channelType, objectJson) as object
             },
-            transferSameLayerArgs: sameLayerManager.transferSameLayerArgs
+            transferSameLayerArgs: sameLayerManager.transferSameLayerArgs,
           },
           name: 'JSBridge',
           methodList: ['nativeMethod', 'transferSameLayerArgs'],
-          controller: this.taroWebController.webController,
+          controller: this.taroWebController.webController
         })
         .onConsole((event) => {
           wbLogger.debug(TARO_WEB_TAG, `${event?.message.getMessage()}`)

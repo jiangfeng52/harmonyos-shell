@@ -103,11 +103,18 @@ window.MethodChannel = {
       descriptor.value = function (...args: any[]) {
 
         const firstArg = args.length >= 1 ? args[0] : ''
-        const objectId = args.length >= 2 ? args[1] : undefined
+        const callInstanceParam = args.length >= 2 ? args[1] : undefined
+        let autoRelease = mode?.autoRelease ?? true
+        let isAsync = mode?.isAsync ?? true
+        if (callInstanceParam){
+          autoRelease = callInstanceParam?.autoRelease
+          isAsync = callInstanceParam?.isAsync
+          console.debug('ClassInstanceApi callInstanceParam', `${isAsync}, ${autoRelease}`);
+        }
 
         let argTypeIsFun = isFunction(firstArg)
         // @ts-ignore
-        let stubId = window.MethodChannel.__registerArgStub(firstArg, argTypeIsFun, mode?.autoRelease ?? true)
+        let stubId = window.MethodChannel.__registerArgStub(firstArg, argTypeIsFun, autoRelease)
         if (argTypeIsFun) {
           // @ts-ignore
           if (window.MethodChannel._listenerMap.has(firstArg)) {
@@ -122,7 +129,7 @@ window.MethodChannel = {
         // 方法调用转换为数据
         var methodCall = {
           //修改了名称
-          isAsync: mode?.isAsync ?? true,
+          isAsync: isAsync,
           // 调用函数名
           call: `${className ? className : ''}\$${key.toString()}`,
           arg: {
@@ -130,7 +137,7 @@ window.MethodChannel = {
             properties: firstArg,
             funs: getAllFuns(firstArg),
             stubId: stubId,
-            objectId: objectId,
+            callInstanceParam: callInstanceParam,
           },
         }
         // @ts-ignore
