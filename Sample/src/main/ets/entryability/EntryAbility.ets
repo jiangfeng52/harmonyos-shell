@@ -46,7 +46,8 @@ export default class EntryAbility extends UIAbility {
         rootIndexHtmlPath: "/spa/main/index.html",
         nativeBack: ()=>{
           router.back()
-        }
+        },
+        forceDarkAccess: true
       })
       TaroHybridManager.preLoader(
         windowStage.getMainWindowSync().getUIContext(),

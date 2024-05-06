@@ -18,6 +18,7 @@ export interface TaroHybridCoreBuilderData {
   taroPath: string
   taroWebController: TaroWebController
   injectObj: InjectObject
+  forceDarkAccess: boolean
 }
 
 @Builder
@@ -25,7 +26,8 @@ export function TaroHybridCoreBuilder(builderData: TaroHybridCoreBuilderData) {
   TaroHybridCore({
     domain: builderData.domain,
     indexHtmlPath: builderData.indexHtmlPath,
-    taroPath: builderData.taroPath
+    taroPath: builderData.taroPath,
+    forceDarkAccess: builderData.forceDarkAccess
   })
 }
 const HTTP_TIMEOUT = 3000;
@@ -35,6 +37,8 @@ struct TaroHybridCore {
   @Prop indexHtmlPath: string;
   @Prop taroPath: string;
   @Prop domain: string;
+  // 是否强制反色适配深色模式
+  @Prop forceDarkAccess: boolean;
   @State taroWebController: TaroWebController = TaroHybridManager.getCoreInstance(this.indexHtmlPath)?.builderData.taroWebController ?? new TaroWebController()
   @State isDebug: boolean = (GlobalThis.getInstance().getContext('context') as common.UIAbilityContext).applicationInfo.debug
   private useCache: boolean = true
@@ -124,7 +128,8 @@ struct TaroHybridCore {
       showCapsule: false,
       onNavigationBarBackPressed: this.navigationBarBackPressed,
       hookInterceptorWithoutCache:this.hookInterceptorWithoutCache,
-      isRoot: this.isRoot
+      isRoot: this.isRoot,
+      forceDarkAccess: this.forceDarkAccess
     })
       .width('100%')
       .height('100%')
