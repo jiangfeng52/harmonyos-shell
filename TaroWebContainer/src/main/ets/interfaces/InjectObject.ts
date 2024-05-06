@@ -208,19 +208,18 @@ export interface NativeDataChangeListener {
    * 更新
    * @param methodName    要更新的方法名
    * @param methodArgs    要更新的方法参数，如果是空参，直接传[]
-   * @param update        数据更新（不传，则更新整个方法的缓存数据）
    */
   change: (methodName: string, methodArgs: any[]) => void
   /**
    * 注册
-   * @param methodName    要注册的方法名
+   * @param methodName    要注册的方法名列表
    */
-  register: (methodName: string) => void
+  register: (methodNames: string[]) => void
   /**
    * 解注册
-   * @param methodName    要解注册的方法名
+   * @param methodName    要解注册的方法名列表
    */
-  unregister:(methodName: string) => void
+  unregister:(methodNames: string[]) => void
 
 }
 

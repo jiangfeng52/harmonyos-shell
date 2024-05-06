@@ -13,24 +13,37 @@ class NativeCacheManager {
   public registerNativeListener(listener: NativeDataChangeListener | null) {
     this._listener = listener
     // 方法名全部要注册
-    this._registers.forEach((re) => this._listener?.register(re.method))
+    this._listener?.register(this._registers.map(r => r.method))
   }
 
-  public register(r: NativeRegister) {
-    const index = this._registers.indexOf(r)
-    if (index === -1) {
-      this._registers.push(r)
-      r.updater(this._context, this._listener)
-      this._listener?.register(r.method)
-    }
+  public register(rList: NativeRegister[]) {
+    let rNameList = new Set<string>()
+    rList.forEach(r => {
+      const index = this._registers.indexOf(r)
+      // 不存在
+      if (index === -1) {
+        this._registers.push(r)
+        r.updater(this._context, this._listener)
+        rNameList.add(r.method)
+      }
+    })
+    // taro注册
+    this._listener?.register(Array.from(rNameList))
   }
 
-  public unregister(r: NativeRegister) {
-    const index = this._registers.indexOf(r)
-    if (index > -1) {
-      this._registers.splice(index, 1)
-      this._listener?.unregister(r.method)
-    }
+  public unregister(rList: NativeRegister[]) {
+    let rNameList = new Set<string>()
+    rList.forEach(r => {
+      const index = this._registers.indexOf(r)
+      // 存在
+      if (index > -1) {
+        this._registers.splice(index, 1)
+        rNameList.add(r.method)
+      }
+    })
+    // taro解注册
+    this._listener?.unregister(Array.from(rNameList))
+
   }
 
   /**
