@@ -300,6 +300,10 @@ export struct TaroWebContainer {
 
   }
 
+  aboutToDisappear(): void {
+    nativeCacheManager.unregisterAll()
+  }
+
   onPageStateUpdated(): void {
   }
 

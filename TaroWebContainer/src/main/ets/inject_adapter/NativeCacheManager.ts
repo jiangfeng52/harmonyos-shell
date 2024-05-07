@@ -46,6 +46,10 @@ class NativeCacheManager {
 
   }
 
+  public unregisterAll(){
+    this.unregister(this._registers)
+  }
+
   /**
    * 通过执行该方法，调用了listener的change方法->taro层接收到回调->taro重新请求最新数据。
    *
