@@ -51,7 +51,7 @@ export struct TaroWebContainer {
   // 是否强制反色适配深色模式
   @Prop forceDarkAccess: boolean;
   // 导航栏初始化visible值
-  @Prop navigationInitVisible: boolean = true;
+  @Prop navigationInitVisible: boolean = false;
   // 显示胶囊
   @Prop showCapsule: boolean = true;
   // 胶囊按钮点击后跳转的页面
