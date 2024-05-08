@@ -1,7 +1,7 @@
 import { NativeDataChangeListener } from '../interfaces/InjectObject';
 import { common } from '@kit.AbilityKit';
 
-class NativeCacheManager {
+export class NativeCacheManager {
   private _listener: NativeDataChangeListener | null = null;
   private _registers: NativeRegister[] = []
   private _context: common.UIAbilityContext | null = null;
@@ -23,7 +23,7 @@ class NativeCacheManager {
       // 不存在
       if (index === -1) {
         this._registers.push(r)
-        r.updater(this._context, this._listener)
+        r.updater(this._context, () => this._listener)
         rNameList.add(r.method)
       }
     })
@@ -46,7 +46,7 @@ class NativeCacheManager {
 
   }
 
-  public unregisterAll(){
+  public unregisterAll() {
     this.unregister(this._registers)
   }
 
@@ -59,8 +59,6 @@ class NativeCacheManager {
     this._listener?.change(p.method, p.args)
   }
 }
-
-export const nativeCacheManager = new NativeCacheManager()
 
 export interface NativeApiPair {
   /*方法名*/
@@ -78,5 +76,5 @@ export interface NativeRegister {
   args: any[];
 
   /*更新的方法*/
-  updater: (context: common.UIAbilityContext | null, listener: NativeDataChangeListener | null) => void;
+  updater: (context: common.UIAbilityContext | null, listener: () => NativeDataChangeListener | null) => void;
 }

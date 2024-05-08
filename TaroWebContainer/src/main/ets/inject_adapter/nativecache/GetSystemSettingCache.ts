@@ -1,4 +1,4 @@
-import { NativeApiPair, nativeCacheManager, NativeRegister } from '../NativeCacheManager';
+import { NativeApiPair, NativeRegister } from '../NativeCacheManager';
 import { abilityAccessCtrl, common, Permissions } from '@kit.AbilityKit';
 import { access, wifiManager } from '@kit.ConnectivityKit';
 import { wbLogger } from '../../utils/Logger';
@@ -10,7 +10,7 @@ import { NativeDataChangeListener } from '../../interfaces/InjectObject';
 /**
  * 注册NativeApi方法"getSystemSetting"的监听
  */
-class GetSystemSettingCache implements NativeRegister {
+export class GetSystemSettingCache implements NativeRegister {
   private pair: NativeApiPair = {
     method: "getSystemSetting",
     args: []
@@ -19,28 +19,28 @@ class GetSystemSettingCache implements NativeRegister {
 
   method: string;
   args: any[];
-  updater: (context: common.UIAbilityContext | null, listener: NativeDataChangeListener | null) => void;
+  updater: (context: common.UIAbilityContext | null, listener: () => NativeDataChangeListener | null) => void;
 
   constructor() {
     this.method = this.pair.method
     this.args = this.pair.args
-    this.updater = (context: common.UIAbilityContext | null, listener: NativeDataChangeListener | null) => {
+    this.updater = (context: common.UIAbilityContext | null, listener: () => NativeDataChangeListener | null) => {
       try {
         // wifi状态的监听
         wifiManager.on("wifiStateChange", (result: number) => {
           //0: inactive, 1: active, 2: activating, 3: de-activating
           wbLogger.debug(this.TAG, "wifiStateChange:" + result)
           if (result === 1) {
-            nativeCacheManager.update(this.pair)
+            listener()?.change(this.pair.method, this.pair.args)
           } else if (result === 0) {
-            nativeCacheManager.update(this.pair)
+            listener()?.change(this.pair.method, this.pair.args)
           }
         });
 
         // 地理位置的系统开关监听
         geoLocationManager.on('locationEnabledChange', (state: boolean): void => {
           wbLogger.debug(this.TAG, "locationEnabledChange:" + JSON.stringify(state))
-          nativeCacheManager.update(this.pair)
+          listener()?.change(this.pair.method, this.pair.args)
         });
 
         // 横竖屏的监听
@@ -48,7 +48,7 @@ class GetSystemSettingCache implements NativeRegister {
           .on("change", (mediaQueryResult: mediaquery.MediaQueryResult) => {
             let matches = mediaQueryResult.matches as boolean
             wbLogger.debug(this.TAG, "orientation: landscape:" + matches)
-            nativeCacheManager.update(this.pair)
+            listener()?.change(this.pair.method, this.pair.args)
           })
 
         // 蓝牙的监听
@@ -64,9 +64,9 @@ class GetSystemSettingCache implements NativeRegister {
               access.on('stateChange', (data: access.BluetoothState) => {
                 wbLogger.debug(this.TAG, "bluetoothStateChange:" + JSON.stringify(data))
                 if (data === access.BluetoothState.STATE_OFF) {
-                  nativeCacheManager.update(this.pair)
+                  listener()?.change(this.pair.method, this.pair.args)
                 } else if (data === access.BluetoothState.STATE_ON) {
-                  nativeCacheManager.update(this.pair)
+                  listener()?.change(this.pair.method, this.pair.args)
                 }
               });
             } else {
@@ -84,5 +84,3 @@ class GetSystemSettingCache implements NativeRegister {
     }
   }
 }
-
-export const getSystemSettingCache = new GetSystemSettingCache()

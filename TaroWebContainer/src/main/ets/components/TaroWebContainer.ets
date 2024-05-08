@@ -34,10 +34,9 @@ import { wbLogger } from '../utils/Logger';
 import { AlbumBackward, ChooseAlbumResult, MediaItemData, chooseAlbumOptions } from '../interfaces/Media'
 import { BusinessError } from '@ohos.base';
 import { Channel, MethodChannel } from '../inject_adapter/Channel';
-import { nativeCacheManager } from '../inject_adapter/NativeCacheManager';
-import { getWindowInfoCache } from '../inject_adapter/nativecache/GetWindowInfoCache';
-import { getDeviceInfoCache } from '../inject_adapter/nativecache/GetDeviceInfoCache';
-import { getSystemSettingCache } from '../inject_adapter/nativecache/GetSystemSettingCache';
+import { GetWindowInfoCache } from '../inject_adapter/nativecache/GetWindowInfoCache';
+import { GetDeviceInfoCache } from '../inject_adapter/nativecache/GetDeviceInfoCache';
+import { GetSystemSettingCache } from '../inject_adapter/nativecache/GetSystemSettingCache';
 
 const CONTAINER_TAG = 'TaroWebContainer';
 
@@ -254,7 +253,7 @@ export struct TaroWebContainer {
 
     // 创建高阶API适配器，合并注入的对象
     this.adapter = new ApiAdapter();
-    const nativeInject = new NativeInject(this.navigationBarData, this.capsuleOptions, this.capsuleController);
+    const nativeInject = new NativeInject(this.navigationBarData, this.capsuleOptions, this.capsuleController,this.taroWebController.getNativeCacheManager());
     this.taroWebController.setAlbumBackward(this.albumBackward);
     nativeInject.setChooseAlbumCallback(this.chooseAlbumCallback);
 
@@ -294,14 +293,13 @@ export struct TaroWebContainer {
     })
     this.appearDone = true;
 
-    nativeCacheManager.init(context)
-    nativeCacheManager.register([getWindowInfoCache, getDeviceInfoCache, getSystemSettingCache])
-
+    this.taroWebController.getNativeCacheManager().init(context)
+    this.taroWebController.getNativeCacheManager().register([new GetWindowInfoCache(), new GetDeviceInfoCache(), new GetSystemSettingCache()])
 
   }
 
   aboutToDisappear(): void {
-    nativeCacheManager.unregisterAll()
+    this.taroWebController.getNativeCacheManager().unregisterAll()
   }
 
   onPageStateUpdated(): void {
