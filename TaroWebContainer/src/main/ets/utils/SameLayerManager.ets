@@ -34,7 +34,9 @@ interface RenderParams {
 function getRenderOptions(originalArgs: object, embedWidth: number | undefined, embedHeight: number | undefined): object {
   const args: ESObject = {};
   Object.keys(originalArgs).forEach(key => {
-    args[key] = originalArgs[key]
+    if (typeof originalArgs[key] !== 'function') {
+      args[key] = originalArgs[key]
+    }
   })
   args['width'] = embedWidth || 0;
   args['height'] = embedHeight || 0;
@@ -159,10 +161,15 @@ class SameLayerManager {
       nodeContainerArgMap.set(componentId, nodeController)
       createCallback?.()
     } else if (embed.status == NativeEmbedStatus.UPDATE) {
-      wbLogger.info(TAG, 'onNativeEmbedLifecycleChange UPDATE: Re-render native component')
       const nodeController = nodeContainerArgMap.get(componentId)!;
       const embedWidth = px2vp(embed.info.width);
       const embedHeight = px2vp(embed.info.height);
+      // 页面滑动可能会导致embed标签的宽高会出现1px的抖动，此外，embed坐标发生变化也会触发UPDATE，均不需要重新渲染。
+      if (Math.abs(embedWidth - nodeController.getEmbedWidth()!) <= 1
+        && Math.abs(embedHeight - nodeController.getEmbedHeight()!) <= 1 ) {
+        return
+      }
+      wbLogger.info(TAG, 'onNativeEmbedLifecycleChange UPDATE: Re-render native component')
       nodeController.setEmbedWidth(embedWidth) // embed宽度发生变化，重新设置宽度
       nodeController.setEmbedHeight(embedHeight) // embed高度发生变化，重新设置高度
       const originalArgs = sameLayerArgsMap.get(componentId)!;
@@ -171,6 +178,8 @@ class SameLayerManager {
       nodeController.rebuild()
     } else {
       wbLogger.info(TAG, 'onNativeEmbedLifecycleChange DESTROY')
+      // 清理数组元素，触发重新渲染
+      destroyCallback?.()
       const nodeController = nodeContainerArgMap.get(componentId)
       nodeController?.release()
       // 动态下树
@@ -180,8 +189,6 @@ class SameLayerManager {
       nodeContainerArgMap.delete(componentId)
       // 清理同层渲染组件数据
       sameLayerArgsMap.delete(componentId)
-      // 清理数组元素，触发重新渲染
-      destroyCallback?.()
     }
   }
 
@@ -210,7 +217,8 @@ class SameLayerManager {
       wbLogger.warn(TAG, 'ComponentId is undefined.')
       return
     }
-    if (sameLayerArgsMap.get(args['componentId']) === undefined) {
+    if (sameLayerArgsMap.get(args['componentId']) === undefined ||
+      nodeContainerArgMap.get(args['componentId']) === undefined) {
       wbLogger.info(TAG, `Create native component attributes: ${JSON.stringify(args)}`);
       // 创建同层组件时
       sameLayerArgsMap.set(args['componentId'], args)
@@ -227,7 +235,11 @@ class SameLayerManager {
       if (args['width'] === originalArgs['width'] && args['height'] === originalArgs['height']) {
         wbLogger.info(TAG, 'transferSameLayerArgs: Re-render native component');
         // 更新原生组件
-        const nodeController = nodeContainerArgMap.get(args['componentId'])!;
+        const nodeController = nodeContainerArgMap.get(args['componentId']);
+        if (!nodeController) {
+          wbLogger.warn(TAG, 'NodeController instance is undefined.');
+          return
+        }
         const embedWidth = nodeController.getEmbedWidth();
         const embedHeight = nodeController.getEmbedHeight();
         const renderOptions = getRenderOptions(args, embedWidth, embedHeight);
