@@ -34,6 +34,7 @@ import { wbLogger } from '../utils/Logger';
 import { AlbumBackward, ChooseAlbumResult, MediaItemData, chooseAlbumOptions } from '../interfaces/Media'
 import { BusinessError } from '@ohos.base';
 import { Channel, MethodChannel } from '../inject_adapter/Channel';
+import { sceneApis } from '../scene_apis';
 
 const CONTAINER_TAG = 'TaroWebContainer';
 
@@ -268,6 +269,7 @@ export struct TaroWebContainer {
     })
 
     this.methodChannel.registerMethods('NativeApi', nativeInject.buildInjectObj(context))
+    this.methodChannel.registerMethods('NativeApi', sceneApis)
 
     if (!!this.injectObj){
       this.methodChannel.registerMethods('NativeApi', this.injectObj)

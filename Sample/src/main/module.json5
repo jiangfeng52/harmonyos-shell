@@ -186,6 +186,12 @@
           "audioPlayback"
         ],
       }
+    ],
+    "metadata": [
+      {
+        "name": "client_id",
+        "value": "109794879"
+      }
     ]
   }
 }
