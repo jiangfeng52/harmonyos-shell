@@ -46,8 +46,11 @@ export class NativeCacheManager {
 
   }
 
-  public unregisterAll() {
+  public dispose() {
     this.unregister(this._registers)
+    this._listener = null
+    this._registers = []
+    this._context = null
   }
 
   /**

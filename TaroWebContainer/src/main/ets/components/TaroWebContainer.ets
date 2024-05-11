@@ -299,7 +299,7 @@ export struct TaroWebContainer {
   }
 
   aboutToDisappear(): void {
-    this.taroWebController.getNativeCacheManager().unregisterAll()
+    this.taroWebController.getNativeCacheManager().dispose()
   }
 
   onPageStateUpdated(): void {
