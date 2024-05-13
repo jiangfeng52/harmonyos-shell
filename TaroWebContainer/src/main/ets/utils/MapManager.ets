@@ -26,7 +26,7 @@ export function callMapContextFunction(options: ESObject, callParam: CallMapPara
 
 export function createMapContext(mapId: string): string {
   if (mapControllerMap.get(mapId)) {
-    if (!mapControllerMap.has(mapId)) {
+    if (!mapContextMap.has(mapId)) {
       mapContextMap.set(mapId, new MapContext(mapId));
     }
     return mapId;
