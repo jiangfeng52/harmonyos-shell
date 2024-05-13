@@ -102,6 +102,7 @@ struct NativeMap {
     const mapController = mapControllerMap.get(this.params.componentId);
     // 移除注册了的事件
     this.eventList.forEach((eventName: string) => {
+      wbLogger.info(TAG, `{eventName} event is removed`);
       mapController?.off(eventName as ESObject, () => {});
     })
     // 清理mapController实例
