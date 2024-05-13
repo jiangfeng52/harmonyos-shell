@@ -85,7 +85,7 @@ struct NativeMap {
               eventName = eventName.charAt(0).toLowerCase() + eventName.slice(1);
               this.eventList.push(eventName);
               mapController.on(eventName as ESObject, (e) => {
-                wbLogger.info(TAG, `${event} event is triggered`);
+                wbLogger.info(TAG, `${eventName} event is triggered`);
                 args[key](e);
               })
             }
