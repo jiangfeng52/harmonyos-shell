@@ -34,7 +34,8 @@ import {
   ExitMiniProgramOptions,
   SettingOptions,
   NavigationStyle,
-  ChooseMediumOptions
+  ChooseMediumOptions,
+  NativeDataChangeListener
 } from '../interfaces/InjectObject';
 import {
   getBundleUsedPermission,
@@ -63,6 +64,7 @@ import util from '@ohos.util';
 import { selectMediaAssets } from '../utils/MediaUtil';
 import { selectMediumAssets } from '../utils/MediumUtil';
 import { MediaItemData, ChooseAlbumResult, chooseAlbumOptions } from '../interfaces/Media';
+import { NativeCacheManager } from './NativeCacheManager';
 
 
 const NATIVE_TAG = 'NativeInject';
@@ -85,14 +87,16 @@ export class NativeInject {
   // 胶囊显示控制
   private capsuleController: CapsuleController;
   private chooseAlbumCallback?: (options: chooseAlbumOptions, mediaItems: MediaItemData[]) => Promise<ChooseAlbumResult>;
+  private nativeCacheManager: NativeCacheManager;
 
-  constructor(navigationBarData: NavigationBarData, capsuleOptions: MenuButtonOptions, capsuleController: CapsuleController) {
+  constructor(navigationBarData: NavigationBarData, capsuleOptions: MenuButtonOptions, capsuleController: CapsuleController, nativeCacheManager: NativeCacheManager) {
     this.navigationBarData = navigationBarData;
     this.systemBarHeight = 0;
     this.windowWidth = 0;
     this.permissionInfo = [];
     this.capsuleOptions = capsuleOptions
     this.capsuleController = capsuleController
+    this.nativeCacheManager = nativeCacheManager
   }
 
   private setStatusBarFrontColor(barFrontColor: string) {
@@ -120,6 +124,10 @@ export class NativeInject {
 
   public buildInjectObj(context: common.UIAbilityContext): InnerInjectObj {
     return {
+      registerNativeListener:(listener: NativeDataChangeListener | null)=>{
+        this.nativeCacheManager.registerNativeListener(listener)
+      },
+
       copyFileToSandboxCache: (src: string) => {
         wbLogger.debug('JsBridgeNative', `NativeApi$copyFileToSandboxCache`)
         const context = getContext() as common.UIAbilityContext;

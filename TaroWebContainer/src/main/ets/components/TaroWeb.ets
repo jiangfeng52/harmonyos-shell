@@ -30,6 +30,7 @@ import { sameLayerManager } from '../utils/SameLayerManager';
 import { NativeVideoBuilder } from './SameLayer/NativeComponents/Video/Video';
 import { NativeMapBuilder } from './SameLayer/NativeComponents/Map/Map';
 import { callMapContextFunction, createMapContext } from '../utils/MapManager';
+import { NativeCacheManager } from '../inject_adapter/NativeCacheManager';
 
 
 const TARO_WEB_TAG = 'TaroWeb';
@@ -42,11 +43,17 @@ export class TaroWebController {
   public hasBindedTaroWeb: boolean;
   public callbacks: InterceptRequestHandler[];
   public albumBackward?: AlbumBackward;
+  public nativeCacheManager: NativeCacheManager
 
   constructor() {
     this.webController = new webview.WebviewController();
+    this.nativeCacheManager = new NativeCacheManager()
     this.hasBindedTaroWeb = false;
     this.callbacks = [];
+  }
+
+  getNativeCacheManager(){
+    return this.nativeCacheManager
   }
 
   loadUrl(url: string | Resource, headers?: Array<webview.WebHeader>) {
