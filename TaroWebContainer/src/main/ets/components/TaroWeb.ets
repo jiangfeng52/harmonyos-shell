@@ -28,6 +28,8 @@ import { NativeApi } from '../inject_adapter/NativeApi';
 import { Channel, MethodChannel } from '../inject_adapter/Channel';
 import { sameLayerManager } from '../utils/SameLayerManager';
 import { NativeVideoBuilder } from './SameLayer/NativeComponents/Video/Video';
+import { NativeMapBuilder } from './SameLayer/NativeComponents/Map/Map';
+import { callMapContextFunction, createMapContext } from '../utils/MapManager';
 import { NativeCacheManager } from '../inject_adapter/NativeCacheManager';
 
 
@@ -137,8 +139,12 @@ export struct TaroWeb {
 
     this.methodChannel.registerMethods('NativeApi', this.nativeAPI.nativeObj)
 
-    if (!sameLayerManager.isAlreadyRegistered('video')) {
-      sameLayerManager.registerNativeComponentBuilders('video', NativeVideoBuilder)
+    if (!sameLayerManager.isAlreadyRegistered('hos-map')) {
+      sameLayerManager.registerNativeComponentBuilders('hos-map', NativeMapBuilder);
+    }
+
+    if (!sameLayerManager.isAlreadyRegistered('hos-video')) {
+      sameLayerManager.registerNativeComponentBuilders('hos-video', NativeVideoBuilder);
     }
   }
 
@@ -230,10 +236,12 @@ export struct TaroWeb {
               wbLogger.debug('nativeApi', `channelType ${channelType} objectJson(${objectJson})`)
               return this.channel.call(channelType, objectJson) as object
             },
-            transferSameLayerArgs: sameLayerManager.transferSameLayerArgs
+            transferSameLayerArgs: sameLayerManager.transferSameLayerArgs,
+            callMapContextFunction: callMapContextFunction,
+            createMapContext: createMapContext,
           },
           name: 'JSBridge',
-          methodList: ['nativeMethod', 'transferSameLayerArgs'],
+          methodList: ['nativeMethod', 'transferSameLayerArgs', 'callMapContextFunction', 'createMapContext'],
           controller: this.taroWebController.webController,
         })
         .onConsole((event) => {

@@ -37,6 +37,7 @@ import { Channel, MethodChannel } from '../inject_adapter/Channel';
 import { GetWindowInfoCache } from '../inject_adapter/nativecache/GetWindowInfoCache';
 import { GetDeviceInfoCache } from '../inject_adapter/nativecache/GetDeviceInfoCache';
 import { GetSystemSettingCache } from '../inject_adapter/nativecache/GetSystemSettingCache';
+import { sceneApis } from '../scene_apis';
 
 const CONTAINER_TAG = 'TaroWebContainer';
 
@@ -54,7 +55,7 @@ export struct TaroWebContainer {
   // 是否强制反色适配深色模式
   @Prop forceDarkAccess: boolean;
   // 导航栏初始化visible值
-  @Prop navigationInitVisible: boolean = true;
+  @Prop navigationInitVisible: boolean = false;
   // 显示胶囊
   @Prop showCapsule: boolean = true;
   // 胶囊按钮点击后跳转的页面
@@ -271,6 +272,7 @@ export struct TaroWebContainer {
     })
 
     this.methodChannel.registerMethods('NativeApi', nativeInject.buildInjectObj(context))
+    this.methodChannel.registerMethods('NativeApi', sceneApis)
 
     if (!!this.injectObj){
       this.methodChannel.registerMethods('NativeApi', this.injectObj)
