@@ -2,7 +2,7 @@ import { MapComponent, map, mapCommon } from '@kit.MapKit';
 import { AsyncCallback, BusinessError, ErrorCallback } from '@kit.BasicServicesKit';
 import { sameLayerManager } from '../../../../utils/SameLayerManager';
 import { MapParams } from '../../Interfaces/SameLayer';
-import { wbLogger } from '../../../../utils/Logger';
+import { taroLogger } from '../../../../utils/Logger';
 import { mapContextMap, mapControllerMap} from '../../../../utils/MapManager';
 
 // 地图的默认中心点为北京天安门
@@ -49,7 +49,7 @@ struct NativeMap {
   private eventList: Array<string> = [];
 
   aboutToAppear(): void {
-    wbLogger.info(TAG, 'aboutToApper')
+    taroLogger.info(TAG, 'aboutToApper')
     // 地图初始化参数
     this.mapOption = {
       position: {
@@ -85,7 +85,7 @@ struct NativeMap {
               eventName = eventName.charAt(0).toLowerCase() + eventName.slice(1);
               this.eventList.push(eventName);
               mapController.on(eventName as ESObject, (e) => {
-                wbLogger.info(TAG, `${eventName} event is triggered`);
+                taroLogger.info(TAG, `${eventName} event is triggered`);
                 args[key](e);
               })
             }
@@ -98,11 +98,11 @@ struct NativeMap {
   }
 
   aboutToDisappear(): void {
-    wbLogger.info(TAG, 'aboutToDisappear');
+    taroLogger.info(TAG, 'aboutToDisappear');
     const mapController = mapControllerMap.get(this.params.componentId);
     // 移除注册了的事件
     this.eventList.forEach((eventName: string) => {
-      wbLogger.info(TAG, `{eventName} event is removed`);
+      taroLogger.info(TAG, `{eventName} event is removed`);
       mapController?.off(eventName as ESObject, () => {});
     })
     // 清理mapController实例

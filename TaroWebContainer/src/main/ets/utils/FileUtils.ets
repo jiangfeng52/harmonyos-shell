@@ -1,5 +1,5 @@
 import fs from '@ohos.file.fs'
-import { wbLogger } from './Logger';
+import { taroLogger } from './Logger';
 import { http } from '@kit.NetworkKit';
 
 const FILE_UTIL = 'FileUtil';
@@ -19,7 +19,7 @@ export class FileUtils {
       const file = fs.openSync(uri, fs.OpenMode.READ_ONLY)
       return file.fd
     } catch (error) {
-      wbLogger.error(FILE_UTIL, `getFdFromUriOrSandBoxPath openSync error:`, error)
+      taroLogger.error(FILE_UTIL, `getFdFromUriOrSandBoxPath openSync error:`, error)
     }
     throw new Error('file is not exist')
   }
@@ -70,7 +70,7 @@ export class FileUtils {
     if (splits && splits.length>1) {
       return splits
     }else{
-      wbLogger.error(FILE_UTIL, `Mini rawFile name is not standard : ${fileName}，Please use the format ：业务名称@版本号`);
+      taroLogger.error(FILE_UTIL, `Mini rawFile name is not standard : ${fileName}，Please use the format ：业务名称@版本号`);
     }
     return null
   }
@@ -92,7 +92,7 @@ export class FileUtils {
         fs.mkdirSync(filePath,true)
       }
     }catch (e){
-      wbLogger.error(FILE_UTIL, `mkFilesDir failed:`, e);
+      taroLogger.error(FILE_UTIL, `mkFilesDir failed:`, e);
     }
   }
 

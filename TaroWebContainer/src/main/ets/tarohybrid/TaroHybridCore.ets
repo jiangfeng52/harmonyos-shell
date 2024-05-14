@@ -8,7 +8,7 @@ import { DebugLayout } from './DebugDialog';
 import { TaroHybridManager } from './TaroHybridManager';
 import { TaroHybridUtils } from './TaroHybridUtils';
 import bundleManager from '@ohos.bundle.bundleManager';
-import { wbLogger } from '../utils/Logger';
+import { taroLogger } from '../utils/Logger';
 import { FileUtils } from '../utils/FileUtils';
 import { http } from '@kit.NetworkKit';
 
@@ -80,7 +80,7 @@ struct TaroHybridCore {
     }
 
     const url = request.getRequestUrl();
-    wbLogger.debug("CrossOrigin","拦截器收到的request: "+url);
+    taroLogger.debug("CrossOrigin","拦截器收到的request: "+url);
 
     if ( url.search(this.domain) != -1 ) {
       let actualRequestUrl = url.replace(this.domain,this.devDomain)
@@ -91,7 +91,7 @@ struct TaroHybridCore {
       responseWeb.setResponseHeader(request.getRequestHeader())
       responseWeb.setResponseIsReady(false)
       FileUtils.getFileResponseFromUrl(actualRequestUrl,HTTP_TIMEOUT,http.HttpDataType.ARRAY_BUFFER).then(ret => {
-        wbLogger.debug("CrossOrigin", 'download result : %{public}s ,code:%{public}s', actualRequestUrl,`${ret.responseCode}`)
+        taroLogger.debug("CrossOrigin", 'download result : %{public}s ,code:%{public}s', actualRequestUrl,`${ret.responseCode}`)
         responseWeb.setResponseCode(ret.responseCode);
         responseWeb.setReasonMessage(ret.result === http.ResponseCode.OK ? 'OK' : 'http.get resource failed');
         if (ret.result instanceof ArrayBuffer) {
@@ -102,7 +102,7 @@ struct TaroHybridCore {
         responseWeb.setResponseIsReady(true)
         return responseWeb
       }).catch((err: Error) => {
-        wbLogger.debug("CrossOrigin", 'download error: %{public}s , err is %{public}s', actualRequestUrl, err.message)
+        taroLogger.debug("CrossOrigin", 'download error: %{public}s , err is %{public}s', actualRequestUrl, err.message)
         responseWeb.setResponseCode(0);
         responseWeb.setReasonMessage(err.message);
         responseWeb.setResponseIsReady(true)

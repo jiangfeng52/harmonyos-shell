@@ -1,5 +1,5 @@
 import router from '@ohos.router';
-import { wbLogger } from '../utils/Logger';
+import { taroLogger } from '../utils/Logger';
 
 export class RouterUtils {
   static pushUrlWithLog(url: string) {
@@ -8,10 +8,10 @@ export class RouterUtils {
       router.RouterMode.Standard,
       (err)=>{
         if (err) {
-          wbLogger.error('RouterUtils',`Invoke pushUrl failed, code is ${err.code}, message is ${err.message}`);
+          taroLogger.error('RouterUtils',`Invoke pushUrl failed, code is ${err.code}, message is ${err.message}`);
           return;
         }
-        wbLogger.info('RouterUtils', 'Invoke pushUrl succeeded.');
+        taroLogger.info('RouterUtils', 'Invoke pushUrl succeeded.');
       }
     )
   }

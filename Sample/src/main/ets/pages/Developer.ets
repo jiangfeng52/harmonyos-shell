@@ -1,8 +1,9 @@
 import router from '@ohos.router';
-import { NavigationBar, NavigationBarData, wbLogger } from '@hybrid/web-container';
+import { NavigationBar, NavigationBarData } from '@hybrid/web-container';
 import { NotificationRequest, SendMessageOptions, NotificationContent, NotificationPictureContent, NotificationBasicContent,
   NotificationLongTextContent, NotificationMultiLineContent, CancelMessageOptions, sendMessage, cancelMessage
 } from '@hybrid/web-container';
+import { logger } from '../utils/Logger';
 
 
 PersistentStorage.persistProp('enableDevDomain', false);
@@ -92,7 +93,7 @@ struct Developer {
     } else if ( this.notificationContentType === 'NOTIFICATION_CONTENT_BASIC_TEXT') {
       NotificationContent.normal = NotificationBasicContent
     } else {
-      wbLogger.info(TAG, 'notificationContentType %{public}s', 'Incorrect notification type.')
+      logger.info(TAG, 'notificationContentType %{public}s', 'Incorrect notification type.')
       return;
     }
     let notificationRequests:NotificationRequest = {
@@ -106,12 +107,12 @@ struct Developer {
     }
     try {
       sendMessage(SendMessageOption).then((res) => {
-        wbLogger.debug(TAG, 'requestSubscribeMessage %{public}s', JSON.stringify(res))
+        logger.debug(TAG, 'requestSubscribeMessage %{public}s', JSON.stringify(res))
       }).catch((err:Error) => {
-        wbLogger.debug(TAG, 'requestSubscribeMessage %{public}s', JSON.stringify(err))
+        logger.debug(TAG, 'requestSubscribeMessage %{public}s', JSON.stringify(err))
       })
     } catch (err) {
-      wbLogger.debug(TAG, 'requestSubscribeMessage %{public}s', JSON.stringify(err))
+      logger.debug(TAG, 'requestSubscribeMessage %{public}s', JSON.stringify(err))
     }
   }
 
@@ -120,9 +121,9 @@ struct Developer {
       id:this.cancelId
     }
     cancelMessage(cancelMessageOptions).then((res) => {
-      wbLogger.debug(TAG, 'requestSubscribeMessage %{public}s', JSON.stringify(res))
+      logger.debug(TAG, 'requestSubscribeMessage %{public}s', JSON.stringify(res))
     }).catch((err:Error) => {
-      wbLogger.debug(TAG, 'requestSubscribeMessage %{public}s', JSON.stringify(err))
+      logger.debug(TAG, 'requestSubscribeMessage %{public}s', JSON.stringify(err))
     })
   }
 

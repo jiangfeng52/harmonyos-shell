@@ -1,6 +1,6 @@
 import zlib from '@ohos.zlib'
 import { BusinessError } from '@ohos.base'
-import { wbLogger } from '../../../utils/Logger'
+import { taroLogger } from '../../../utils/Logger'
 import fs from '@ohos.file.fs'
 import { LocalVersionInfo } from '../bean/LocalVersionInfo'
 import { UpdateConfig } from '../bean/UpdateConfig'
@@ -25,7 +25,7 @@ export class MiniLocalFileDataSource {
           filenames.push(element)
         }
       }
-      wbLogger.debug("LocalUpdateManager", `filenames length is ${filenames.length}`)
+      taroLogger.debug("LocalUpdateManager", `filenames length is ${filenames.length}`)
       let filesLength = filenames.length
       if (filesLength==1) {
         let splits = FileUtils.checkMiniFileNameFormat(filenames[0])
@@ -83,9 +83,9 @@ export class MiniLocalFileDataSource {
 
         zlib.decompressFile(filePath, savePath, options, (errData) => {
           if (errData !== null) {
-            wbLogger.debug("UpdateManager", '%{public}s decompressFile failed. code is %{public}d, message is %{public}s', filePath, errData.code, errData.message)
+            taroLogger.debug("UpdateManager", '%{public}s decompressFile failed. code is %{public}d, message is %{public}s', filePath, errData.code, errData.message)
           } else {
-            wbLogger.debug("UpdateManager", '%{public}s decompressFile success. decompressPath is %{public}s', filePath, savePath)
+            taroLogger.debug("UpdateManager", '%{public}s decompressFile success. decompressPath is %{public}s', filePath, savePath)
           }
           FileUtils.delTempFile(filePath)
           resolve(errData == null ? savePath : '')
@@ -93,7 +93,7 @@ export class MiniLocalFileDataSource {
       } catch (errData) {
         let code = (errData as BusinessError).code;
         let message = (errData as BusinessError).message;
-        wbLogger.debug("UpdateManager", '%{public}s decompressFile failed. code is %{public}d, message is %{public}s', filePath, code, message)
+        taroLogger.debug("UpdateManager", '%{public}s decompressFile failed. code is %{public}d, message is %{public}s', filePath, code, message)
         FileUtils.delTempFile(filePath)
         resolve('')
       }

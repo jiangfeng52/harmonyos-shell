@@ -15,7 +15,7 @@
 // 将Taro-storage 桥接到 native 的 kvStore中; 实现 native 和 web 数据共享
 import distributedKVStore from '@ohos.data.distributedKVStore';
 import { GlobalThis } from './GlobalThis'
-import { wbLogger } from './Logger'
+import { taroLogger } from './Logger'
 import { AsyncCallback, BusinessError } from '@ohos.base';
 
 const STORAGE = "storage"
@@ -47,7 +47,7 @@ export class Storage {
   public kvStore: distributedKVStore.SingleKVStore | undefined;
 
   constructor(context: Context, bundleName: string) {
-    wbLogger.info(STORAGE, "do storage constructor");
+    taroLogger.info(STORAGE, "do storage constructor");
     this.kvManager = distributedKVStore.createKVManager(
       {
         context: context, // sample context
@@ -56,12 +56,12 @@ export class Storage {
     )
     this.kvManager.getKVStore(STORE_ID, options, (err, store: distributedKVStore.SingleKVStore) => {
       if (err) {
-        wbLogger.error(STORAGE, `Failed to getKVStore is ${err.code},message is ${err.message}`);
+        taroLogger.error(STORAGE, `Failed to getKVStore is ${err.code},message is ${err.message}`);
         return;
       }
       this.kvStore = store
       GlobalThis.getInstance().setKvStore('kvStore', store)
-      wbLogger.info(STORAGE, "Succeeded in getting KVStore");
+      taroLogger.info(STORAGE, "Succeeded in getting KVStore");
     });
   }
 
@@ -153,18 +153,18 @@ export class Storage {
    */
   clear() {
     if (!this.kvStore) {
-      wbLogger.error(STORAGE, `no init kvStore`)
+      taroLogger.error(STORAGE, `no init kvStore`)
     }
     this.kvStore?.getEntries(KEY_PREFIX, (err, items) => {
       if (err != undefined) {
-        wbLogger.error(STORAGE, `Failed to get Entries.code is ${err.code},message is ${err.message}`)
+        taroLogger.error(STORAGE, `Failed to get Entries.code is ${err.code},message is ${err.message}`)
       }
       for (let item of items) {
         this.kvStore?.delete(item.key, (err) => {
           if (err != undefined) {
-            wbLogger.error(STORAGE, `Failed to delete.code is ${err.code},message is ${err.message}`)
+            taroLogger.error(STORAGE, `Failed to delete.code is ${err.code},message is ${err.message}`)
           }
-          wbLogger.info(STORAGE, `success to delete.code, key: ${item.key}`)
+          taroLogger.info(STORAGE, `success to delete.code, key: ${item.key}`)
         })
       }
     })

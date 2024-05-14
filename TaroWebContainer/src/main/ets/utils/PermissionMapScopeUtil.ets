@@ -20,7 +20,7 @@ import common from '@ohos.app.ability.common';
 import Want from '@ohos.app.ability.Want';
 import { GlobalThis } from './GlobalThis';
 import { AuthSetting, PermissionInfo } from '../interfaces/InjectObject';
-import { wbLogger } from '../utils/Logger';
+import { taroLogger } from '../utils/Logger';
 
 const PERMISSION_UTIL = 'PermissionUtil';
 
@@ -133,7 +133,7 @@ export function getBundleUserPermissions(permissions: Array<PermissionInfo>): Ar
 
 export async function getBundleWxScopeList(permissions: Array<PermissionInfo>): Promise<BundleScopeResult> {
   if (Array.isArray(permissions) && permissions.length === 0) {
-    wbLogger.error(PERMISSION_UTIL, 'permissions 数组为空');
+    taroLogger.error(PERMISSION_UTIL, 'permissions 数组为空');
     return { allScope: allScopeUseMap, bundleScope: bundleUsedScopeMap };
   }
 
@@ -141,8 +141,8 @@ export async function getBundleWxScopeList(permissions: Array<PermissionInfo>): 
     for (const entry of ohosMappingWxMap.entries()) {
       const key = entry[0];
       const value = entry[1];
-      wbLogger.debug(PERMISSION_UTIL, `Key: ${key}`);
-      wbLogger.debug(PERMISSION_UTIL, `Value: ${value}`);
+      taroLogger.debug(PERMISSION_UTIL, `Key: ${key}`);
+      taroLogger.debug(PERMISSION_UTIL, `Value: ${value}`);
       // 判断权限组中是否包含子权限
       if (!value.includes(permissionObj.name)) {
         continue;
@@ -182,7 +182,7 @@ async function checkAccessToken(permission: Permissions): Promise<abilityAccessC
     tokenId = appInfo.accessTokenId;
   } catch (error) {
     let err: BusinessError = error as BusinessError;
-    wbLogger.error(PERMISSION_UTIL, `Failed to get bundle info for self. Code is ${err.code}, message is ${err.message}`);
+    taroLogger.error(PERMISSION_UTIL, `Failed to get bundle info for self. Code is ${err.code}, message is ${err.message}`);
   }
 
   // 校验应用是否被授予权限
@@ -190,7 +190,7 @@ async function checkAccessToken(permission: Permissions): Promise<abilityAccessC
     grantStatus = await atManager.checkAccessToken(tokenId, permission);
   } catch (error) {
     let err: BusinessError = error as BusinessError;
-    wbLogger.error(PERMISSION_UTIL, `Failed to check access token. Code is ${err.code}, message is ${err.message}`);
+    taroLogger.error(PERMISSION_UTIL, `Failed to check access token. Code is ${err.code}, message is ${err.message}`);
   }
   return grantStatus;
 }
@@ -201,10 +201,10 @@ export async function requestPermission(permissions: Permissions[]): Promise<num
   let authResults: number[] = [];
 
   for (const permission of permissions.entries()) {
-    wbLogger.debug(PERMISSION_UTIL, "number: " + permission[0], " permission: " + permission[1])
+    taroLogger.debug(PERMISSION_UTIL, "number: " + permission[0], " permission: " + permission[1])
     let grantStatus: abilityAccessCtrl.GrantStatus = await checkAccessToken(permission[1])
     if (grantStatus === 0) {
-      wbLogger.debug(PERMISSION_UTIL, " permission " + permission[1] + " has granted")
+      taroLogger.debug(PERMISSION_UTIL, " permission " + permission[1] + " has granted")
       authResults.push(0)
       continue
     }
@@ -220,7 +220,7 @@ export async function requestPermission(permissions: Permissions[]): Promise<num
     authResults.push(...permissionRequestResult.authResults)
   } catch (error) {
     let err: BusinessError = error as BusinessError;
-    wbLogger.error(PERMISSION_UTIL, `Failed to request permissions. Code is ${err.code}, message is ${err.message}`);
+    taroLogger.error(PERMISSION_UTIL, `Failed to request permissions. Code is ${err.code}, message is ${err.message}`);
     if (authResults.length < permissions.length){
       authResults.push(...new Array(permissions.length - authResults.length).fill(-1))
     }
@@ -247,7 +247,7 @@ export async function openPermissionsInSystemSettings(): Promise<void> {
 export function getBundleUsedPermission(scopeAll: AuthSetting, bundleAll: Map<string, boolean>): BundleScopeResult {
   Object.keys(scopeAll).forEach((key) => {
     const value = scopeAll[key as keyof AuthSetting];
-    wbLogger.debug(PERMISSION_UTIL, `getBundleUsedPermission: ${key}, ${value}`);
+    taroLogger.debug(PERMISSION_UTIL, `getBundleUsedPermission: ${key}, ${value}`);
     // 如果bundleScope存在权限，表示权限有被使用
     if (bundleAll.has(key)) {
       scopeAll[key] = bundleAll.get(key);
@@ -264,15 +264,15 @@ export function getBundleInfoPermissions(): Promise<bundleManager.ReqPermissionD
     try {
       bundleManager.getBundleInfoForSelf(bundleFlags).then((data) => {
         const permissionInfo = data.reqPermissionDetails;
-        wbLogger.info(PERMISSION_UTIL, `getBundleInfoForSelf successfully. Data: ${JSON.stringify(data)}`);
+        taroLogger.info(PERMISSION_UTIL, `getBundleInfoForSelf successfully. Data: ${JSON.stringify(data)}`);
         resolve(permissionInfo);
       }).catch((err: BusinessError) => {
-        wbLogger.error(PERMISSION_UTIL, `getBundleInfoForSelf failed. Cause: ${err.message}}`);
+        taroLogger.error(PERMISSION_UTIL, `getBundleInfoForSelf failed. Cause: ${err.message}}`);
         resolve([]);
       });
     } catch (err) {
       let message = (err as BusinessError).message;
-      wbLogger.error(PERMISSION_UTIL, `getBundleInfoForSelf failed. Cause: ${message}}`);
+      taroLogger.error(PERMISSION_UTIL, `getBundleInfoForSelf failed. Cause: ${message}}`);
       resolve([]);
     }
   });

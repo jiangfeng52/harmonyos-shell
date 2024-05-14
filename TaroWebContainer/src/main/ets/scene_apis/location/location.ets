@@ -1,7 +1,7 @@
 import { sceneMap } from '@kit.MapKit';
 import { common } from '@kit.AbilityKit';
 import { BusinessError } from '@kit.BasicServicesKit';
-import { wbLogger } from '../../utils/Logger';
+import { taroLogger } from '../../utils/Logger';
 
 const TAG: string = 'LOCATION'
 
@@ -33,14 +33,14 @@ export function openLocation(options: OpenLocationOptions) {
   }
   try {
     sceneMap.queryLocation(context, openLocationOptions).then(() => {
-      wbLogger.info(TAG, "Query location success.");
+      taroLogger.info(TAG, "Query location success.");
       options.success()
     }).catch((err: BusinessError) => {
-      wbLogger.error(TAG, `Failed to query Location, code: ${err.code}, message: ${err.message}`);
+      taroLogger.error(TAG, `Failed to query Location, code: ${err.code}, message: ${err.message}`);
       options.fail(err)
     });
   } catch (e) {
-    wbLogger.error(TAG, `Failed to query Location, message: ${e.message}`);
+    taroLogger.error(TAG, `Failed to query Location, message: ${e.message}`);
     options.fail(e)
   }
 }
@@ -65,14 +65,14 @@ export function chooseLocation(options: ChooseLocationOptions) {
   }
   try {
     sceneMap.chooseLocation(context, chooseLocationOptions).then((data) => {
-      wbLogger.info(TAG, "Choose location success:" + JSON.stringify(data));
+      taroLogger.info(TAG, "Choose location success:" + JSON.stringify(data));
       options.success(data);
     }).catch((err: BusinessError) => {
-      wbLogger.error(TAG, `Failed to choose Location, code: ${err.code}, message: ${err.message}`);
+      taroLogger.error(TAG, `Failed to choose Location, code: ${err.code}, message: ${err.message}`);
       options.fail(err);
     });
   } catch (e) {
-    wbLogger.error(TAG, `Failed to choose Location, message: ${e.message}`);
+    taroLogger.error(TAG, `Failed to choose Location, message: ${e.message}`);
     options.fail(e);
   }
 }

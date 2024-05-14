@@ -20,7 +20,7 @@ import { switchInternalToHapSandBox } from '../utils/InternalPath';
 import { MiniLocalFileDataSource } from '../data/source/local/MiniLocalFileDataSource';
 import { MiniRawFileDataSource } from '../data/source/local/MiniRawFileDataSource';
 import webview from '@ohos.web.webview';
-import { wbLogger } from '../utils/Logger';
+import { taroLogger } from '../utils/Logger';
 import { LocalUpdateManagerInstance } from '../update/LocalUpdateManager';
 import { AlbumBackward } from '../interfaces/Media'
 import webView from '@ohos.web.webview';
@@ -65,7 +65,7 @@ export class TaroWebController {
       this.webController.accessBackward();
     } catch(err) {
       const error: BusinessError = err as BusinessError;
-      wbLogger.error(TARO_WEB_TAG, `fail loadUrl, error code: ${error.code}`);
+      taroLogger.error(TARO_WEB_TAG, `fail loadUrl, error code: ${error.code}`);
     }
   }
 
@@ -164,10 +164,10 @@ export struct TaroWeb {
         responseWeb.setResponseCode(200);
         responseWeb.setReasonMessage('OK');
         responseWeb.setResponseIsReady(true);
-        wbLogger.info(TARO_WEB_TAG, 'responseWeb for internal resources');
+        taroLogger.info(TARO_WEB_TAG, 'responseWeb for internal resources');
       }
       else {
-        wbLogger.info(TARO_WEB_TAG, 'file resource is not exist');
+        taroLogger.info(TARO_WEB_TAG, 'file resource is not exist');
       }
       return responseWeb;
     }
@@ -185,14 +185,14 @@ export struct TaroWeb {
       // const path: string | undefined = url?.replace(this.webUrlPrefix, '');
       let path: string = url.replace(this.webUrlPrefix, '');
       path = path.split('#')[0]
-      wbLogger.debug('TaroWeb', 'intercepter path=%{public}s', path)
+      taroLogger.debug('TaroWeb', 'intercepter path=%{public}s', path)
       let biz = MiniRawFileDataSource.getBizByPath(path) //获取业务标识
       const lastVerInfo = LocalUpdateManagerInstance.getLastVersionInfo(biz)
       if (lastVerInfo?.diskCachePath) { // 走本地缓存
         if (!path || !MiniLocalFileDataSource.fileExist(lastVerInfo?.diskCachePath, path)) {
           return null;
         }
-        wbLogger.debug('TaroWeb', 'useLocalCacheResource path=%{public}s', path)
+        taroLogger.debug('TaroWeb', 'useLocalCacheResource path=%{public}s', path)
         return MiniLocalFileDataSource.getFileOnResponseWeb(lastVerInfo?.diskCachePath, path)
       }
       if (lastVerInfo?.rawCachePath) { // 走App内置的Raw缓存
@@ -200,7 +200,7 @@ export struct TaroWeb {
         if (!path || rawPath.trim() === '') {
           return null;
         }
-        wbLogger.debug('TaroWeb', 'useRawCacheResource path=%{public}s', rawPath)
+        taroLogger.debug('TaroWeb', 'useRawCacheResource path=%{public}s', rawPath)
         return MiniRawFileDataSource.getRawfileOnResponseWeb(rawPath)
       }
     }
@@ -233,7 +233,7 @@ export struct TaroWeb {
         .javaScriptProxy({
           object: {
             nativeMethod: (channelType: string, objectJson: string) => {
-              wbLogger.debug('nativeApi', `channelType ${channelType} objectJson(${objectJson})`)
+              taroLogger.debug('nativeApi', `channelType ${channelType} objectJson(${objectJson})`)
               return this.channel.call(channelType, objectJson) as object
             },
             transferSameLayerArgs: sameLayerManager.transferSameLayerArgs,
@@ -245,7 +245,7 @@ export struct TaroWeb {
           controller: this.taroWebController.webController,
         })
         .onConsole((event) => {
-          wbLogger.debug(TARO_WEB_TAG, `${event?.message.getMessage()}`)
+          taroLogger.debug(TARO_WEB_TAG, `${event?.message.getMessage()}`)
           return false
         })
         .zoomAccess(false)
@@ -256,15 +256,15 @@ export struct TaroWeb {
               this.apiAdapter.getRunJavaScript(),
               (error, result) => {
                 if (error) {
-                  wbLogger.error(TARO_WEB_TAG, `Run JavaScript error: ${JSON.stringify(error)}`)
+                  taroLogger.error(TARO_WEB_TAG, `Run JavaScript error: ${JSON.stringify(error)}`)
                   return;
                 }
                 if (result) {
-                  wbLogger.info(TARO_WEB_TAG, `The asFinish() return value is: ${result}`)
+                  taroLogger.info(TARO_WEB_TAG, `The asFinish() return value is: ${result}`)
                 }
               });
           } catch (error) {
-            wbLogger.error(TARO_WEB_TAG, `runJavaScript error: ${(error as BusinessError).message}`);
+            taroLogger.error(TARO_WEB_TAG, `runJavaScript error: ${(error as BusinessError).message}`);
           }
         })
         .onInterceptRequest((event) => { // 当web组件加载url之前触发该回调，用于拦截url并返回响应数据。
@@ -275,7 +275,7 @@ export struct TaroWeb {
           return this.taroWebController.interceptRequest(request);
         })
         .onSslErrorEventReceive((event) => { // 通知用户加载资源时发生SSL错误
-          wbLogger.info(TARO_WEB_TAG, `onSslErrorEventReceive:${event.error}`)
+          taroLogger.info(TARO_WEB_TAG, `onSslErrorEventReceive:${event.error}`)
           event.handler.handleConfirm() // 通知Web组件继续使用SSL证书
           return true
         })
