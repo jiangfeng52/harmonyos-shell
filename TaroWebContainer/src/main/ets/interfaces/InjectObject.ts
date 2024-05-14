@@ -200,7 +200,31 @@ export interface NavigationStyle {
   backgroundColor: string;
 }
 
+/**
+ * 系统数据更新监听器
+ */
+export interface NativeDataChangeListener {
+  /**
+   * 更新
+   * @param methodName    要更新的方法名
+   * @param methodArgs    要更新的方法参数，如果是空参，直接传[]
+   */
+  change: (methodName: string, methodArgs: any[]) => void
+  /**
+   * 注册
+   * @param methodName    要注册的方法名列表
+   */
+  register: (methodNames: string[]) => void
+  /**
+   * 解注册
+   * @param methodName    要解注册的方法名列表
+   */
+  unregister:(methodNames: string[]) => void
+
+}
+
 export interface InnerInjectObj {
+  registerNativeListener: (listener: NativeDataChangeListener | null) => void
   setNavigationBarColor: (options: NavigationBarOptions) => void;
   showNavigationBarLoading: () => void;
   hideNavigationBarLoading: () => void;
@@ -219,6 +243,7 @@ export interface InnerInjectObj {
   setCapsuleState: (visible: boolean) => void;
   getCapsuleState: () => CapsuleState;
   chooseMediaAssets: (options: ChooseMediaOptions) => void;
+  chooseMediumAssets: (options: ChooseMediumOptions) => void;
   exitMiniProgram: (options: ExitMiniProgramOptions) => void;
 }
 
@@ -236,6 +261,12 @@ export interface ChooseMediaOptions {
   apiName: string;
   success: Function;
   fail: Function;
+}
+
+export interface ChooseMediumOptions extends ChooseMediaOptions{
+  takingSupported?: boolean,
+  editSupported?: boolean,
+  searchSupported?: boolean,
 }
 
 export interface ExitMiniProgramOptions {

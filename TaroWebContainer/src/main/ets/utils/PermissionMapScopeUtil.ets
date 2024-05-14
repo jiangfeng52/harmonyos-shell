@@ -195,7 +195,7 @@ async function checkAccessToken(permission: Permissions): Promise<abilityAccessC
   return grantStatus;
 }
 
-export async function requestPermission(permissions: Permissions[]):Promise<number[]> {
+export async function requestPermission(permissions: Permissions[]): Promise<number[]> {
   let notGranted: Permissions[] = [];
   let atManager = abilityAccessCtrl.createAtManager();
   let authResults: number[] = [];

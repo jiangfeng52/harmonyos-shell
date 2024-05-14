@@ -4,6 +4,7 @@ import Want from '@ohos.app.ability.Want';
 import { GlobalThis, LocalUpdateManagerInstance, TaroHybridManager, wbLogger } from '@hybrid/web-container';
 import common from '@ohos.app.ability.common';
 import { TaroHybridNativeMethods } from '../pages/TaroHybridNativeMethods';
+import router from '@ohos.router';
 
 const ABILITY_TAG = 'EntryAbility';
 const storage = new LocalStorage();
@@ -41,7 +42,12 @@ export default class EntryAbility extends UIAbility {
         domain: 'http://domain',
         injectNativeMethod: (indexHtmlPath: string, uiAbilityContext: common.UIAbilityContext) => {
           return new TaroHybridNativeMethods(uiAbilityContext).nativeObj
-        }
+        },
+        rootIndexHtmlPath: "/spa/main/index.html",
+        nativeBack: ()=>{
+          router.back()
+        },
+        forceDarkAccess: true
       })
       TaroHybridManager.preLoader(
         windowStage.getMainWindowSync().getUIContext(),

@@ -2,7 +2,6 @@ import common from '@ohos.app.ability.common';
 import { RouterToTaroHybrid } from './TaroHybridPage';
 import { InjectObject } from '@hybrid/web-container/Index';
 
-
 interface HarmonyNavigateToOptions {
   indexHtmlPath?: string,
   taroPath?: string
@@ -25,4 +24,5 @@ export class TaroHybridNativeMethods {
     }
   };
 }
+
 

@@ -12,13 +12,14 @@ export class TaroHybridCoreInstance {
   private builderNode: BuilderNode<TaroHybridCoreBuilderData[]> | undefined
   builderData: TaroHybridCoreBuilderData
 
-  constructor(domain: string, indexHtmlPath: string, taroPath: string, injectObj: InjectObject) {
+  constructor(domain: string, indexHtmlPath: string, taroPath: string, injectObj: InjectObject, forceDarkAccess: boolean) {
     this.builderData = {
       domain: domain,
       indexHtmlPath: indexHtmlPath,
       taroPath: taroPath,
       taroWebController: new TaroWebController(),
-      injectObj: injectObj
+      injectObj: injectObj,
+      forceDarkAccess: forceDarkAccess
     }
   }
 
@@ -53,7 +54,10 @@ export class TaroHybridCoreInstance {
 export interface TaroHybridManagerOptions {
   uiAbilityContex: common.UIAbilityContext
   domain: string
-  injectNativeMethod: (indexHtmlPath: string, uiAbilityContext: common.UIAbilityContext) => InjectObject
+  injectNativeMethod: (indexHtmlPath: string, uiAbilityContext: common.UIAbilityContext) => InjectObject,
+  rootIndexHtmlPath?: string,
+  nativeBack: ()=>void,
+  forceDarkAccess: boolean
 }
 
 export class TaroHybridManager {
@@ -67,6 +71,15 @@ export class TaroHybridManager {
     GlobalThis.getInstance().setContext('context', options.uiAbilityContex);
   }
 
+  static isRootContainer(indexHtmlPath: string){
+    const rootIndexHtmlPath = TaroHybridManager.options?.rootIndexHtmlPath
+    if(!rootIndexHtmlPath) {
+      // 默认情况，如果没有设置rootIndexHtmlPath，默认都是true
+      return true
+    }
+    return indexHtmlPath === rootIndexHtmlPath
+  }
+
   static preLoader(uiContext: UIContext, indexHtmlPath: string, taroPath: string){
     const instance = TaroHybridManager.getOrCreateCoreInstance(indexHtmlPath, taroPath)
     instance.getBuilderNode(uiContext)
@@ -78,7 +91,8 @@ export class TaroHybridManager {
         TaroHybridManager?.options?.domain??'',
         indexHtmlPath,
         taroPath,
-        TaroHybridManager?.options?.injectNativeMethod(indexHtmlPath, GlobalThis.getInstance().getContext('context') as common.UIAbilityContext) ?? {}
+        TaroHybridManager?.options?.injectNativeMethod(indexHtmlPath, GlobalThis.getInstance().getContext('context') as common.UIAbilityContext) ?? {},
+        TaroHybridManager?.options?.forceDarkAccess?? false
       )
       // 一定要先保存到Map里，再build
       TaroHybridManager.builderInstanceMaps.set(indexHtmlPath, builderInstance)
@@ -119,6 +133,9 @@ export class TaroHybridManager {
     data.taroWebController.loadUrl(webUrl);
   }
 
+  static nativeBack(){
+    TaroHybridManager.options?.nativeBack()
+  }
 
   static onBack(taroWebController: TaroWebController, indexHtmlPath: string, rootTaroPage: string): boolean {
     // const instance = TaroHybridManager.getCoreInstance(indexHtmlPath)

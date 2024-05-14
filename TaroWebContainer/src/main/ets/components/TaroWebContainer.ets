@@ -30,11 +30,14 @@ import { GlobalThis } from '../utils/GlobalThis';
 import { getBundleInfoPermissions } from '../utils/PermissionMapScopeUtil';
 import { HostPageState } from '../interfaces/HostPageState';
 import { RouterUtils } from '../utils/RouterUtils';
-import router from '@ohos.router';
 import { wbLogger } from '../utils/Logger';
 import { AlbumBackward, ChooseAlbumResult, MediaItemData, chooseAlbumOptions } from '../interfaces/Media'
 import { BusinessError } from '@ohos.base';
 import { Channel, MethodChannel } from '../inject_adapter/Channel';
+import { GetWindowInfoCache } from '../inject_adapter/nativecache/GetWindowInfoCache';
+import { GetDeviceInfoCache } from '../inject_adapter/nativecache/GetDeviceInfoCache';
+import { GetSystemSettingCache } from '../inject_adapter/nativecache/GetSystemSettingCache';
+import { sceneApis } from '../scene_apis';
 
 const CONTAINER_TAG = 'TaroWebContainer';
 
@@ -49,8 +52,10 @@ export struct TaroWebContainer {
   @Prop webUrlPrefix: string;
   // 使用缓存
   @Prop useCache: boolean = true;
+  // 是否强制反色适配深色模式
+  @Prop forceDarkAccess: boolean;
   // 导航栏初始化visible值
-  @Prop navigationInitVisible: boolean = true;
+  @Prop navigationInitVisible: boolean = false;
   // 显示胶囊
   @Prop showCapsule: boolean = true;
   // 胶囊按钮点击后跳转的页面
@@ -65,6 +70,7 @@ export struct TaroWebContainer {
   @State systemBarHeight: number = 0;
   @State channel: Channel = new Channel()
   @State methodChannel: MethodChannel = new MethodChannel(this.channel)
+  @Prop isRoot: boolean = true
 
   // 显示图库
   @State showAlbum: boolean = false;
@@ -82,6 +88,8 @@ export struct TaroWebContainer {
 
   // 路由控制器
   @Link taroWebController: TaroWebController;
+
+  hookInterceptorWithoutCache?: (request: WebResourceRequest) => WebResourceResponse | null;
 
   // 用户自定义的注入对象
   injectObj: InjectObject | undefined;
@@ -103,7 +111,12 @@ export struct TaroWebContainer {
 
   onTitleReceive = (title: string)=>{
     this.navigationBarData.title = title
-    this.navigationBarData.canBackward = this.taroWebController.accessBackward();
+    if (this.isRoot) {
+      this.navigationBarData.canBackward = this.taroWebController.accessBackward();
+    } else {
+      // 多容器时，当不是第1个容器，即使Web不能返回，也应该显示返回按钮
+      this.navigationBarData.canBackward = true
+    }
   }
   onRefreshAccessedHistory = ()=>{
     this.navigationBarData.loading = false;
@@ -181,6 +194,7 @@ export struct TaroWebContainer {
       TaroWeb({
         webUrl: this.webUrl,
         webUrlPrefix: this.webUrlPrefix,
+        hookInterceptorWithoutCache: this.hookInterceptorWithoutCache,
         useCache: this.useCache,
         apiAdapter: this.adapter,
         taroWebController: this.taroWebController,
@@ -188,7 +202,8 @@ export struct TaroWebContainer {
         onRefreshAccessedHistory: this.onRefreshAccessedHistory,
         enableWebDebug: this.enableWebDebug,
         channel: this.channel,
-        methodChannel: this.methodChannel
+        methodChannel: this.methodChannel,
+        forceDarkAccess: this.forceDarkAccess
       })
       NavigationBar({
         navigationBarData: this.navigationBarData,
@@ -239,7 +254,7 @@ export struct TaroWebContainer {
 
     // 创建高阶API适配器，合并注入的对象
     this.adapter = new ApiAdapter();
-    const nativeInject = new NativeInject(this.navigationBarData, this.capsuleOptions, this.capsuleController);
+    const nativeInject = new NativeInject(this.navigationBarData, this.capsuleOptions, this.capsuleController,this.taroWebController.getNativeCacheManager());
     this.taroWebController.setAlbumBackward(this.albumBackward);
     nativeInject.setChooseAlbumCallback(this.chooseAlbumCallback);
 
@@ -257,6 +272,7 @@ export struct TaroWebContainer {
     })
 
     this.methodChannel.registerMethods('NativeApi', nativeInject.buildInjectObj(context))
+    this.methodChannel.registerMethods('NativeApi', sceneApis)
 
     if (!!this.injectObj){
       this.methodChannel.registerMethods('NativeApi', this.injectObj)
@@ -278,6 +294,14 @@ export struct TaroWebContainer {
       this.adapter!.setSystemBarHeight(this.systemBarHeight);
     })
     this.appearDone = true;
+
+    this.taroWebController.getNativeCacheManager().init(context)
+    this.taroWebController.getNativeCacheManager().register([new GetWindowInfoCache(), new GetDeviceInfoCache(), new GetSystemSettingCache()])
+
+  }
+
+  aboutToDisappear(): void {
+    this.taroWebController.getNativeCacheManager().dispose()
   }
 
   onPageStateUpdated(): void {

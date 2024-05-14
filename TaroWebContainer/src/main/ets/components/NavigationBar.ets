@@ -27,7 +27,7 @@ export class NavigationBarData {
   public animationDuration: number = 0;
   public animationCurve: number = Curve.Linear;
   public systemBarHeight: number = 40;
-  public visible: boolean = true;
+  public visible: boolean = false;
   public paddingBottom: number = 8;
 }
 
