@@ -1,4 +1,3 @@
-import { Logger, LoggerLevel } from '@hybrid/web-container';
 import { RouterToTaroHybrid } from './TaroHybridPage';
 import router from '@ohos.router';
 
@@ -7,9 +6,6 @@ let storage = LocalStorage.getShared() // 获取共享的本地存储对象
 @Entry(storage)
 @Component
 struct Index {
-  aboutToAppear() {
-    Logger.setLogLevel(LoggerLevel.LOG_DEBUG);
-  }
 
   build() {
     Column({space: 30}) {

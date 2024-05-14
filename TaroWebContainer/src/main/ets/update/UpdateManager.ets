@@ -1,7 +1,7 @@
 import ArrayList from '@ohos.util.ArrayList'
 import AppContext from '@ohos.app.ability.common'
 import { BusinessError } from '@ohos.base';
-import { wbLogger } from '../utils/Logger';
+import { taroLogger } from '../utils/Logger';
 
 export abstract class UpdateManager {
   protected onCheckForUpdateListeners: ArrayList<(hasUpdate: boolean) => void> = new ArrayList<(hasUpdate: boolean) => void>();
@@ -20,10 +20,10 @@ export abstract class UpdateManager {
   applyUpdate(): void {
     (this.context as AppContext.UIAbilityContext).terminateSelf((err: BusinessError) =>{
       if (err.code){
-        wbLogger.debug('UpdateManager', 'terminateSelf failed, code is %{public}, message is %{public}', err.code, err.message)
+        taroLogger.debug('UpdateManager', 'terminateSelf failed, code is %{public}, message is %{public}', err.code, err.message)
         return
       }
-      wbLogger.debug('UpdateManager', 'applyUpdate success')
+      taroLogger.debug('UpdateManager', 'applyUpdate success')
     })
   }
 

@@ -30,7 +30,7 @@ import { GlobalThis } from '../utils/GlobalThis';
 import { getBundleInfoPermissions } from '../utils/PermissionMapScopeUtil';
 import { HostPageState } from '../interfaces/HostPageState';
 import { RouterUtils } from '../utils/RouterUtils';
-import { wbLogger } from '../utils/Logger';
+import { taroLogger } from '../utils/Logger';
 import { AlbumBackward, ChooseAlbumResult, MediaItemData, chooseAlbumOptions } from '../interfaces/Media'
 import { BusinessError } from '@ohos.base';
 import { Channel, MethodChannel } from '../inject_adapter/Channel';
@@ -130,7 +130,7 @@ export struct TaroWebContainer {
       return ;
     }
     if(this.taroWebController.accessBackward()) {
-      wbLogger.debug(CONTAINER_TAG, 'backWord:webViewController')
+      taroLogger.debug(CONTAINER_TAG, 'backWord:webViewController')
       this.taroWebController.backward();
     }
   }
@@ -262,12 +262,12 @@ export struct TaroWebContainer {
       try {
         this.taroWebController.webController.runJavaScript(jsCode, (error, result) => {
           if (error) {
-            wbLogger.error(CONTAINER_TAG, `Run JavaScript error: ${JSON.stringify(error)}`)
+            taroLogger.error(CONTAINER_TAG, `Run JavaScript error: ${JSON.stringify(error)}`)
             return;
           }
         });
       } catch (error) {
-        wbLogger.error(CONTAINER_TAG, `runJavaScript error: ${(error as BusinessError).message}`);
+        taroLogger.error(CONTAINER_TAG, `runJavaScript error: ${(error as BusinessError).message}`);
       }
     })
 
@@ -308,12 +308,12 @@ export struct TaroWebContainer {
   }
 
   onWantUpdated() {
-    wbLogger.debug(CONTAINER_TAG, `onWantUpdated want`);
+    taroLogger.debug(CONTAINER_TAG, `onWantUpdated want`);
     this.handleWantInfo();
   }
 
   handleWantInfo() {
-    wbLogger.info(CONTAINER_TAG, `want: ${JSON.stringify(this.want)}`);
+    taroLogger.info(CONTAINER_TAG, `want: ${JSON.stringify(this.want)}`);
     this.structLaunchOptions();
     this.redirectNewUrl();
   }
@@ -341,12 +341,12 @@ export struct TaroWebContainer {
     const pagePath = params?.path ? `${params.path}${params?.query ? '?' + params.query : ''}` : '';
     if (pagePath) {
       this.webUrl = `${this.originIndexUrl}#${pagePath}`;
-      wbLogger.info(CONTAINER_TAG, `webUrl: ${this.webUrl}`);
+      taroLogger.info(CONTAINER_TAG, `webUrl: ${this.webUrl}`);
       if (this.appearDone) {
         try {
           this.taroWebController.loadUrl(this.webUrl);
         } catch(e) {
-          wbLogger.error(CONTAINER_TAG, `failed loadUrl: ${this.webUrl}`);
+          taroLogger.error(CONTAINER_TAG, `failed loadUrl: ${this.webUrl}`);
         }
       }
     }

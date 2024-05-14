@@ -15,7 +15,7 @@
 
 import window from '@ohos.window';
 import display from '@ohos.display';
-import { wbLogger } from '../utils/Logger';
+import { taroLogger } from '../utils/Logger';
 
 const WINDOW_UTIL = 'WindowUtil';
 
@@ -26,9 +26,9 @@ const WINDOW_UTIL = 'WindowUtil';
 export function setFullScreen(windowClass: window.Window) {
   windowClass.setWindowLayoutFullScreen(true, (err) => {
     if (err.code) {
-      wbLogger.error(WINDOW_UTIL, `Failed to set the window layout to full-screen mode. Cause: ${JSON.stringify(err)}`);
+      taroLogger.error(WINDOW_UTIL, `Failed to set the window layout to full-screen mode. Cause: ${JSON.stringify(err)}`);
     } else {
-      wbLogger.info(WINDOW_UTIL, 'Succeeded in setting the window layout to full-screen mode.');
+      taroLogger.info(WINDOW_UTIL, 'Succeeded in setting the window layout to full-screen mode.');
     }
   });
 }
@@ -40,10 +40,10 @@ export function setSystemBarProperties(windowClass: window.Window, contentColor?
   };
   windowClass.setWindowSystemBarProperties(sysBarProps, (err) => {
     if (err.code) {
-      wbLogger.error(WINDOW_UTIL, `Failed to set the system bar properties. Cause: ${JSON.stringify(err)}}`);
+      taroLogger.error(WINDOW_UTIL, `Failed to set the system bar properties. Cause: ${JSON.stringify(err)}}`);
       return;
     }
-    wbLogger.info(WINDOW_UTIL, 'Succeeded in setting the system bar properties.');
+    taroLogger.info(WINDOW_UTIL, 'Succeeded in setting the system bar properties.');
   });
 }
 
@@ -53,7 +53,7 @@ export function getWindowWidth(windowClass: window.Window) {
     const displayInfo = display.getDefaultDisplaySync();
     return Math.round(windowWidth / displayInfo.densityPixels);
   } catch (error) {
-    wbLogger.error(WINDOW_UTIL, `Failed to get window width: ${JSON.stringify(error)}`);
+    taroLogger.error(WINDOW_UTIL, `Failed to get window width: ${JSON.stringify(error)}`);
     return 40;
   }
 }
@@ -65,7 +65,7 @@ export function getSystemBarHeight(windowClass: window.Window) {
     const avoidAreaHeight = Math.round(systemAvoidArea.topRect.height / displayInfo.densityPixels);
     return avoidAreaHeight;
   } catch (error) {
-    wbLogger.error(WINDOW_UTIL, `Failed to get systemBar height: ${JSON.stringify(error)}`);
+    taroLogger.error(WINDOW_UTIL, `Failed to get systemBar height: ${JSON.stringify(error)}`);
     return 40;
   }
 }

@@ -57,7 +57,7 @@ import {
 } from '../utils/SubscribeMessageUtil';
 import { NavigationBarData } from '../components/NavigationBar';
 import { setSystemBarProperties } from '../utils/WindowUtil';
-import { wbLogger } from '../utils/Logger';
+import { taroLogger } from '../utils/Logger';
 import { switchHapSandBoxToInternal, switchInternalToHapSandBox } from '../utils/InternalPath';
 import { LocalUpdateManagerInstance } from '../update/LocalUpdateManager';
 import util from '@ohos.util';
@@ -129,7 +129,7 @@ export class NativeInject {
       },
 
       copyFileToSandboxCache: (src: string) => {
-        wbLogger.debug('JsBridgeNative', `NativeApi$copyFileToSandboxCache`)
+        taroLogger.debug('JsBridgeNative', `NativeApi$copyFileToSandboxCache`)
         const context = getContext() as common.UIAbilityContext;
         const fileName = src.substring(src.lastIndexOf('/') + 1);
         const sandboxPath = `${context.cacheDir}/${Date.now()}_${fileName}`;
@@ -138,8 +138,8 @@ export class NativeInject {
         return { internalCachePath: switchHapSandBoxToInternal(sandboxPath) }
       },
       setNavigationBarColor: (options) => {
-        wbLogger.debug('JsBridgeNative', `NativeApi$setNavigationBarColor`)
-        wbLogger.info(NATIVE_TAG, `setNavigationBarColor: ${JSON.stringify(options || {})}`)
+        taroLogger.debug('JsBridgeNative', `NativeApi$setNavigationBarColor`)
+        taroLogger.info(NATIVE_TAG, `setNavigationBarColor: ${JSON.stringify(options || {})}`)
         this.navigationBarData.barColor = options.backgroundColor ?? this.navigationBarData.barColor;
         this.navigationBarData.barFrontColor = options.frontColor ?? this.navigationBarData.barFrontColor;
         if (options.animation) {
@@ -157,15 +157,15 @@ export class NativeInject {
         this.setStatusBarFrontColor(this.navigationBarData.barFrontColor);
       },
       showNavigationBarLoading: () => {
-        wbLogger.debug('JsBridgeNative', `NativeApi$showNavigationBarLoading`)
+        taroLogger.debug('JsBridgeNative', `NativeApi$showNavigationBarLoading`)
         this.navigationBarData.loading = true;
       },
       hideNavigationBarLoading: () => {
-        wbLogger.debug('JsBridgeNative', `NativeApi$hideNavigationBarLoading`)
+        taroLogger.debug('JsBridgeNative', `NativeApi$hideNavigationBarLoading`)
         this.navigationBarData.loading = false;
       },
       getMenuButtonBoundingClientRect: () => {
-        wbLogger.debug('JsBridgeNative', `NativeApi$getMenuButtonBoundingClientRect`)
+        taroLogger.debug('JsBridgeNative', `NativeApi$getMenuButtonBoundingClientRect`)
         return {
           left: this.windowWidth - this.capsuleOptions.marginRight - this.capsuleOptions.width,
           right: this.windowWidth - this.capsuleOptions.marginRight,
@@ -179,8 +179,8 @@ export class NativeInject {
         // options.path 格式:
         // - EntryAbility:///pages/api/framework/index?paramA=good
         // - /pages/api/framework/index?paramA=good
-        wbLogger.debug('JsBridgeNative', `NativeApi$navigateToMiniProgram`)
-        wbLogger.info(NATIVE_TAG, 'navigateToMiniProgram options:' + JSON.stringify(options));
+        taroLogger.debug('JsBridgeNative', `NativeApi$navigateToMiniProgram`)
+        taroLogger.info(NATIVE_TAG, 'navigateToMiniProgram options:' + JSON.stringify(options));
         const entryAbility = 'EntryAbility';
         let abilityName = entryAbility;
         let path = '';
@@ -202,7 +202,7 @@ export class NativeInject {
             query,
           },
         };
-        wbLogger.debug(NATIVE_TAG, `navigateToMiniProgram: ${JSON.stringify(wantInfo)}`);
+        taroLogger.debug(NATIVE_TAG, `navigateToMiniProgram: ${JSON.stringify(wantInfo)}`);
         try {
           const context = getContext(this) as common.UIAbilityContext;
           context.startAbility(wantInfo).then(() => {
@@ -211,7 +211,7 @@ export class NativeInject {
             options.fail({ errMsg: 'invalid appid or path scheme' } as ErrorMsg);
           })
         } catch (paramError) {
-          wbLogger.warn(NATIVE_TAG, `navigateToMiniProgram failed: ${JSON.stringify(paramError)}`);
+          taroLogger.warn(NATIVE_TAG, `navigateToMiniProgram failed: ${JSON.stringify(paramError)}`);
           options.fail({
             errMsg: `code: ${(paramError as BusinessError).code}, message ${(paramError as BusinessError).message}`
           } as ErrorMsg
@@ -219,7 +219,7 @@ export class NativeInject {
         }
       },
       setNavigationStyle: (navigationStyle: NavigationStyle) => {
-        wbLogger.debug('JsBridgeNative', `NativeApi$setNavigationStyle`)
+        taroLogger.debug('JsBridgeNative', `NativeApi$setNavigationStyle`)
         this.navigationBarData.visible = navigationStyle.style !== 'custom';
         this.navigationBarData.barFrontColor = navigationStyle.textStyle === 'white' ? '#ffffff' : '#000000';
         this.navigationBarData.barColor = navigationStyle.backgroundColor;
@@ -227,7 +227,7 @@ export class NativeInject {
         this.setStatusBarFrontColor(this.navigationBarData.barFrontColor);
       },
       openSetting: async (options: SettingOptions) => {
-        wbLogger.debug('JsBridgeNative', `NativeApi$openSetting`)
+        taroLogger.debug('JsBridgeNative', `NativeApi$openSetting`)
         const apiName: string = 'openSetting';
         // 接口返回
         try {
@@ -269,7 +269,7 @@ export class NativeInject {
                 subscriptionsSetting.mainSwitch = false
               })
             }).catch((err: Error) => {
-              wbLogger.debug(NATIVE_TAG, 'requestSubscribeMessage %{public}s', JSON.stringify(err))
+              taroLogger.debug(NATIVE_TAG, 'requestSubscribeMessage %{public}s', JSON.stringify(err))
             })
             const subscribeCode = await getMassageList()
             subscriptionsSetting.itemSettings = subscribeCode.massageList
@@ -281,7 +281,7 @@ export class NativeInject {
           }
           options.success({ authSetting: bundleUsedScope.allScope, errMsg: `${apiName}:ok` });
         } catch (paramError) {
-          wbLogger.warn(NATIVE_TAG, `openSetting: ${JSON.stringify(paramError)}`);
+          taroLogger.warn(NATIVE_TAG, `openSetting: ${JSON.stringify(paramError)}`);
           options.fail({
             errMsg: `${apiName}:fail error code: ${(paramError as BusinessError).code} ${(paramError as BusinessError).message}`
           } as ErrorMsg
@@ -290,7 +290,7 @@ export class NativeInject {
         options.complete('openSetting: complete success')
       },
       getSetting: async (options: SettingOptions) => {
-        wbLogger.debug('JsBridgeNative', `NativeApi$getSetting`)
+        taroLogger.debug('JsBridgeNative', `NativeApi$getSetting`)
         const apiName: string = 'getSetting';
         // 接口返回
         try {
@@ -330,7 +330,7 @@ export class NativeInject {
                 subscriptionsSetting.mainSwitch = false
               })
             }).catch((err: Error) => {
-              wbLogger.debug(NATIVE_TAG, 'requestSubscribeMessage %{public}s', JSON.stringify(err))
+              taroLogger.debug(NATIVE_TAG, 'requestSubscribeMessage %{public}s', JSON.stringify(err))
             })
             const subscribeCode = await getMassageList()
             subscriptionsSetting.itemSettings = subscribeCode.massageList
@@ -350,29 +350,29 @@ export class NativeInject {
         options.complete('getSetting: complete success')
       },
       applyUpdate: () => {
-        wbLogger.debug('JsBridgeNative', `NativeApi$getUpdateManager`)
+        taroLogger.debug('JsBridgeNative', `NativeApi$getUpdateManager`)
         return LocalUpdateManagerInstance.applyUpdate();
       },
       onCheckForUpdate: (option: ESObject) => {
-        wbLogger.debug('JsBridgeNative', `NativeApi$getUpdateManager`)
+        taroLogger.debug('JsBridgeNative', `NativeApi$getUpdateManager`)
         return LocalUpdateManagerInstance.onCheckForUpdate(option);
       },
       onUpdateFailed: (option: ESObject) => {
-        wbLogger.debug('JsBridgeNative', `NativeApi$getUpdateManager`)
+        taroLogger.debug('JsBridgeNative', `NativeApi$getUpdateManager`)
         return LocalUpdateManagerInstance.onUpdateFailed(option);
       },
       onUpdateReady: (option: ESObject) => {
-        wbLogger.debug('JsBridgeNative', `NativeApi$getUpdateManager`)
+        taroLogger.debug('JsBridgeNative', `NativeApi$getUpdateManager`)
         return LocalUpdateManagerInstance.onUpdateReady(option);
       },
       requestSubscribeMessage: async (options: RequestSubscribeMessageOptions) => {
-        wbLogger.debug('JsBridgeNative', `NativeApi$requestSubscribeMessage`)
+        taroLogger.debug('JsBridgeNative', `NativeApi$requestSubscribeMessage`)
         const apiName: string = 'requestSubscribeMessage';
         try {
           const enableCode = await enableNotification();
           if (enableCode.errMsg === 'success') {
             const addSlotCode = await addNotificationManagerSlot(options)
-            wbLogger.debug(NATIVE_TAG, 'requestSubscribeMessage %{public}s', JSON.stringify(addSlotCode))
+            taroLogger.debug(NATIVE_TAG, 'requestSubscribeMessage %{public}s', JSON.stringify(addSlotCode))
             if (addSlotCode.errMsg == 'success') {
               options.success({ errMsg: `${apiName}:ok` });
             } else {
@@ -390,7 +390,7 @@ export class NativeInject {
         }
       },
       saveDataUrlToFile: (options: SaveDataUrlOptions) => {
-        wbLogger.debug('JsBridgeNative', `NativeApi$saveDataUrlToFile`)
+        taroLogger.debug('JsBridgeNative', `NativeApi$saveDataUrlToFile`)
         try {
           let tmpFilePath = `internal://cache/${Date.now()}_${options.url.split('/').splice(-1, 1).toString()}`;
           const data = options.data.split(',');
@@ -417,23 +417,23 @@ export class NativeInject {
         }
       },
       setCapsuleState: (visible: boolean) => {
-        wbLogger.debug('JsBridgeNative', `NativeApi$setCapsuleState`)
+        taroLogger.debug('JsBridgeNative', `NativeApi$setCapsuleState`)
         this.capsuleController.changeCapsuleState(visible);
       },
       getCapsuleState: () => {
-        wbLogger.debug('JsBridgeNative', `NativeApi$getCapsuleState`)
+        taroLogger.debug('JsBridgeNative', `NativeApi$getCapsuleState`)
         return { visible: this.capsuleController.getCapsuleState() }
       },
       chooseMediaAssets: (options: ChooseMediaOptions) => {
-        wbLogger.debug('JsBridgeNative', `NativeApi$chooseMediaAssets`)
+        taroLogger.debug('JsBridgeNative', `NativeApi$chooseMediaAssets`)
         selectMediaAssets(options, this.chooseAlbumCallback!)
       },
       chooseMediumAssets: (options: ChooseMediumOptions) => {
-        wbLogger.debug('JsBridgeNative', `NativeApi$chooseMediumAssets`)
+        taroLogger.debug('JsBridgeNative', `NativeApi$chooseMediumAssets`)
         selectMediumAssets(options)
       },
       exitMiniProgram: (options?: ExitMiniProgramOptions) => {
-        wbLogger.debug('JsBridgeNative', `NativeApi$exitMiniProgram`)
+        taroLogger.debug('JsBridgeNative', `NativeApi$exitMiniProgram`)
         try {
           context.terminateSelf()
             .then(() => {

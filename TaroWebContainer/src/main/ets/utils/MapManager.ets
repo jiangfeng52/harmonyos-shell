@@ -1,5 +1,5 @@
 import { map, mapCommon } from '@kit.MapKit';
-import { wbLogger } from './Logger';
+import { taroLogger } from './Logger';
 
 const TAG = "SameLayerRender";
 
@@ -9,7 +9,7 @@ export const mapContextMap: Map<string, MapContext> = new Map();
 export function callMapContextFunction(options: ESObject, callParam: CallMapParam): ESObject {
   const instance: object | undefined = mapContextMap.get(callParam.instanceId) as object | undefined
   if (!instance) {
-    wbLogger.error(TAG, 'the native MapContext instance has not been create.')
+    taroLogger.error(TAG, 'the native MapContext instance has not been create.')
     return
   }
   if (callParam.callType === 'exec') {
@@ -19,7 +19,7 @@ export function callMapContextFunction(options: ESObject, callParam: CallMapPara
   } else if (callParam.callType === 'set') {
     instance[callParam.funcName] = options
   } else {
-    wbLogger.error(TAG, `Invalid call parameter, callType: ${callParam.callType}.`)
+    taroLogger.error(TAG, `Invalid call parameter, callType: ${callParam.callType}.`)
     return
   }
 }
@@ -45,20 +45,20 @@ class MapContext {
   setDayNightMode(mode: number) {
     try {
       this.mapController.setDayNightMode(mode);
-      wbLogger.info(TAG, `setDayNightMode ok: set mode to ${mode}`);
+      taroLogger.info(TAG, `setDayNightMode ok: set mode to ${mode}`);
     } catch (e) {
-      wbLogger.error(TAG, `setDayNightMode err: ${JSON.stringify(e)}`);
+      taroLogger.error(TAG, `setDayNightMode err: ${JSON.stringify(e)}`);
     }
   }
 
   getCenterLocation() {
     try {
       const cameraPosition: mapCommon.CameraPosition = this.mapController.getCameraPosition();
-      wbLogger.info(TAG, `getCenterLocation ok: ${JSON.stringify(cameraPosition.target)}}`);
+      taroLogger.info(TAG, `getCenterLocation ok: ${JSON.stringify(cameraPosition.target)}}`);
       return cameraPosition.target;
     } catch (e) {
       const result = JSON.stringify({ errMsg: e })
-      wbLogger.error(TAG, `getCenterLocation err: ${result}`);
+      taroLogger.error(TAG, `getCenterLocation err: ${result}`);
       return result;
     }
   }
@@ -71,11 +71,11 @@ class MapContext {
       };
       const cameraUpdate: map.CameraUpdate = map.newLatLng(latLng);
       this.mapController.moveCamera(cameraUpdate);
-      wbLogger.info(TAG, `moveToLocation ok: move to ${JSON.stringify(latLng)}`);
+      taroLogger.info(TAG, `moveToLocation ok: move to ${JSON.stringify(latLng)}`);
       return true;
     } catch (e) {
       const result = JSON.stringify({ errMsg: e })
-      wbLogger.error(TAG, `moveToLocation err: ${result}`);
+      taroLogger.error(TAG, `moveToLocation err: ${result}`);
       return result;
     }
   }

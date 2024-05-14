@@ -1,7 +1,7 @@
 import { NativeApiPair, NativeRegister } from '../NativeCacheManager';
 import { abilityAccessCtrl, common, Permissions } from '@kit.AbilityKit';
 import { access, wifiManager } from '@kit.ConnectivityKit';
-import { wbLogger } from '../../utils/Logger';
+import { taroLogger } from '../../utils/Logger';
 import { geoLocationManager } from '@kit.LocationKit';
 import { mediaquery } from '@kit.ArkUI';
 import { BusinessError } from '@kit.BasicServicesKit';
@@ -29,7 +29,7 @@ export class GetSystemSettingCache implements NativeRegister {
         // wifi状态的监听
         wifiManager.on("wifiStateChange", (result: number) => {
           //0: inactive, 1: active, 2: activating, 3: de-activating
-          wbLogger.debug(this.TAG, "wifiStateChange:" + result)
+          taroLogger.debug(this.TAG, "wifiStateChange:" + result)
           if (result === 1) {
             listener()?.change(this.pair.method, this.pair.args)
           } else if (result === 0) {
@@ -39,7 +39,7 @@ export class GetSystemSettingCache implements NativeRegister {
 
         // 地理位置的系统开关监听
         geoLocationManager.on('locationEnabledChange', (state: boolean): void => {
-          wbLogger.debug(this.TAG, "locationEnabledChange:" + JSON.stringify(state))
+          taroLogger.debug(this.TAG, "locationEnabledChange:" + JSON.stringify(state))
           listener()?.change(this.pair.method, this.pair.args)
         });
 
@@ -47,7 +47,7 @@ export class GetSystemSettingCache implements NativeRegister {
         mediaquery.matchMediaSync('(orientation: landscape)')
           .on("change", (mediaQueryResult: mediaquery.MediaQueryResult) => {
             let matches = mediaQueryResult.matches as boolean
-            wbLogger.debug(this.TAG, "orientation: landscape:" + matches)
+            taroLogger.debug(this.TAG, "orientation: landscape:" + matches)
             listener()?.change(this.pair.method, this.pair.args)
           })
 
@@ -62,7 +62,7 @@ export class GetSystemSettingCache implements NativeRegister {
             if (grantStatus[i] === 0) {
               // 用户授权，可以继续访问目标操作
               access.on('stateChange', (data: access.BluetoothState) => {
-                wbLogger.debug(this.TAG, "bluetoothStateChange:" + JSON.stringify(data))
+                taroLogger.debug(this.TAG, "bluetoothStateChange:" + JSON.stringify(data))
                 if (data === access.BluetoothState.STATE_OFF) {
                   listener()?.change(this.pair.method, this.pair.args)
                 } else if (data === access.BluetoothState.STATE_ON) {
@@ -76,10 +76,10 @@ export class GetSystemSettingCache implements NativeRegister {
           }
           // 授权成功
         }).catch((err: BusinessError) => {
-          wbLogger.debug(this.TAG, `Failed to request permissions from user. Code is ${err.code}, message is ${err.message}`)
+          taroLogger.debug(this.TAG, `Failed to request permissions from user. Code is ${err.code}, message is ${err.message}`)
         })
       } catch (e) {
-        wbLogger.debug(this.TAG, `registerGetSystemSetting发生错误`)
+        taroLogger.debug(this.TAG, `registerGetSystemSetting发生错误`)
       }
     }
   }

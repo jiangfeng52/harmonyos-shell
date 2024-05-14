@@ -5,7 +5,7 @@ import { CheckOriginal } from './CheckOriginal';
 import { DetailMedia } from './DetailMedia';
 import { IMediaData, MediaItemData, ChooseAlbumResult, chooseAlbumOptions } from '../../interfaces/Media';
 import { getThumbnailPixelMap } from '../../utils/MediaUtil';
-import { wbLogger } from '../../utils/Logger';
+import { taroLogger } from '../../utils/Logger';
 
 const ALBUM_TAG = 'Album';
 
@@ -134,7 +134,7 @@ export struct Album {
         getThumbnailPixelMap(media.originPath).then((pixelMap) => {
           media.thumbnail = pixelMap;
         }, () => {
-          wbLogger.error(ALBUM_TAG, 'getThumbnailForVideo fail')
+          taroLogger.error(ALBUM_TAG, 'getThumbnailForVideo fail')
         })
       }
     }

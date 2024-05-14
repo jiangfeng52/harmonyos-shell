@@ -1,6 +1,6 @@
 import common from '@ohos.app.ability.common';
 import fs from '@ohos.file.fs';
-import { wbLogger } from '../../../utils/Logger';
+import { taroLogger } from '../../../utils/Logger';
 import { LocalVersionInfo } from '../bean/LocalVersionInfo';
 import { FileUtils } from '../../../utils/FileUtils';
 import { MiniLocalFileDataSource } from './MiniLocalFileDataSource';
@@ -46,7 +46,7 @@ export class MiniRawFileDataSource {
    * @returns
    */
   copyRawFilesToDiskSync(context: common.Context, src: string, dest: string): boolean {
-    wbLogger.debug(TAG, `Directory copy start from %{public}s to %{public}s`, src, dest);
+    taroLogger.debug(TAG, `Directory copy start from %{public}s to %{public}s`, src, dest);
     let entries: Array<string> | null = null
     try {
       // 目前没有直接判断是rawFile文件目录下的文件类型：目录还是文件，暂时依靠try catch
@@ -56,9 +56,9 @@ export class MiniRawFileDataSource {
       FileUtils.mkFilesDir(dest)
     } catch (error) {
       entries = null
-      wbLogger.debug(TAG, `${src} is not dir，It should be a file，Target dest is ${dest}`);
+      taroLogger.debug(TAG, `${src} is not dir，It should be a file，Target dest is ${dest}`);
     }
-    wbLogger.debug(TAG, `Directory copy start from %{public}s to %{public}s,length = %{public}s`, src, dest, `${entries?.length}`);
+    taroLogger.debug(TAG, `Directory copy start from %{public}s to %{public}s,length = %{public}s`, src, dest, `${entries?.length}`);
     if (entries != null && entries?.length >= 1) {
       for (const entry of entries) {
         // 拼接完整的源路径和目标路径
@@ -81,15 +81,15 @@ export class MiniRawFileDataSource {
    * @returns
    */
   copyRawFileToDiskSync(context: common.Context, src: string, dest: string): boolean {
-    wbLogger.debug(TAG, `Directory copying from %{public}s to %{public}s`, src, dest);
+    taroLogger.debug(TAG, `Directory copying from %{public}s to %{public}s`, src, dest);
     try {
       let content = context.resourceManager.getRawFileContentSync(src);
       let file = fs.openSync(dest, fs.OpenMode.READ_WRITE | fs.OpenMode.CREATE);
       fs.writeSync(file.fd, content.buffer)
-      wbLogger.debug(TAG, `Directory copied success from %{public}s to %{public}s`, src, dest);
+      taroLogger.debug(TAG, `Directory copied success from %{public}s to %{public}s`, src, dest);
       return true
     } catch (err) {
-      wbLogger.error(TAG, " Directory copying failed" + src + " to " + dest + " with error message: " + err.message + ", error code: " + err.code);
+      taroLogger.error(TAG, " Directory copying failed" + src + " to " + dest + " with error message: " + err.message + ", error code: " + err.code);
       // } finally {
       //   if (file != undefined) {
       //     fs.closeSync(file);
@@ -112,7 +112,7 @@ export class MiniRawFileDataSource {
         return filePath
       }
     } catch (e) {
-      wbLogger.warn('RawUtils', `rawfileExist ${filePath} did't internal ${e}`)
+      taroLogger.warn('RawUtils', `rawfileExist ${filePath} did't internal ${e}`)
     }
     return ''
   }
