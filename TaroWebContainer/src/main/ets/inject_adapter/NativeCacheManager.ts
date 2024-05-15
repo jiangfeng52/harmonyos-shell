@@ -6,8 +6,14 @@ export class NativeCacheManager {
   private _registers: NativeRegister[] = []
   private _context: common.UIAbilityContext | null = null;
 
-  public init(context: common.UIAbilityContext) {
+  /**
+   * 尚未执行updater方法的NativeRegister集合
+   */
+  private _unUpdaterRegisters: NativeRegister[] = []
+
+  public initCacheData(context: common.UIAbilityContext) {
     this._context = context
+    this.updateCacheData()
   }
 
   public registerNativeListener(listener: NativeDataChangeListener | null) {
@@ -17,18 +23,8 @@ export class NativeCacheManager {
   }
 
   public register(rList: NativeRegister[]) {
-    let rNameList = new Set<string>()
-    rList.forEach(r => {
-      const index = this._registers.indexOf(r)
-      // 不存在
-      if (index === -1) {
-        this._registers.push(r)
-        r.updater(this._context, () => this._listener)
-        rNameList.add(r.method)
-      }
-    })
-    // taro注册
-    this._listener?.register(Array.from(rNameList))
+    this._unUpdaterRegisters.push(...rList)
+    this.updateCacheData()
   }
 
   public unregister(rList: NativeRegister[]) {
@@ -51,6 +47,24 @@ export class NativeCacheManager {
     this._listener = null
     this._registers = []
     this._context = null
+  }
+
+  private updateCacheData() {
+    if (!this._context) {
+      return
+    }
+    if (this._unUpdaterRegisters.length === 0) {
+      return
+    }
+    let rNameList = new Set<string>()
+    this._unUpdaterRegisters.forEach(r => {
+      this._registers.push(r)
+      r.updater(this._context, () => this._listener)
+      rNameList.add(r.method)
+    })
+    // taro注册
+    this._listener?.register(Array.from(rNameList))
+    this._unUpdaterRegisters.splice(0)
   }
 
   /**
