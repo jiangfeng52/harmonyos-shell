@@ -58,7 +58,7 @@ export class NativeCacheManager {
     }
     let rNameList = new Set<string>()
     this._unUpdaterRegisters.forEach(r => {
-      this._registers.push(r)
+      this._registers.indexOf(r) === -1 && this._registers.push(r)
       r.updater(this._context, () => this._listener)
       rNameList.add(r.method)
     })
