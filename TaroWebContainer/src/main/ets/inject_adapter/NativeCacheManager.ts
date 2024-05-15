@@ -19,22 +19,22 @@ export class NativeCacheManager {
   public registerNativeListener(listener: NativeDataChangeListener | null) {
     this._listener = listener
     // 方法名全部要注册
-    this._listener?.register(this._registers.map(r => r.method))
+    this._listener?.register(this._registers.map(r => r.getMethod()))
   }
 
-  public register(rList: NativeRegister[]) {
+  public register(...rList: NativeRegister[]) {
     this._unUpdaterRegisters.push(...rList)
     this.updateCacheData()
   }
 
-  public unregister(rList: NativeRegister[]) {
+  public unregister(...rList: NativeRegister[]) {
     let rNameList = new Set<string>()
     rList.forEach(r => {
       const index = this._registers.indexOf(r)
       // 存在
       if (index > -1) {
         this._registers.splice(index, 1)
-        rNameList.add(r.method)
+        rNameList.add(r.getMethod())
       }
     })
     // taro解注册
@@ -43,7 +43,8 @@ export class NativeCacheManager {
   }
 
   public dispose() {
-    this.unregister(this._registers)
+    this.unregister(...this._registers)
+    this._registers.forEach(r => r.dispose(this._context))
     this._listener = null
     this._registers = []
     this._context = null
@@ -60,7 +61,7 @@ export class NativeCacheManager {
     this._unUpdaterRegisters.forEach(r => {
       this._registers.indexOf(r) === -1 && this._registers.push(r)
       r.updater(this._context, () => this._listener)
-      rNameList.add(r.method)
+      rNameList.add(r.getMethod())
     })
     this._unUpdaterRegisters.splice(0)
     // taro注册
@@ -82,16 +83,22 @@ export interface NativeApiPair {
   method: string;
 
   /*方法入参*/
-  args: any[];
+  args: object[];
 }
 
 export interface NativeRegister {
   /*方法名*/
-  method: string;
+  getMethod(): string;
 
   /*方法入参*/
-  args: any[];
+  getArgs(): object[];
 
   /*更新的方法*/
-  updater: (context: common.UIAbilityContext | null, listener: () => NativeDataChangeListener | null) => void;
+  updater(context: common.UIAbilityContext, listener: () => NativeDataChangeListener | null): void;
+
+  /**
+   * 释放资源方法
+   * @param context
+   */
+  dispose(context: common.UIAbilityContext): void
 }

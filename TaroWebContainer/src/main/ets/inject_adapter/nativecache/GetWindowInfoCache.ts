@@ -10,17 +10,20 @@ export class GetWindowInfoCache implements NativeRegister {
     method: "getWindowInfo",
     args: []
   }
-  private TAG = this.pair.method
 
-  method: string;
-  args: any[];
-  updater: (context: common.UIAbilityContext | null, listener: () => NativeDataChangeListener | null) => void;
+  updater(context: common.UIAbilityContext, listener: () => NativeDataChangeListener | null): void {
 
-  constructor() {
-    this.method = this.pair.method
-    this.args = this.pair.args
-    this.updater = (context: common.UIAbilityContext | null, listener: () => NativeDataChangeListener | null) => {
-      // 无需更新数据
-    }
+  }
+
+  getMethod(): string {
+    return this.pair.method
+  }
+
+  getArgs(): any[] {
+    return this.pair.args
+  }
+
+  dispose(context: common.UIAbilityContext): void {
+
   }
 }
