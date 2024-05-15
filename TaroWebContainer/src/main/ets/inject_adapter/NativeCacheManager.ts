@@ -62,9 +62,9 @@ export class NativeCacheManager {
       r.updater(this._context, () => this._listener)
       rNameList.add(r.method)
     })
+    this._unUpdaterRegisters.splice(0)
     // taro注册
     this._listener?.register(Array.from(rNameList))
-    this._unUpdaterRegisters.splice(0)
   }
 
   /**
