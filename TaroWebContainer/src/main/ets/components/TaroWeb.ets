@@ -31,6 +31,7 @@ import { NativeVideoBuilder } from './SameLayer/NativeComponents/Video/Video';
 import { NativeMapBuilder } from './SameLayer/NativeComponents/Map/Map';
 import { callMapContextFunction, createMapContext } from '../utils/MapManager';
 import { NativeCacheManager } from '../inject_adapter/NativeCacheManager';
+import { taroTrace, TraceTask } from '../utils/Trace';
 
 
 const TARO_WEB_TAG = 'TaroWeb';
@@ -179,6 +180,7 @@ export struct TaroWeb {
     if(!this.useCache && this.hookInterceptorWithoutCache != null){
       return this.hookInterceptorWithoutCache(request)
     }
+
     //优先使用本地缓存，再使用RawFile缓存，没有则直接网络请求
     const url = request.getRequestUrl();
     if (url && this.useCache && this.webUrlPrefix) {
@@ -192,8 +194,11 @@ export struct TaroWeb {
         if (!path || !MiniLocalFileDataSource.fileExist(lastVerInfo?.diskCachePath, path)) {
           return null;
         }
+        taroTrace.startTrace(TraceTask.MiniLocalFileDataSource)
         taroLogger.debug('TaroWeb', 'useLocalCacheResource path=%{public}s', path)
-        return MiniLocalFileDataSource.getFileOnResponseWeb(lastVerInfo?.diskCachePath, path)
+        const response = MiniLocalFileDataSource.getFileOnResponseWeb(lastVerInfo?.diskCachePath, path)
+        taroTrace.finishTrace(TraceTask.MiniLocalFileDataSource)
+        return response
       }
       if (lastVerInfo?.rawCachePath) { // 走App内置的Raw缓存
         let rawPath = MiniRawFileDataSource.rawfileExist(lastVerInfo.rawCachePath, path)
@@ -201,7 +206,10 @@ export struct TaroWeb {
           return null;
         }
         taroLogger.debug('TaroWeb', 'useRawCacheResource path=%{public}s', rawPath)
-        return MiniRawFileDataSource.getRawfileOnResponseWeb(rawPath)
+        taroTrace.startTrace(TraceTask.MiniRawFileDataSource)
+        const response =  MiniRawFileDataSource.getRawfileOnResponseWeb(rawPath)
+        taroTrace.finishTrace(TraceTask.MiniRawFileDataSource)
+        return response
       }
     }
     return null;
@@ -234,7 +242,10 @@ export struct TaroWeb {
           object: {
             nativeMethod: (channelType: string, objectJson: string) => {
               taroLogger.debug('nativeApi', `channelType ${channelType} objectJson(${objectJson})`)
-              return this.channel.call(channelType, objectJson) as object
+              taroTrace.startTrace(TraceTask.nativeMethod)
+              const obj = this.channel.call(channelType, objectJson) as object
+              taroTrace.finishTrace(TraceTask.nativeMethod)
+              return obj
             },
             transferSameLayerArgs: sameLayerManager.transferSameLayerArgs,
             callMapContextFunction: callMapContextFunction,
@@ -272,7 +283,10 @@ export struct TaroWeb {
           if (!request) {
             return null;
           }
-          return this.taroWebController.interceptRequest(request);
+          taroTrace.startTrace(TraceTask.onInterceptRequest)
+          const response = this.taroWebController.interceptRequest(request);
+          taroTrace.finishTrace(TraceTask.onInterceptRequest)
+          return response
         })
         .onSslErrorEventReceive((event) => { // 通知用户加载资源时发生SSL错误
           taroLogger.info(TARO_WEB_TAG, `onSslErrorEventReceive:${event.error}`)
