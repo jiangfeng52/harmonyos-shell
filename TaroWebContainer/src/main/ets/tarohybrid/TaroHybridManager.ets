@@ -7,6 +7,7 @@ import { GlobalThis } from '../utils/GlobalThis';
 import { TaroWebController } from '../components/TaroWeb';
 import { InjectObject } from '../interfaces/InjectObject';
 import { taroLogger } from '../utils/Logger';
+import { taroTrace } from '../utils/Trace';
 
 export class TaroHybridCoreInstance {
   private builderNode: BuilderNode<TaroHybridCoreBuilderData[]> | undefined
@@ -76,6 +77,10 @@ export class TaroHybridManager {
   static setDebuggable(debuggable: boolean) {
     TaroHybridManager.debuggable = debuggable
     taroLogger.setLoggable(debuggable)
+  }
+
+  static openTrace(){
+    taroTrace.setOpen(true)
   }
 
   static getDebuggable() {
