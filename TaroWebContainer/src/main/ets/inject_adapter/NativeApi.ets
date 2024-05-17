@@ -382,6 +382,15 @@ export class NativeApi {
       NativeApiConfig.getInstance().innerAudioContextMap.get(objectId).stop()
     },
 
+    innerAudioPause(options: ESObject, objectId: number): void {
+      taroLogger.debug('JsBridgeNativeApi', `NativeApi$pause`)
+      if (!NativeApiConfig.getInstance().innerAudioContextMap.has(objectId)) {
+        taroLogger.error('JsBridgeNativeApi', 'the context has not been init')
+        return
+      }
+      NativeApiConfig.getInstance().innerAudioContextMap.get(objectId).pause()
+    },
+
     innerAudioPlay(options: ESObject, objectId: number): void {
       taroLogger.debug('JsBridgeNativeApi', `NativeApi$play`)
       if (!NativeApiConfig.getInstance().innerAudioContextMap.has(objectId)) {
