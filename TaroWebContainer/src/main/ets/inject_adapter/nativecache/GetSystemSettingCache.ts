@@ -1,54 +1,55 @@
 import { NativeApiPair, NativeRegister } from '../NativeCacheManager';
 import { abilityAccessCtrl, common, Permissions } from '@kit.AbilityKit';
+import { geoLocationManager } from '@kit.LocationKit';
+import { BusinessError, Callback } from '@kit.BasicServicesKit';
 import { access, wifiManager } from '@kit.ConnectivityKit';
 import { taroLogger } from '../../utils/Logger';
-import { geoLocationManager } from '@kit.LocationKit';
 import { mediaquery } from '@kit.ArkUI';
-import { BusinessError } from '@kit.BasicServicesKit';
-import { NativeDataChangeListener } from '../../interfaces/InjectObject';
 
 /**
  * 注册NativeApi方法"getSystemSetting"的监听
  */
 export class GetSystemSettingCache implements NativeRegister {
+
   private pair: NativeApiPair = {
     method: "getSystemSetting",
     args: []
   }
   private TAG = this.pair.method
 
-  method: string;
-  args: any[];
-  updater: (context: common.UIAbilityContext | null, listener: () => NativeDataChangeListener | null) => void;
+  private locationEnabledChangeCallback: Callback<boolean>
 
-  constructor() {
-    this.method = this.pair.method
-    this.args = this.pair.args
-    this.updater = (context: common.UIAbilityContext | null, listener: () => NativeDataChangeListener | null) => {
+  getApis(): NativeApiPair[] {
+    return [this.pair]
+  }
+
+  updater(context: common.UIAbilityContext, onChange: (apiPairs: NativeApiPair[]) => void): void {
       try {
         // wifi状态的监听
         wifiManager.on("wifiStateChange", (result: number) => {
           //0: inactive, 1: active, 2: activating, 3: de-activating
           taroLogger.debug(this.TAG, "wifiStateChange:" + result)
           if (result === 1) {
-            listener()?.change(this.pair.method, this.pair.args)
+            onChange([this.pair])
           } else if (result === 0) {
-            listener()?.change(this.pair.method, this.pair.args)
+            onChange([this.pair])
           }
         });
 
-        // 地理位置的系统开关监听
-        geoLocationManager.on('locationEnabledChange', (state: boolean): void => {
+        this.locationEnabledChangeCallback = (state: boolean): void => {
           taroLogger.debug(this.TAG, "locationEnabledChange:" + JSON.stringify(state))
-          listener()?.change(this.pair.method, this.pair.args)
-        });
+          onChange([this.pair])
+        }
+
+        // 地理位置的系统开关监听
+        geoLocationManager.on('locationEnabledChange', this.locationEnabledChangeCallback);
 
         // 横竖屏的监听
         mediaquery.matchMediaSync('(orientation: landscape)')
           .on("change", (mediaQueryResult: mediaquery.MediaQueryResult) => {
             let matches = mediaQueryResult.matches as boolean
             taroLogger.debug(this.TAG, "orientation: landscape:" + matches)
-            listener()?.change(this.pair.method, this.pair.args)
+            onChange([this.pair])
           })
 
         // 蓝牙的监听
@@ -64,9 +65,9 @@ export class GetSystemSettingCache implements NativeRegister {
               access.on('stateChange', (data: access.BluetoothState) => {
                 taroLogger.debug(this.TAG, "bluetoothStateChange:" + JSON.stringify(data))
                 if (data === access.BluetoothState.STATE_OFF) {
-                  listener()?.change(this.pair.method, this.pair.args)
+                  onChange([this.pair])
                 } else if (data === access.BluetoothState.STATE_ON) {
-                  listener()?.change(this.pair.method, this.pair.args)
+                  onChange([this.pair])
                 }
               });
             } else {
@@ -81,6 +82,11 @@ export class GetSystemSettingCache implements NativeRegister {
       } catch (e) {
         taroLogger.debug(this.TAG, `registerGetSystemSetting发生错误`)
       }
-    }
   }
+
+  dispose(context: common.UIAbilityContext): void {
+    // 地理位置的系统开关监听
+    this.locationEnabledChangeCallback && geoLocationManager.off('locationEnabledChange', this.locationEnabledChangeCallback);
+  }
+
 }

@@ -209,7 +209,7 @@ export interface NativeDataChangeListener {
    * @param methodName    要更新的方法名
    * @param methodArgs    要更新的方法参数，如果是空参，直接传[]
    */
-  change: (methodName: string, methodArgs: any[]) => void
+  change: (methodName: string, methodArgs: object[]) => void
   /**
    * 注册
    * @param methodName    要注册的方法名列表

@@ -295,8 +295,8 @@ export struct TaroWebContainer {
     })
     this.appearDone = true;
 
-    this.taroWebController.getNativeCacheManager().init(context)
-    this.taroWebController.getNativeCacheManager().register([new GetWindowInfoCache(), new GetDeviceInfoCache(), new GetSystemSettingCache()])
+    this.taroWebController.getNativeCacheManager().initCacheData(context)
+    this.taroWebController.getNativeCacheManager().register(new GetWindowInfoCache(), new GetDeviceInfoCache(), new GetSystemSettingCache())
 
   }
 
