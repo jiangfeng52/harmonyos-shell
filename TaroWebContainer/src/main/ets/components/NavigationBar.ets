@@ -14,13 +14,13 @@
  */
 import router from '@ohos.router';
 
-const DEFAULT_TITLE_LEFT = 40;
+const DEFAULT_TITLE_LEFT = 16;
 
 @Observed
 export class NavigationBarData {
   public title: string = '';
   public canBackward: boolean = false;
-  public titleHeight: number = 32;
+  public titleHeight: number = 40;
   public loading: boolean = false;
   public barColor: string = '#FFFFFF'
   public barFrontColor: string = '#000000';
@@ -47,9 +47,10 @@ export struct NavigationBar {
           if (this.navigationBarData.canBackward) {
             Image($r('app.media.back'))
               .fillColor(this.navigationBarData.barFrontColor)
-              .width(25)
-              .height(25)
-              .margin({ left: 26 })
+              .width(40)
+              .height(40)
+              .padding(5)
+              .margin({ left: 3 })
               .objectFit(ImageFit.Contain)
               .onClick(() => {
                 if (this.onBackPressed) {
@@ -82,8 +83,7 @@ export struct NavigationBar {
         }
         .height(this.navigationBarData.titleHeight + this.navigationBarData.paddingBottom + this.navigationBarData.systemBarHeight)
         .width('100%')
-        .alignItems(VerticalAlign.Bottom)
-        .padding({ bottom: this.navigationBarData.paddingBottom })
+        .alignItems(VerticalAlign.Center)
       }
       .backgroundColor(this.navigationBarData.barColor)
       .foregroundColor(this.navigationBarData.barFrontColor)

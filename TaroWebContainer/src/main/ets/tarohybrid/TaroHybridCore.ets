@@ -163,7 +163,7 @@ struct TaroHybridCore {
         Button(`${this.debugLayoutVisible == Visibility.Visible ? '收起' : '调试'}`,  { type: ButtonType.Capsule, stateEffect: false })
           .backgroundColor(0x317aff)
           .height(25)
-          .margin({top: 5, right: 5})
+          .margin({top: 10, right: 5})
           .onClick(()=>{
             this.debugLayoutVisible = this.debugLayoutVisible == Visibility.Visible ? Visibility.None : Visibility.Visible
           })
