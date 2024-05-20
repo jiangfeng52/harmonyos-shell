@@ -1,5 +1,5 @@
 import request from '@ohos.request'
-import { wbLogger } from '../../../utils/Logger';
+import { taroLogger } from '../../../utils/Logger';
 import { NetworkTask, NetworkTaskStatus } from '../bean/NetworkTask';
 import { FileUtils } from '../../../utils/FileUtils';
 
@@ -24,17 +24,17 @@ export class MiniNetworkDataSource {
       request.downloadFile(context, downloadConfig)
         .then((downloadTask: request.DownloadTask) => {
           downloadTask.on('complete', () => {
-            wbLogger.debug("UpdateManager", '%{public}s download succeed', url)
+            taroLogger.debug("UpdateManager", '%{public}s download succeed', url)
             resolve(tempPath)
           })
           downloadTask.on('fail', (err: number) => {
-            wbLogger.debug("UpdateManager", '%{public}s download error, errCode is %{public}s', url, err.toString())
+            taroLogger.debug("UpdateManager", '%{public}s download error, errCode is %{public}s', url, err.toString())
             FileUtils.delTempFile(tempPath)
             resolve(null)
           })
         })
         .catch((err: Object) => {
-          wbLogger.debug("UpdateManager", '%{public}s download error, err is %{public}s', url, err.toString())
+          taroLogger.debug("UpdateManager", '%{public}s download error, err is %{public}s', url, err.toString())
           FileUtils.delTempFile(tempPath)
           resolve(null)
         })

@@ -1,12 +1,12 @@
 import hilog from '@ohos.hilog';
 
-const TAG: string = 'WebContainer'
+const TAG: string = 'WebContainerSample'
 
 class Logger {
   private domain: number = 0x0001;
   private commonTag: string;
 
-  private loggable = false
+  private loggable = true
 
   constructor(commonTag: string, domain: number = 0x0001) {
     this.commonTag = commonTag;
@@ -42,4 +42,4 @@ class Logger {
   }
 }
 // 导出模块内默认的日志对象
-export const taroLogger = new Logger(TAG);
+export const logger = new Logger(TAG);

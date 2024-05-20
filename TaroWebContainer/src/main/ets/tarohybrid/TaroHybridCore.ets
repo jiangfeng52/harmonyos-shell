@@ -8,7 +8,7 @@ import { DebugLayout } from './DebugDialog';
 import { TaroHybridManager } from './TaroHybridManager';
 import { TaroHybridUtils } from './TaroHybridUtils';
 import bundleManager from '@ohos.bundle.bundleManager';
-import { wbLogger } from '../utils/Logger';
+import { taroLogger } from '../utils/Logger';
 import { FileUtils } from '../utils/FileUtils';
 import { http } from '@kit.NetworkKit';
 
@@ -18,6 +18,7 @@ export interface TaroHybridCoreBuilderData {
   taroPath: string
   taroWebController: TaroWebController
   injectObj: InjectObject
+  forceDarkAccess: boolean
 }
 
 @Builder
@@ -25,7 +26,8 @@ export function TaroHybridCoreBuilder(builderData: TaroHybridCoreBuilderData) {
   TaroHybridCore({
     domain: builderData.domain,
     indexHtmlPath: builderData.indexHtmlPath,
-    taroPath: builderData.taroPath
+    taroPath: builderData.taroPath,
+    forceDarkAccess: builderData.forceDarkAccess
   })
 }
 const HTTP_TIMEOUT = 3000;
@@ -35,6 +37,8 @@ struct TaroHybridCore {
   @Prop indexHtmlPath: string;
   @Prop taroPath: string;
   @Prop domain: string;
+  // 是否强制反色适配深色模式
+  @Prop forceDarkAccess: boolean;
   @State taroWebController: TaroWebController = TaroHybridManager.getCoreInstance(this.indexHtmlPath)?.builderData.taroWebController ?? new TaroWebController()
   @State isDebug: boolean = (GlobalThis.getInstance().getContext('context') as common.UIAbilityContext).applicationInfo.debug
   private useCache: boolean = true
@@ -76,7 +80,7 @@ struct TaroHybridCore {
     }
 
     const url = request.getRequestUrl();
-    wbLogger.debug("CrossOrigin","拦截器收到的request: "+url);
+    taroLogger.debug("CrossOrigin","拦截器收到的request: "+url);
 
     if ( url.search(this.domain) != -1 ) {
       let actualRequestUrl = url.replace(this.domain,this.devDomain)
@@ -87,7 +91,7 @@ struct TaroHybridCore {
       responseWeb.setResponseHeader(request.getRequestHeader())
       responseWeb.setResponseIsReady(false)
       FileUtils.getFileResponseFromUrl(actualRequestUrl,HTTP_TIMEOUT,http.HttpDataType.ARRAY_BUFFER).then(ret => {
-        wbLogger.debug("CrossOrigin", 'download result : %{public}s ,code:%{public}s', actualRequestUrl,`${ret.responseCode}`)
+        taroLogger.debug("CrossOrigin", 'download result : %{public}s ,code:%{public}s', actualRequestUrl,`${ret.responseCode}`)
         responseWeb.setResponseCode(ret.responseCode);
         responseWeb.setReasonMessage(ret.result === http.ResponseCode.OK ? 'OK' : 'http.get resource failed');
         if (ret.result instanceof ArrayBuffer) {
@@ -98,7 +102,7 @@ struct TaroHybridCore {
         responseWeb.setResponseIsReady(true)
         return responseWeb
       }).catch((err: Error) => {
-        wbLogger.debug("CrossOrigin", 'download error: %{public}s , err is %{public}s', actualRequestUrl, err.message)
+        taroLogger.debug("CrossOrigin", 'download error: %{public}s , err is %{public}s', actualRequestUrl, err.message)
         responseWeb.setResponseCode(0);
         responseWeb.setReasonMessage(err.message);
         responseWeb.setResponseIsReady(true)
@@ -124,7 +128,8 @@ struct TaroHybridCore {
       showCapsule: false,
       onNavigationBarBackPressed: this.navigationBarBackPressed,
       hookInterceptorWithoutCache:this.hookInterceptorWithoutCache,
-      isRoot: this.isRoot
+      isRoot: this.isRoot,
+      forceDarkAccess: this.forceDarkAccess
     })
       .width('100%')
       .height('100%')

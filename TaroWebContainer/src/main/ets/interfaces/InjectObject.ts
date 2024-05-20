@@ -200,7 +200,31 @@ export interface NavigationStyle {
   backgroundColor: string;
 }
 
+/**
+ * 系统数据更新监听器
+ */
+export interface NativeDataChangeListener {
+  /**
+   * 更新
+   * @param methodName    要更新的方法名
+   * @param methodArgs    要更新的方法参数，如果是空参，直接传[]
+   */
+  change: (methodName: string, methodArgs: object[]) => void
+  /**
+   * 注册
+   * @param methodName    要注册的方法名列表
+   */
+  register: (methodNames: string[]) => void
+  /**
+   * 解注册
+   * @param methodName    要解注册的方法名列表
+   */
+  unregister:(methodNames: string[]) => void
+
+}
+
 export interface InnerInjectObj {
+  registerNativeListener: (listener: NativeDataChangeListener | null) => void
   setNavigationBarColor: (options: NavigationBarOptions) => void;
   showNavigationBarLoading: () => void;
   hideNavigationBarLoading: () => void;

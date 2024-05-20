@@ -1,6 +1,7 @@
 import Want from '@ohos.app.ability.Want';
 import Url from '@ohos.url';
-import { TaroWebContainer, InjectObject, HostPageState, TaroWebController, Logger, LoggerLevel, wbLogger } from '@hybrid/web-container';
+import { TaroWebContainer, InjectObject, HostPageState, TaroWebController } from '@hybrid/web-container';
+import { logger } from '../utils/Logger';
 
 const WEB_CONTAINER_PAGE_TAG = 'WebContainerPage';
 let storage = LocalStorage.getShared() // 获取共享的本地存储对象
@@ -15,7 +16,7 @@ struct WebContainerPage {
 
   // 用户可以自定义对象注入到Web环境中，使用native.sayHello格式进行调用
   nativeObj: InjectObject = {
-    sayHello: () => wbLogger.info(TAG, 'sayHello %{public}s', 'Hello World'),
+    sayHello: () => logger.info(TAG, 'sayHello %{public}s', 'Hello World'),
   }
 
   onBackPress() {
@@ -24,10 +25,6 @@ struct WebContainerPage {
       return true;
     }
     return false;
-  }
-
-  aboutToAppear() {
-    Logger.setLogLevel(LoggerLevel.LOG_DEBUG);
   }
 
   onPageShow() {
@@ -49,7 +46,7 @@ struct WebContainerPage {
       const url = Url.URL.parseURL(this.webUrl());
       return `${url.protocol}//${url.host}/`;
     } catch (err) {
-      wbLogger.error(WEB_CONTAINER_PAGE_TAG, `Invalid webUrl: ${this.webUrl()}`);
+      logger.error(WEB_CONTAINER_PAGE_TAG, `Invalid webUrl: ${this.webUrl()}`);
       return '';
     }
   }
@@ -66,6 +63,7 @@ struct WebContainerPage {
         isFullScreen: false, // 是否全屏显示
         injectObj: this.nativeObj, // 注入对象
         navigationInitVisible: true, // 导航栏是否显示
+        forceDarkAccess: true
       })
         .width('100%')
         .height('100%')

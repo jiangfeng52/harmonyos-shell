@@ -6,19 +6,21 @@ import { TaroHybridUtils } from './TaroHybridUtils';
 import { GlobalThis } from '../utils/GlobalThis';
 import { TaroWebController } from '../components/TaroWeb';
 import { InjectObject } from '../interfaces/InjectObject';
-import { wbLogger } from '../utils/Logger';
+import { taroLogger } from '../utils/Logger';
+import { taroTrace } from '../utils/Trace';
 
 export class TaroHybridCoreInstance {
   private builderNode: BuilderNode<TaroHybridCoreBuilderData[]> | undefined
   builderData: TaroHybridCoreBuilderData
 
-  constructor(domain: string, indexHtmlPath: string, taroPath: string, injectObj: InjectObject) {
+  constructor(domain: string, indexHtmlPath: string, taroPath: string, injectObj: InjectObject, forceDarkAccess: boolean) {
     this.builderData = {
       domain: domain,
       indexHtmlPath: indexHtmlPath,
       taroPath: taroPath,
       taroWebController: new TaroWebController(),
-      injectObj: injectObj
+      injectObj: injectObj,
+      forceDarkAccess: forceDarkAccess
     }
   }
 
@@ -29,7 +31,7 @@ export class TaroHybridCoreInstance {
           wrapBuilder<TaroHybridCoreBuilderData[]>(TaroHybridCoreBuilder),
           this.builderData
         )
-      wbLogger.debug(
+      taroLogger.debug(
         'TaroHybrid',
         '%{public}s create BuilderNode',
         [this.builderData.indexHtmlPath]);
@@ -42,7 +44,7 @@ export class TaroHybridCoreInstance {
       this.builderNode.dispose()
       this.builderNode = undefined
 
-      wbLogger.debug(
+      taroLogger.debug(
         'TaroHybrid',
         '%{public}s dispose BuilderNode',
         [this.builderData.indexHtmlPath]);
@@ -55,7 +57,8 @@ export interface TaroHybridManagerOptions {
   domain: string
   injectNativeMethod: (indexHtmlPath: string, uiAbilityContext: common.UIAbilityContext) => InjectObject,
   rootIndexHtmlPath?: string,
-  nativeBack: ()=>void
+  nativeBack: ()=>void,
+  forceDarkAccess: boolean
 }
 
 export class TaroHybridManager {
@@ -64,9 +67,24 @@ export class TaroHybridManager {
   // 回收机制：引用计数
   private static referenceCountMap: HashMap<string, number> = new HashMap();
 
+  private static debuggable = false
+
   static init(options: TaroHybridManagerOptions){
     TaroHybridManager.options = options
     GlobalThis.getInstance().setContext('context', options.uiAbilityContex);
+  }
+
+  static setDebuggable(debuggable: boolean) {
+    TaroHybridManager.debuggable = debuggable
+    taroLogger.setLoggable(debuggable)
+  }
+
+  static openTrace(){
+    taroTrace.setOpen(true)
+  }
+
+  static getDebuggable() {
+    return TaroHybridManager.debuggable
   }
 
   static isRootContainer(indexHtmlPath: string){
@@ -89,7 +107,8 @@ export class TaroHybridManager {
         TaroHybridManager?.options?.domain??'',
         indexHtmlPath,
         taroPath,
-        TaroHybridManager?.options?.injectNativeMethod(indexHtmlPath, GlobalThis.getInstance().getContext('context') as common.UIAbilityContext) ?? {}
+        TaroHybridManager?.options?.injectNativeMethod(indexHtmlPath, GlobalThis.getInstance().getContext('context') as common.UIAbilityContext) ?? {},
+        TaroHybridManager?.options?.forceDarkAccess?? false
       )
       // 一定要先保存到Map里，再build
       TaroHybridManager.builderInstanceMaps.set(indexHtmlPath, builderInstance)

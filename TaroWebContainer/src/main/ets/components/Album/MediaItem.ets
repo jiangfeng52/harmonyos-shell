@@ -1,6 +1,6 @@
 import { MediaItemData } from '../../interfaces/Media';
 import { getThumbnailPixelMap } from '../../utils/MediaUtil';
-import { wbLogger } from '../../utils/Logger';
+import { taroLogger } from '../../utils/Logger';
 
 const MEDIA_ITEM_TAG = 'MediaItem';
 
@@ -27,7 +27,7 @@ export struct MediaItem {
       getThumbnailPixelMap(this.data.originPath).then((pixelMap) => {
         this.thumbnail = pixelMap;
       }, () => {
-        wbLogger.error(MEDIA_ITEM_TAG, 'getThumbnailForVideo fail')
+        taroLogger.error(MEDIA_ITEM_TAG, 'getThumbnailForVideo fail')
       })
     }
   }

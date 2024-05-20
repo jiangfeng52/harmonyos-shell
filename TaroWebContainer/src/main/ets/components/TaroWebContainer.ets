@@ -30,10 +30,14 @@ import { GlobalThis } from '../utils/GlobalThis';
 import { getBundleInfoPermissions } from '../utils/PermissionMapScopeUtil';
 import { HostPageState } from '../interfaces/HostPageState';
 import { RouterUtils } from '../utils/RouterUtils';
-import { wbLogger } from '../utils/Logger';
+import { taroLogger } from '../utils/Logger';
 import { AlbumBackward, ChooseAlbumResult, MediaItemData, chooseAlbumOptions } from '../interfaces/Media'
 import { BusinessError } from '@ohos.base';
 import { Channel, MethodChannel } from '../inject_adapter/Channel';
+import { GetWindowInfoCache } from '../inject_adapter/nativecache/GetWindowInfoCache';
+import { GetDeviceInfoCache } from '../inject_adapter/nativecache/GetDeviceInfoCache';
+import { GetSystemSettingCache } from '../inject_adapter/nativecache/GetSystemSettingCache';
+import { sceneApis } from '../scene_apis';
 
 const CONTAINER_TAG = 'TaroWebContainer';
 
@@ -48,8 +52,10 @@ export struct TaroWebContainer {
   @Prop webUrlPrefix: string;
   // 使用缓存
   @Prop useCache: boolean = true;
+  // 是否强制反色适配深色模式
+  @Prop forceDarkAccess: boolean;
   // 导航栏初始化visible值
-  @Prop navigationInitVisible: boolean = true;
+  @Prop navigationInitVisible: boolean = false;
   // 显示胶囊
   @Prop showCapsule: boolean = true;
   // 胶囊按钮点击后跳转的页面
@@ -124,7 +130,7 @@ export struct TaroWebContainer {
       return ;
     }
     if(this.taroWebController.accessBackward()) {
-      wbLogger.debug(CONTAINER_TAG, 'backWord:webViewController')
+      taroLogger.debug(CONTAINER_TAG, 'backWord:webViewController')
       this.taroWebController.backward();
     }
   }
@@ -196,7 +202,8 @@ export struct TaroWebContainer {
         onRefreshAccessedHistory: this.onRefreshAccessedHistory,
         enableWebDebug: this.enableWebDebug,
         channel: this.channel,
-        methodChannel: this.methodChannel
+        methodChannel: this.methodChannel,
+        forceDarkAccess: this.forceDarkAccess
       })
       NavigationBar({
         navigationBarData: this.navigationBarData,
@@ -247,7 +254,7 @@ export struct TaroWebContainer {
 
     // 创建高阶API适配器，合并注入的对象
     this.adapter = new ApiAdapter();
-    const nativeInject = new NativeInject(this.navigationBarData, this.capsuleOptions, this.capsuleController);
+    const nativeInject = new NativeInject(this.navigationBarData, this.capsuleOptions, this.capsuleController,this.taroWebController.getNativeCacheManager());
     this.taroWebController.setAlbumBackward(this.albumBackward);
     nativeInject.setChooseAlbumCallback(this.chooseAlbumCallback);
 
@@ -255,16 +262,17 @@ export struct TaroWebContainer {
       try {
         this.taroWebController.webController.runJavaScript(jsCode, (error, result) => {
           if (error) {
-            wbLogger.error(CONTAINER_TAG, `Run JavaScript error: ${JSON.stringify(error)}`)
+            taroLogger.error(CONTAINER_TAG, `Run JavaScript error: ${JSON.stringify(error)}`)
             return;
           }
         });
       } catch (error) {
-        wbLogger.error(CONTAINER_TAG, `runJavaScript error: ${(error as BusinessError).message}`);
+        taroLogger.error(CONTAINER_TAG, `runJavaScript error: ${(error as BusinessError).message}`);
       }
     })
 
     this.methodChannel.registerMethods('NativeApi', nativeInject.buildInjectObj(context))
+    this.methodChannel.registerMethods('NativeApi', sceneApis)
 
     if (!!this.injectObj){
       this.methodChannel.registerMethods('NativeApi', this.injectObj)
@@ -286,18 +294,26 @@ export struct TaroWebContainer {
       this.adapter!.setSystemBarHeight(this.systemBarHeight);
     })
     this.appearDone = true;
+
+    this.taroWebController.getNativeCacheManager().initCacheData(context)
+    this.taroWebController.getNativeCacheManager().register(new GetWindowInfoCache(), new GetDeviceInfoCache(), new GetSystemSettingCache())
+
+  }
+
+  aboutToDisappear(): void {
+    this.taroWebController.getNativeCacheManager().dispose()
   }
 
   onPageStateUpdated(): void {
   }
 
   onWantUpdated() {
-    wbLogger.debug(CONTAINER_TAG, `onWantUpdated want`);
+    taroLogger.debug(CONTAINER_TAG, `onWantUpdated want`);
     this.handleWantInfo();
   }
 
   handleWantInfo() {
-    wbLogger.info(CONTAINER_TAG, `want: ${JSON.stringify(this.want)}`);
+    taroLogger.info(CONTAINER_TAG, `want: ${JSON.stringify(this.want)}`);
     this.structLaunchOptions();
     this.redirectNewUrl();
   }
@@ -325,12 +341,12 @@ export struct TaroWebContainer {
     const pagePath = params?.path ? `${params.path}${params?.query ? '?' + params.query : ''}` : '';
     if (pagePath) {
       this.webUrl = `${this.originIndexUrl}#${pagePath}`;
-      wbLogger.info(CONTAINER_TAG, `webUrl: ${this.webUrl}`);
+      taroLogger.info(CONTAINER_TAG, `webUrl: ${this.webUrl}`);
       if (this.appearDone) {
         try {
           this.taroWebController.loadUrl(this.webUrl);
         } catch(e) {
-          wbLogger.error(CONTAINER_TAG, `failed loadUrl: ${this.webUrl}`);
+          taroLogger.error(CONTAINER_TAG, `failed loadUrl: ${this.webUrl}`);
         }
       }
     }

@@ -3,7 +3,7 @@ import photoAccessHelper from '@ohos.file.photoAccessHelper';
 import cameraPicker from '@ohos.multimedia.cameraPicker';
 import { GlobalThis } from './GlobalThis';
 import common from '@ohos.app.ability.common';
-import { wbLogger } from './Logger';
+import { taroLogger } from './Logger';
 import { FileUtils } from './FileUtils';
 import fs from '@ohos.file.fs'
 import image from '@ohos.multimedia.image'
@@ -64,12 +64,12 @@ export async function getPhotoAssetList(): Promise<Array<photoAccessHelper.Photo
     if (fetchResult !== undefined) {
       let photoAsset: Array<photoAccessHelper.PhotoAsset> = await fetchResult.getAllObjects();
       if (photoAsset !== undefined) {
-        wbLogger.info(MEDIA_UTIL, 'photoAsset.length :' + photoAsset.length);
+        taroLogger.info(MEDIA_UTIL, 'photoAsset.length :' + photoAsset.length);
       }
       return photoAsset.reverse();
     }
   } catch (err) {
-    wbLogger.error(MEDIA_UTIL, `getPhotoAssetList failed. Cause: ${JSON.stringify(err)}`);
+    taroLogger.error(MEDIA_UTIL, `getPhotoAssetList failed. Cause: ${JSON.stringify(err)}`);
     return [];
   }
   return [];
@@ -98,7 +98,7 @@ export async function getAssetByUri(uri: string): Promise<photoAccessHelper.Phot
       return await fetchResult.getFirstObject()
     }
   } catch (err) {
-    wbLogger.error(MEDIA_UTIL, `getPhotoAssetList failed. Cause: ${JSON.stringify(err)}`);
+    taroLogger.error(MEDIA_UTIL, `getPhotoAssetList failed. Cause: ${JSON.stringify(err)}`);
   }
   return undefined
 }
@@ -144,7 +144,7 @@ export async function getCameraUris(captureType: PHOTO_TYPE, maxDuration: number
     }
   } catch (error) {
     const err = error as BusinessError;
-    wbLogger.error(MEDIA_UTIL, `Failed camera capture: ${err.message}`);
+    taroLogger.error(MEDIA_UTIL, `Failed camera capture: ${err.message}`);
   }
   return uris;
 }
@@ -163,12 +163,12 @@ export async function compressImage(params: CompressImageParams): Promise<Compre
     let fd = 0;
     if (FileUtils.isSandboxPath(src)) {
       if (!fs.accessSync(src)) {
-        wbLogger.error(MEDIA_UTIL, `compressImage fail, src can not access.`);
+        taroLogger.error(MEDIA_UTIL, `compressImage fail, src can not access.`);
         return options;
       }
       const file = fs.openSync(src, fs.OpenMode.READ_ONLY);
       if (!file) {
-        wbLogger.error(MEDIA_UTIL, `compressImage fail, src can not open.`)
+        taroLogger.error(MEDIA_UTIL, `compressImage fail, src can not open.`)
         return options;
       }
       fd = file.fd;
@@ -198,7 +198,7 @@ export async function compressImage(params: CompressImageParams): Promise<Compre
           tempFileName: newFileName
         };
       } catch (error) {
-        wbLogger.error(MEDIA_UTIL, `compressImage----file deal error:`, error)
+        taroLogger.error(MEDIA_UTIL, `compressImage----file deal error:`, error)
       }
     } else {
       const newFileName = `IMAGE_${Date.now()}`;
@@ -216,7 +216,7 @@ export async function compressImage(params: CompressImageParams): Promise<Compre
       };
     }
   } catch (error) {
-    wbLogger.error(MEDIA_UTIL, `compressImage----pack error:`, error)
+    taroLogger.error(MEDIA_UTIL, `compressImage----pack error:`, error)
   }
   return options;
 }
@@ -271,10 +271,10 @@ export async function compressVideo(src: string): Promise<CompressResult> {
         tempFileName: name.split('.')[0]
       };
     } else {
-      wbLogger.error(MEDIA_UTIL, `videoCompressor error:`, data.message);
+      taroLogger.error(MEDIA_UTIL, `videoCompressor error:`, data.message);
     }
   } catch (err) {
-    wbLogger.error(MEDIA_UTIL, `videoCompressor error:`, err.message);
+    taroLogger.error(MEDIA_UTIL, `videoCompressor error:`, err.message);
   }
   return {};
 }
@@ -374,7 +374,7 @@ export async function generateThumbnailFile(asset: photoAccessHelper.PhotoAsset)
     fs.closeSync(file.fd);
     return switchHapSandBoxToInternal(sandboxThumbPath);
   } catch (err) {
-    wbLogger.info(MEDIA_UTIL, 'generateThumbnailFile failed');
+    taroLogger.info(MEDIA_UTIL, 'generateThumbnailFile failed');
     return '';
   }
 }
