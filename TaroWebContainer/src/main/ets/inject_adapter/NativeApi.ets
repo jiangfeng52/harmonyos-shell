@@ -63,6 +63,12 @@ export class NativeApi {
     saveImageToPhotosAlbum: (options: ESObject) => {
       as.saveImageToPhotosAlbum(options)
     },
+
+    downloadFile(options: ESObject): void {
+      taroLogger.debug('JsBridgeNativeApi', `NativeApi$downloadFile`)
+      as.downloadFile(options)
+    },
+    
     getVideoInfo(options: ESObject): void {
       taroLogger.debug('JsBridgeNativeApi', `NativeApi$getVideoInfo`)
       return as.getVideoInfo(options)
