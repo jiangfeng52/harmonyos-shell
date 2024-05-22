@@ -365,6 +365,9 @@ export const precompile = async (controller: WebviewController, webUrlPrefix: st
     return
   }
   for (const config of configs) {
+    if (config.hadPreCompiled) {
+      continue
+    }
     let biz = MiniRawFileDataSource.getBizByPath(config.localPath) //获取业务标识
     const lastVerInfo = LocalUpdateManagerInstance.getLastVersionInfo(biz)
     if (lastVerInfo?.rawCachePath) {

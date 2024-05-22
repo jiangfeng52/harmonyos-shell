@@ -58,7 +58,7 @@ export default class EntryAbility extends UIAbility {
                 { headerKey: "E-Tag", headerValue: "aWO42N9P9dG/5xqYQCxsx+vDOoU=" },
                 { headerKey: "Last-Modified", headerValue: "Wed, 29 May 2024 10:38:41 GMT" }
               ]
-            })
+            }, false)
           ]
         }
       })
