@@ -15,4 +15,4 @@ export { TaroHybrid } from './src/main/ets/tarohybrid/TaroHybrid'
 export { Storage } from './src/main/ets/utils/Storage'
 export { sameLayerManager } from './src/main/ets/utils/SameLayerManager'
 export { NativeCacheManager, NativeApiPair, NativeRegister } from './src/main/ets/inject_adapter/NativeCacheManager'
-
+export { PreCompileConfig } from './src/main/ets/interfaces/PreCompileConfig'

@@ -38,6 +38,7 @@ import { GetWindowInfoCache } from '../inject_adapter/nativecache/GetWindowInfoC
 import { GetDeviceInfoCache } from '../inject_adapter/nativecache/GetDeviceInfoCache';
 import { GetSystemSettingCache } from '../inject_adapter/nativecache/GetSystemSettingCache';
 import { sceneApis } from '../scene_apis';
+import { PreCompileConfig } from '../interfaces/PreCompileConfig';
 
 const CONTAINER_TAG = 'TaroWebContainer';
 
@@ -68,6 +69,8 @@ export struct TaroWebContainer {
   @State navigationBarData: NavigationBarData = new NavigationBarData();
   // 系统状态状态栏高度
   @State systemBarHeight: number = 0;
+  // 预编译配置
+  @Prop preCompileConfigs: PreCompileConfig[];
   @State channel: Channel = new Channel()
   @State methodChannel: MethodChannel = new MethodChannel(this.channel)
   @Prop isRoot: boolean = true
@@ -203,7 +206,8 @@ export struct TaroWebContainer {
         enableWebDebug: this.enableWebDebug,
         channel: this.channel,
         methodChannel: this.methodChannel,
-        forceDarkAccess: this.forceDarkAccess
+        forceDarkAccess: this.forceDarkAccess,
+        preCompileConfigs: this.preCompileConfigs
       })
       NavigationBar({
         navigationBarData: this.navigationBarData,

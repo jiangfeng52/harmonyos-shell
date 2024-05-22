@@ -11,6 +11,7 @@ import bundleManager from '@ohos.bundle.bundleManager';
 import { taroLogger } from '../utils/Logger';
 import { FileUtils } from '../utils/FileUtils';
 import { http } from '@kit.NetworkKit';
+import { PreCompileConfig } from '../interfaces/PreCompileConfig';
 
 export interface TaroHybridCoreBuilderData {
   domain: string
@@ -19,6 +20,7 @@ export interface TaroHybridCoreBuilderData {
   taroWebController: TaroWebController
   injectObj: InjectObject
   forceDarkAccess: boolean
+  preCompileConfigs: Array<PreCompileConfig>
 }
 
 @Builder
@@ -39,6 +41,7 @@ struct TaroHybridCore {
   @Prop domain: string;
   // 是否强制反色适配深色模式
   @Prop forceDarkAccess: boolean;
+  @State preCompileConfigs: Array<PreCompileConfig> = TaroHybridManager.getCoreInstance(this.indexHtmlPath)?.builderData.preCompileConfigs ?? [];
   @State taroWebController: TaroWebController = TaroHybridManager.getCoreInstance(this.indexHtmlPath)?.builderData.taroWebController ?? new TaroWebController()
   @State isDebug: boolean = (GlobalThis.getInstance().getContext('context') as common.UIAbilityContext).applicationInfo.debug
   private useCache: boolean = true
@@ -129,7 +132,8 @@ struct TaroHybridCore {
       onNavigationBarBackPressed: this.navigationBarBackPressed,
       hookInterceptorWithoutCache:this.hookInterceptorWithoutCache,
       isRoot: this.isRoot,
-      forceDarkAccess: this.forceDarkAccess
+      forceDarkAccess: this.forceDarkAccess,
+      preCompileConfigs: this.preCompileConfigs
     })
       .width('100%')
       .height('100%')

@@ -32,7 +32,8 @@ import { NativeMapBuilder } from './SameLayer/NativeComponents/Map/Map';
 import { callMapContextFunction, createMapContext } from '../utils/MapManager';
 import { NativeCacheManager } from '../inject_adapter/NativeCacheManager';
 import { taroTrace, TraceTask } from '../utils/Trace';
-
+import { PreCompileConfig } from '../interfaces/PreCompileConfig';
+import Url from '@ohos.url'
 
 const TARO_WEB_TAG = 'TaroWeb';
 
@@ -53,7 +54,7 @@ export class TaroWebController {
     this.callbacks = [];
   }
 
-  getNativeCacheManager(){
+  getNativeCacheManager() {
     return this.nativeCacheManager
   }
 
@@ -64,7 +65,7 @@ export class TaroWebController {
     try {
       this.webController.loadUrl(url);
       this.webController.accessBackward();
-    } catch(err) {
+    } catch (err) {
       const error: BusinessError = err as BusinessError;
       taroLogger.error(TARO_WEB_TAG, `fail loadUrl, error code: ${error.code}`);
     }
@@ -123,6 +124,7 @@ export struct TaroWeb {
   @Prop useCache: boolean;
   // 是否强制反色适配深色模式
   @Prop forceDarkAccess: boolean;
+  @Prop preCompileConfigs: Array<PreCompileConfig>;
   @State componentIdArr: Array<string> = []
   @ObjectLink taroWebController: TaroWebController;
   apiAdapter: ApiAdapter = new ApiAdapter();
@@ -135,6 +137,7 @@ export struct TaroWeb {
   aboutToAppear() {
     webView.WebviewController.setWebDebuggingAccess(this.enableWebDebug);
     this.taroWebController.hasBindedTaroWeb = true
+    this.taroWebController.addRequestHandler(this.precompileInterceptor);
     this.taroWebController.addRequestHandler(this.handleInternalResource);
     this.taroWebController.addRequestHandler(this.useLocalCacheResource);
 
@@ -153,6 +156,55 @@ export struct TaroWeb {
     this.taroWebController.hasBindedTaroWeb = false
   }
 
+  findPreCompileConfigByUrl(url: string) {
+    let preCompileConfig: PreCompileConfig | undefined | null = undefined
+    if (this.preCompileConfigs) {
+      for (const config of this.preCompileConfigs) {
+        if (url == `${this.webUrlPrefix}${config.localPath}`) {
+          preCompileConfig = config
+          break
+        }
+      }
+    }
+    return preCompileConfig
+  }
+
+  precompileInterceptor: InterceptRequestHandler = (request) => {
+    if (!this.useCache) {
+      return null
+    }
+    if (!this.preCompileConfigs || this.preCompileConfigs.length === 0) {
+      return null
+    }
+    const url = request.getRequestUrl();
+    if (!url) {
+      return null
+    }
+    let preCompileConfig = this.findPreCompileConfigByUrl(url)
+    if (!preCompileConfig) {
+      return null
+    }
+    taroLogger.info(TARO_WEB_TAG, `precompileInterceptor hit ${url}`);
+    let path: string = url.replace(this.webUrlPrefix, '');
+    let biz = MiniRawFileDataSource.getBizByPath(path) //获取业务标识
+    const lastVerInfo = LocalUpdateManagerInstance.getLastVersionInfo(biz)
+    if (lastVerInfo?.rawCachePath) { // 走App内置的Raw缓存
+      let rawPath = MiniRawFileDataSource.rawfileExist(lastVerInfo.rawCachePath, path)
+      if (!path || rawPath.trim() === '') {
+        return null;
+      }
+      taroLogger.debug('TaroWeb', 'precompileInterceptor useRawCacheResource path=%{public}s', rawPath)
+      // const response =  MiniRawFileDataSource.getRawfileOnResponseWeb(rawPath)
+      const response = new WebResourceResponse();
+      response.setResponseCode(200);
+      response.setReasonMessage('OK');
+      response.setResponseIsReady(true);
+      response.setResponseHeader(preCompileConfig.options.responseHeaders)
+      return response
+    }
+    return null;
+  }
+
   handleInternalResource: InterceptRequestHandler = (request) => {
     const url = request.getRequestUrl();
     if (url && url.startsWith('internal:')) {
@@ -166,18 +218,16 @@ export struct TaroWeb {
         responseWeb.setReasonMessage('OK');
         responseWeb.setResponseIsReady(true);
         taroLogger.info(TARO_WEB_TAG, 'responseWeb for internal resources');
-      }
-      else {
+      } else {
         taroLogger.info(TARO_WEB_TAG, 'file resource is not exist');
       }
       return responseWeb;
     }
     return null;
   }
-
   useLocalCacheResource: InterceptRequestHandler = (request) => {
     //如果不使用缓存，则使用
-    if(!this.useCache && this.hookInterceptorWithoutCache != null){
+    if (!this.useCache && this.hookInterceptorWithoutCache != null) {
       return this.hookInterceptorWithoutCache(request)
     }
 
@@ -207,7 +257,7 @@ export struct TaroWeb {
         }
         taroLogger.debug('TaroWeb', 'useRawCacheResource path=%{public}s', rawPath)
         taroTrace.startTrace(TraceTask.MiniRawFileDataSource)
-        const response =  MiniRawFileDataSource.getRawfileOnResponseWeb(rawPath)
+        const response = MiniRawFileDataSource.getRawfileOnResponseWeb(rawPath)
         taroTrace.finishTrace(TraceTask.MiniRawFileDataSource)
         return response
       }
@@ -231,6 +281,10 @@ export struct TaroWeb {
         })
         .onNativeEmbedGestureEvent((touch) => {
           sameLayerManager.handleNativeEmbedGestureEvent(touch, this.componentIdArr)
+        })
+        .onControllerAttached(() => {
+          taroLogger.info(TARO_WEB_TAG, 'onControllerAttached')
+          precompile(this.taroWebController.webController, this.webUrlPrefix, this.preCompileConfigs);
         })
         .fileAccess(true)
         .domStorageAccess(true)
@@ -303,5 +357,44 @@ export struct TaroWeb {
         .forceDarkAccess(this.forceDarkAccess)
       // .webLite(true)  // 需要 osChannel sdk
     }
+  }
+}
+
+export const precompile = async (controller: WebviewController, webUrlPrefix: string, configs: Array<PreCompileConfig>) => {
+  if (!configs || configs.length === 0) {
+    return
+  }
+  for (const config of configs) {
+    let biz = MiniRawFileDataSource.getBizByPath(config.localPath) //获取业务标识
+    const lastVerInfo = LocalUpdateManagerInstance.getLastVersionInfo(biz)
+    if (lastVerInfo?.rawCachePath) {
+      let rawPath = MiniRawFileDataSource.rawfileExist(lastVerInfo.rawCachePath, config.localPath)
+      if (!rawPath) {
+        return
+      }
+      let urlObject = Url.URL.parseURL(webUrlPrefix)
+      urlObject.pathname = config.localPath
+      let url = urlObject.toString()
+      let content = await readRawFile(rawPath);
+      try {
+        taroLogger.info(TARO_WEB_TAG, 'start precompileJavaScript')
+        controller.precompileJavaScript(url, content, config.options)
+          .then(errCode => {
+            taroLogger.info(TARO_WEB_TAG, `precompile successfully!  errCode = ${errCode}}, url = ${url}}`);
+          }).catch((errCode: number) => {
+          taroLogger.info(TARO_WEB_TAG, `precompile failed. errCode = ${errCode}}, url = ${url}}`);
+        });
+      } catch (err) {
+        taroLogger.error(TARO_WEB_TAG, "precompile failed. " + err.code + " " + err.message);
+      }
+    }
+  }
+}
+
+async function readRawFile(path: string) {
+  try {
+    return await getContext().resourceManager.getRawFileContent(path);
+  } catch (err) {
+    return new Uint8Array(0);
   }
 }

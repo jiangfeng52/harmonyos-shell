@@ -148,7 +148,7 @@ export class MiniRawFileDataSource {
     if (path.startsWith(start) || path.startsWith(start2) ) {
       let splits = path.split("/")
       if (splits&&splits.length>1) {
-        biz = splits[1]
+        biz = path.startsWith(start2) ? splits[2] : splits[1]
       }
     }
     return biz

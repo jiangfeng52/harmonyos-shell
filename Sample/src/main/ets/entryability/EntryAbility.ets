@@ -1,7 +1,7 @@
 import UIAbility from '@ohos.app.ability.UIAbility';
 import window from '@ohos.window';
 import Want from '@ohos.app.ability.Want';
-import { GlobalThis, LocalUpdateManagerInstance, TaroHybridManager } from '@hybrid/web-container';
+import { GlobalThis, LocalUpdateManagerInstance, PreCompileConfig, TaroHybridManager } from '@hybrid/web-container';
 import common from '@ohos.app.ability.common';
 import { TaroHybridNativeMethods } from '../pages/TaroHybridNativeMethods';
 import router from '@ohos.router';
@@ -42,7 +42,7 @@ export default class EntryAbility extends UIAbility {
     windowStage.loadContent('pages/Index', storage, (err, data) => {
       TaroHybridManager.init({
         uiAbilityContex: this.context,
-        domain: 'http://domain',
+        domain: 'https://harmonymini.58.com',
         injectNativeMethod: (indexHtmlPath: string, uiAbilityContext: common.UIAbilityContext) => {
           return new TaroHybridNativeMethods(uiAbilityContext).nativeObj
         },
@@ -50,7 +50,17 @@ export default class EntryAbility extends UIAbility {
         nativeBack: ()=>{
           router.back()
         },
-        forceDarkAccess: true
+        forceDarkAccess: true,
+        precompileConfigsMethod: (index: string) => {
+          return [
+            new PreCompileConfig("/spa/main/js/app.js", {
+              responseHeaders: [
+                { headerKey: "E-Tag", headerValue: "aWO42N9P9dG/5xqYQCxsx+vDOoU=" },
+                { headerKey: "Last-Modified", headerValue: "Wed, 29 May 2024 10:38:41 GMT" }
+              ]
+            })
+          ]
+        }
       })
       TaroHybridManager.preLoader(
         windowStage.getMainWindowSync().getUIContext(),

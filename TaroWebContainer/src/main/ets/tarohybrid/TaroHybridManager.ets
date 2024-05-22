@@ -8,19 +8,21 @@ import { TaroWebController } from '../components/TaroWeb';
 import { InjectObject } from '../interfaces/InjectObject';
 import { taroLogger } from '../utils/Logger';
 import { taroTrace } from '../utils/Trace';
+import { PreCompileConfig } from '../interfaces/PreCompileConfig';
 
 export class TaroHybridCoreInstance {
   private builderNode: BuilderNode<TaroHybridCoreBuilderData[]> | undefined
   builderData: TaroHybridCoreBuilderData
 
-  constructor(domain: string, indexHtmlPath: string, taroPath: string, injectObj: InjectObject, forceDarkAccess: boolean) {
+  constructor(domain: string, indexHtmlPath: string, taroPath: string, injectObj: InjectObject, forceDarkAccess: boolean, preCompileConfigs: Array<PreCompileConfig>) {
     this.builderData = {
       domain: domain,
       indexHtmlPath: indexHtmlPath,
       taroPath: taroPath,
       taroWebController: new TaroWebController(),
       injectObj: injectObj,
-      forceDarkAccess: forceDarkAccess
+      forceDarkAccess: forceDarkAccess,
+      preCompileConfigs: preCompileConfigs
     }
   }
 
@@ -58,7 +60,8 @@ export interface TaroHybridManagerOptions {
   injectNativeMethod: (indexHtmlPath: string, uiAbilityContext: common.UIAbilityContext) => InjectObject,
   rootIndexHtmlPath?: string,
   nativeBack: ()=>void,
-  forceDarkAccess: boolean
+  forceDarkAccess: boolean,
+  precompileConfigsMethod?: (indexHtmlPath: string) => PreCompileConfig[] | undefined | null
 }
 
 export class TaroHybridManager {
@@ -108,7 +111,8 @@ export class TaroHybridManager {
         indexHtmlPath,
         taroPath,
         TaroHybridManager?.options?.injectNativeMethod(indexHtmlPath, GlobalThis.getInstance().getContext('context') as common.UIAbilityContext) ?? {},
-        TaroHybridManager?.options?.forceDarkAccess?? false
+        TaroHybridManager?.options?.forceDarkAccess?? false,
+        TaroHybridManager?.options?.precompileConfigsMethod?.(indexHtmlPath) ?? []
       )
       // 一定要先保存到Map里，再build
       TaroHybridManager.builderInstanceMaps.set(indexHtmlPath, builderInstance)
