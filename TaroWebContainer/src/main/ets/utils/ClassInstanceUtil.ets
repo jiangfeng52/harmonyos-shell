@@ -1,5 +1,5 @@
 import { InnerAudioContext } from './InnerAudioContext';
-import { wbLogger } from './Logger'
+import { taroLogger } from './Logger'
 import { NativeRequest } from './NativeRequest'
 import { NativeUploadFile } from './NativeUploadFile'
 
@@ -12,30 +12,28 @@ export interface CallInstanceParam {
   property: string;
   objectId: number;
 }
-
+//
 function getInstanceFromMap(instanceMap: Map<number, ESObject>, options: CallInstanceParam): ESObject{
-  switch (options.className) {
-    case 'NativeInnerAudioContext':
-      if (!instanceMap.has(options?.objectId ?? -1)) {
-        return;
-      }
-      return instanceMap.get(options.objectId)
+  if (!instanceMap.has(options?.objectId ?? -1)) {
+    return;
   }
+  return instanceMap.get(options.objectId);
 }
 
 function syncAndReleaseInstance(instanceMap: Map<number, ESObject>, options: CallInstanceParam){
   const arr = options.option as Array<number>
   if (!arr || !arr.length){
     instanceMap = new Map()
-    return;
+    return instanceMap;
   }
   for (let key of instanceMap.keys()){
     if (!arr.includes(key)){
       instanceMap.delete(key)
     }
   }
+  return instanceMap;
 }
-
+// Map中存储的类，类中不能包含promise
 export class ClassInstanceApi {
   public innerAudioContextMap: Map<number, ESObject>;
   public uploadFileMap: Map<number, ESObject>;
@@ -49,33 +47,33 @@ export class ClassInstanceApi {
     this.instanceId = 0;
   }
 
-  createInstance(options: CallInstanceParam): number{
-    wbLogger.debug('ClassInstanceApi', `createInstance ${options.className}`);
+  createInstance(options: ESObject): number{
+    taroLogger.debug('ClassInstanceApi', `createInstance ${options.className}`);
     switch (options.className) {
       case 'NativeInnerAudioContext':
         InnerAudioContext.createInnerAudioContext(this.innerAudioContextMap, this.instanceId);
         return this.instanceId++
       case 'NativeRequest':
-        NativeRequest.createRequest(this.requestMap, this.instanceId);
+        NativeRequest.createRequest(this.requestMap, this.instanceId, options);
         return this.instanceId++
       case 'NativeUploadFile':
-        NativeUploadFile.createUploadFile(this.uploadFileMap, this.instanceId);
+        NativeUploadFile.createUploadFile(this.uploadFileMap, this.instanceId, options);
         return this.instanceId++
     }
     return -1
   }
 
   syncAndReleaseInstance(options: CallInstanceParam): ESObject{
-    wbLogger.debug('ClassInstanceApi', `syncAndReleaseInstance`);
+    taroLogger.debug('ClassInstanceApi', `syncAndReleaseInstance`);
     switch (options.className) {
       case 'NativeInnerAudioContext':
-        syncAndReleaseInstance(this.innerAudioContextMap, options)
+        this.innerAudioContextMap = syncAndReleaseInstance(this.innerAudioContextMap, options)
         return
       case 'NativeRequest':
-        syncAndReleaseInstance(this.requestMap, options)
+        this.requestMap = syncAndReleaseInstance(this.requestMap, options)
         return
       case 'NativeUploadFile':
-        syncAndReleaseInstance(this.uploadFileMap, options)
+        this.uploadFileMap = syncAndReleaseInstance(this.uploadFileMap, options)
         return
     }
   }
@@ -89,47 +87,48 @@ export class ClassInstanceApi {
       case 'NativeUploadFile':
         return getInstanceFromMap(this.uploadFileMap, options)
     }
-    wbLogger.error('ClassInstanceApi', 'the id is not exist in map');
+    taroLogger.error('ClassInstanceApi', 'the id is not exist in map');
     return
   }
 
   callInstance(options: CallInstanceParam): classReturnType {
-    wbLogger.debug('ClassInstanceApi', `callInstance`);
+    taroLogger.debug('ClassInstanceApi', `callInstance`);
     let instance: ESObject = this.getInstanceFromMap(options)
     if (!instance){
-      wbLogger.error('ClassInstanceApi', 'the instance has not been create');
+      taroLogger.error('ClassInstanceApi', 'the instance has not been create');
       return ;
     }
+
     if (options.type === 'function') {
-      wbLogger.debug('ClassInstanceApi', `function call ${options.property}`);
+      taroLogger.debug('ClassInstanceApi', `function call ${options.property}`);
       if (options.option) {
         instance[options.property].call(instance, options.option);
         return ;
       }
       instance[options.property].call(instance);
     } else if (options.type === 'get') {
-      wbLogger.debug('ClassInstanceApi', `get call ${options.property}`);
+      taroLogger.debug('ClassInstanceApi', `get call ${options.property}`);
       return instance[options.property];
     } else if (options.type === 'set') {
-      wbLogger.debug('ClassInstanceApi', `set call ${options.property}`);
+      taroLogger.debug('ClassInstanceApi', `set call ${options.property}`);
       instance[options.property] = options.option;
     } else {
-      wbLogger.error('ClassInstanceApi', 'invalid param', options.type);
+      taroLogger.error('ClassInstanceApi', 'invalid param', options.type);
       return;
     }
   }
 
   callInstanceAsync(options: CallInstanceParam): classReturnType {
-    wbLogger.debug('ClassInstanceApi', `callInstanceAsync`);
+    taroLogger.debug('ClassInstanceApi', `callInstanceAsync`);
     let instance: ESObject = this.getInstanceFromMap(options)
     if (!instance){
-      wbLogger.error('ClassInstanceApi', 'the instance has not been create');
+      taroLogger.error('ClassInstanceApi', 'the instance has not been create');
       return ;
     }
     if (options.type !== 'function'){
-      wbLogger.error('ClassInstanceApi', 'invalid param', options.type);
+      taroLogger.error('ClassInstanceApi', 'invalid param', options.type);
       return ;
     }
-    return instance[options.property].call(instance, options.option);
+    instance[options.property].call(instance, options.option);
   }
 }

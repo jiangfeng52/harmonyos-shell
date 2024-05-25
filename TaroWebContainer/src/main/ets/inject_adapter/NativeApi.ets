@@ -244,22 +244,22 @@ export class NativeApi {
     },
 
     callInstance: (options: CallInstanceParam) =>  {
-      wbLogger.debug('JsBridgeNativeApi', `NativeApi$callInstance`)
+      taroLogger.debug('JsBridgeNativeApi', `NativeApi$callInstance`)
       return this.classInstanceApi.callInstance(options)
     },
 
     callInstanceAsync: (options: CallInstanceParam) =>  {
-      wbLogger.debug('JsBridgeNativeApi', `NativeApi$callInstanceAsync`)
+      taroLogger.debug('JsBridgeNativeApi', `NativeApi$callInstanceAsync`)
       this.classInstanceApi.callInstanceAsync(options)
     },
 
-    createInstance: (options: CallInstanceParam) =>  {
-      wbLogger.debug('JsBridgeNativeApi', `NativeApi$createInstance`)
+    createInstance: (options: ESObject) =>  {
+      taroLogger.debug('JsBridgeNativeApi', `NativeApi$createInstance`)
       return this.classInstanceApi.createInstance(options)
     },
 
     syncAndReleaseInstance: (options: CallInstanceParam) =>  {
-      wbLogger.debug('JsBridgeNativeApi', `NativeApi$syncAndReleaseInstance`)
+      taroLogger.debug('JsBridgeNativeApi', `NativeApi$syncAndReleaseInstance`)
       this.classInstanceApi.syncAndReleaseInstance(options)
     },
 

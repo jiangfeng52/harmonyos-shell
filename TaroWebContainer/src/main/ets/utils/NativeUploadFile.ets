@@ -1,8 +1,8 @@
 import { as } from './advancedapi.min';
 
 export class NativeUploadFile{
-  static createUploadFile(UploadFileMap: Map<number, ESObject>, instanceId: number): ESObject {
-    const uploadFile: ESObject = as.uploadFile();
+  static async createUploadFile(UploadFileMap: Map<number, ESObject>, instanceId: number, option: ESObject): Promise<ESObject> {
+    const uploadFile: ESObject = await as.uploadFile(option);
     UploadFileMap.set(instanceId, uploadFile);
   }
 }
