@@ -117,17 +117,10 @@ export class MiniRawFileDataSource {
     return ''
   }
 
-  static getRawfileOnResponseWeb(file: string): WebResourceResponse{
+  static getRawfileOnResponseWeb(lastVersion: string, file: string): WebResourceResponse{
     const responseWeb = new WebResourceResponse();
     const headers: Array<Header> = [
-      {
-        headerKey:"Connection",
-        headerValue:"keep-alive"
-      },
-      {
-        headerKey:"Cache-Control",
-        headerValue:"no-cache"
-      }
+      {headerKey: "ResponseDataID", headerValue: lastVersion}
     ]
     let mimeType: string = FileUtils.getMimetype(file);
     responseWeb.setResponseHeader(headers)

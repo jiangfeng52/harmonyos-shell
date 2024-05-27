@@ -196,7 +196,7 @@ export struct TaroWeb {
         }
         taroTrace.startTrace(TraceTask.MiniLocalFileDataSource)
         taroLogger.debug('TaroWeb', 'useLocalCacheResource path=%{public}s', path)
-        const response = MiniLocalFileDataSource.getFileOnResponseWeb(lastVerInfo?.diskCachePath, path)
+        const response = MiniLocalFileDataSource.getFileOnResponseWeb(lastVerInfo?.localVersion, lastVerInfo?.diskCachePath, path)
         taroTrace.finishTrace(TraceTask.MiniLocalFileDataSource)
         return response
       }
@@ -207,7 +207,7 @@ export struct TaroWeb {
         }
         taroLogger.debug('TaroWeb', 'useRawCacheResource path=%{public}s', rawPath)
         taroTrace.startTrace(TraceTask.MiniRawFileDataSource)
-        const response =  MiniRawFileDataSource.getRawfileOnResponseWeb(rawPath)
+        const response =  MiniRawFileDataSource.getRawfileOnResponseWeb(lastVerInfo?.localVersion, rawPath)
         taroTrace.finishTrace(TraceTask.MiniRawFileDataSource)
         return response
       }
