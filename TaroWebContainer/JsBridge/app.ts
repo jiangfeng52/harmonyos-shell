@@ -103,7 +103,6 @@ window.MethodChannel = {
       descriptor.value = function (...args: any[]) {
 
         const firstArg = args.length >= 1 ? args[0] : ''
-        const objectId = args.length >= 2 ? args[1] : undefined
 
         let argTypeIsFun = isFunction(firstArg)
         // @ts-ignore
@@ -130,7 +129,6 @@ window.MethodChannel = {
             properties: firstArg,
             funs: getAllFuns(firstArg),
             stubId: stubId,
-            objectId: objectId,
           },
         }
         // @ts-ignore

@@ -85,7 +85,7 @@ export class MethodChannel {
       return undefined;
     }
 
-    const {isFun, properties, funs, stubId, objectId} = arg
+    const {isFun, properties, funs, stubId} = arg
 
     let argProxy;
     if (stubId == -1) { // 没有回调函数
@@ -120,7 +120,7 @@ export class MethodChannel {
       // arg为对象
       argProxy = argObject;
     }
-    return fun.call(null, argProxy, objectId)
+    return fun.call(null, argProxy)
   }
 }
 
