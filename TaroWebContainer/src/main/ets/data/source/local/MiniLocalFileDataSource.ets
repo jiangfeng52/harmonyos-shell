@@ -119,7 +119,7 @@ export class MiniLocalFileDataSource {
     return fs.accessSync(filePath)
   }
 
-  static getFileOnResponseWeb(dir: string, fileRelatePath: string): WebResourceResponse {
+  static getFileOnResponseWeb(lastVersion: string, dir: string, fileRelatePath: string): WebResourceResponse {
     let filePath = `${dir}/${fileRelatePath}`
 
     const file = fs.openSync(filePath, fs.OpenMode.READ_ONLY);
@@ -127,14 +127,7 @@ export class MiniLocalFileDataSource {
 
     const responseWeb = new WebResourceResponse();
     const headers: Array<Header> = [
-      {
-        headerKey: "Connection",
-        headerValue: "keep-alive"
-      },
-      {
-        headerKey: "Cache-Control",
-        headerValue: "no-cache"
-      }
+      {headerKey: "ResponseDataID", headerValue: lastVersion}
     ]
     let mimeType: string;
     if (filePath.endsWith('.js')) {
@@ -166,6 +159,16 @@ export class MiniLocalFileDataSource {
     responseWeb.setResponseCode(200);
     responseWeb.setReasonMessage('OK');
     return responseWeb
+  }
+
+  static replaceFileContents(diskCachePath: string | undefined, fileRelatePath: string, content: string) {
+    if (!diskCachePath) {
+      return
+    }
+    let filePath = `${diskCachePath}/${fileRelatePath}`
+    const file = fs.openSync(filePath, fs.OpenMode.READ_WRITE);
+    fs.writeSync(file.fd, content)
+    fs.closeSync(file);
   }
 
 }
