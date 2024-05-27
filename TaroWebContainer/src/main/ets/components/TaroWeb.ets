@@ -288,6 +288,39 @@ export struct TaroWeb {
           taroTrace.finishTrace(TraceTask.onInterceptRequest)
           return response
         })
+        .onPageEnd(()=>{
+          // 端上预渲染的缓存逻辑，暂未完全调通
+          // const url = this.taroWebController.webController.getUrl()
+          // taroLogger.debug('liuyang111', `onPageEnd url is ${url}`)
+          // this.taroWebController.webController.runJavaScript(
+          //   "javascript:document.documentElement.outerHTML;",
+          //   (error, result)=>{
+          //     try {
+          //       let path: string = url.replace(this.webUrlPrefix, '');
+          //       path = path.split('#')[0]
+          //       let biz = MiniRawFileDataSource.getBizByPath(path) //获取业务标识
+          //       const lastVerInfo = LocalUpdateManagerInstance.getLastVersionInfo(biz)
+          //       taroLogger.debug('liuyang111', `html path=${path}, biz=${biz}, lastVerInfo=${JSON.stringify(lastVerInfo)}`)
+          //       const html = result.substring(1, result.length - 1) // JSON字符串返回的是带引号的字符串，需要去除
+          //         // 将转义序列替换为实际字符
+          //         .replaceAll("\\u003C", "<")
+          //         .replaceAll("\\u003E", ">")
+          //         .replaceAll("\\u0026", "&")
+          //         .replaceAll("\\u0027", "'")
+          //         .replaceAll("\\u0022", "\"")
+          //         .replaceAll("\\/", "/")
+          //         .replaceAll("\\\"", "\"")
+          //         .replaceAll("\\n", "\n")
+          //         .replaceAll("\\t", "\t")
+          //           // 去除Java中的转义字符
+          //         .replaceAll("\\\\", "\\");
+          //       MiniLocalFileDataSource.replaceFileContents(lastVerInfo?.diskCachePath, path, html)
+          //       taroLogger.debug('liuyang111', `success`)
+          //     } catch (err) {
+          //       taroLogger.debug('liuyang111', `err ${err}`)
+          //     }
+          //   })
+        })
         .onSslErrorEventReceive((event) => { // 通知用户加载资源时发生SSL错误
           taroLogger.info(TARO_WEB_TAG, `onSslErrorEventReceive:${event.error}`)
           event.handler.handleConfirm() // 通知Web组件继续使用SSL证书

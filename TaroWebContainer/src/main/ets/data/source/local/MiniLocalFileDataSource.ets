@@ -161,4 +161,14 @@ export class MiniLocalFileDataSource {
     return responseWeb
   }
 
+  static replaceFileContents(diskCachePath: string | undefined, fileRelatePath: string, content: string) {
+    if (!diskCachePath) {
+      return
+    }
+    let filePath = `${diskCachePath}/${fileRelatePath}`
+    const file = fs.openSync(filePath, fs.OpenMode.READ_WRITE);
+    fs.writeSync(file.fd, content)
+    fs.closeSync(file);
+  }
+
 }
