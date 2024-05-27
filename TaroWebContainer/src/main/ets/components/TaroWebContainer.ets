@@ -51,7 +51,7 @@ export struct TaroWebContainer {
   // 资源url的前缀
   @Prop webUrlPrefix: string;
   // 使用缓存
-  @Prop useCache: boolean = true;
+  @Prop @Watch('onUseCacheStateChanged') useCache: boolean = true;
   // 是否强制反色适配深色模式
   @Prop forceDarkAccess: boolean;
   // 导航栏初始化visible值
@@ -150,6 +150,13 @@ export struct TaroWebContainer {
       setSystemBarProperties(windowClass, color);
     });
   }
+
+  onUseCacheStateChanged(propName: string): void {
+    if(this.taroWebController.webController){
+      this.taroWebController.webController.loadUrl(this.webUrl)
+    }
+  }
+
   
   chooseAlbumCallback = (options: chooseAlbumOptions, mediaItems: MediaItemData[], previewOneMode?: boolean) => {
     const mediaPromise = new Promise<ChooseAlbumResult>((resolve, reject) => {
