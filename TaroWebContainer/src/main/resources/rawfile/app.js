@@ -95,6 +95,24 @@ window.MethodChannel = {
       window.MethodChannel.__ArgsMethodStub(object);
     });
   },
+  getPromiseStatus: function getPromiseStatus() {
+    // 方法调用转换为数据
+    var methodCall = {
+      //修改了名称
+      isAsync: false,
+      // 调用函数名
+      call: "GetPromiseStatus",
+      arg: {
+        isFun: false,
+        properties: '',
+        funs: '',
+        stubId: -1,
+        objectId: -1
+      }
+    };
+    // @ts-ignore
+    return window.Channel.nativeCall(window.MethodChannel.ChannelType, methodCall);
+  },
   jsBridgeMode: function jsBridgeMode(mode) {
     return function (target, key, descriptor) {
       var className = target.constructor.name;
@@ -115,11 +133,12 @@ window.MethodChannel = {
             window.MethodChannel._listenerMap.set(firstArg, stubId);
           }
         }
+        var isAsync = (_mode$isAsync = mode === null || mode === void 0 ? void 0 : mode.isAsync) !== null && _mode$isAsync !== void 0 ? _mode$isAsync : true;
 
         // 方法调用转换为数据
         var methodCall = {
           //修改了名称
-          isAsync: (_mode$isAsync = mode === null || mode === void 0 ? void 0 : mode.isAsync) !== null && _mode$isAsync !== void 0 ? _mode$isAsync : true,
+          isAsync: isAsync,
           // 调用函数名
           call: "".concat(className ? className : '', "$").concat(key.toString()),
           arg: {
@@ -131,7 +150,25 @@ window.MethodChannel = {
           }
         };
         // @ts-ignore
-        return window.Channel.nativeCall(window.MethodChannel.ChannelType, methodCall);
+        var result = window.Channel.nativeCall(window.MethodChannel.ChannelType, methodCall);
+        if (!isAsync && result === 'Promise_Result') {
+          console.log('liuyang111', 'result is Promise_Result ***** ');
+          var count = 0;
+          while (count < 20000) {
+            count++;
+            if (count % 2000 === 0) {
+              // @ts-ignore
+              var promiseStatus = window.MethodChannel.getPromiseStatus();
+              console.log('liuyang111', "result is Promise_Result ***** getPromiseStatus ".concat(promiseStatus.status));
+              if (promiseStatus.status === 'pending') {
+                continue;
+              }
+              return promiseStatus.result;
+            }
+          }
+          return undefined;
+        }
+        return result;
       };
     };
   },

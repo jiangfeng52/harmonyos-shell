@@ -94,6 +94,24 @@ window.MethodChannel = {
       window.MethodChannel.__ArgsMethodStub(object)
     })
   },
+  getPromiseStatus: function (){
+    // 方法调用转换为数据
+    var methodCall = {
+      //修改了名称
+      isAsync: false,
+      // 调用函数名
+      call: `GetPromiseStatus`,
+      arg: {
+        isFun: false,
+        properties: '',
+        funs: '',
+        stubId: -1,
+        objectId: -1,
+      },
+    }
+    // @ts-ignore
+    return window.Channel.nativeCall(window.MethodChannel.ChannelType, methodCall)
+  },
   jsBridgeMode: function (mode: {
     isAsync: boolean,
     autoRelease?: boolean
@@ -119,10 +137,12 @@ window.MethodChannel = {
           }
         }
 
+        const isAsync = mode?.isAsync ?? true;
+
         // 方法调用转换为数据
         var methodCall = {
           //修改了名称
-          isAsync: mode?.isAsync ?? true,
+          isAsync:isAsync,
           // 调用函数名
           call: `${className ? className : ''}\$${key.toString()}`,
           arg: {
@@ -134,7 +154,29 @@ window.MethodChannel = {
           },
         }
         // @ts-ignore
-        return window.Channel.nativeCall(window.MethodChannel.ChannelType, methodCall)
+        const result = window.Channel.nativeCall(window.MethodChannel.ChannelType, methodCall)
+
+        if (!isAsync && result === 'Promise_Result') {
+
+          console.log('liuyang111', 'result is Promise_Result ***** ')
+
+          let count = 0
+          while (count < 20000) {
+            count++
+            if (count % 2000 === 0) {
+              // @ts-ignore
+              const promiseStatus = window.MethodChannel.getPromiseStatus()
+              console.log('liuyang111', `result is Promise_Result ***** getPromiseStatus ${promiseStatus.status}`,)
+              if (promiseStatus.status === 'pending') {
+                continue
+              }
+              return promiseStatus.result
+            }
+          }
+          return undefined
+        }
+
+        return result
       }
     }
   },
