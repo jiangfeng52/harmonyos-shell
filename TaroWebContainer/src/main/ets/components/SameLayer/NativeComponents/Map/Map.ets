@@ -1,9 +1,14 @@
 import { MapComponent, map, mapCommon } from '@kit.MapKit';
-import { AsyncCallback, BusinessError, ErrorCallback } from '@kit.BasicServicesKit';
+import { AsyncCallback } from '@kit.BasicServicesKit';
 import { sameLayerManager } from '../../../../utils/SameLayerManager';
 import { MapParams } from '../../Interfaces/SameLayer';
 import { taroLogger } from '../../../../utils/Logger';
-import { mapContextMap, mapControllerMap} from '../../../../utils/MapManager';
+import { mapContextMap, mapControllerMap } from '../../../../utils/MapManager';
+import { as } from '../../../../utils/advancedapi.min';
+import { switchInternalToHapSandBox } from '../../../../utils/InternalPath';
+import { image } from '@kit.ImageKit';
+import { Size } from '@kit.ArkUI';
+import fs from '@ohos.file.fs';
 
 // 地图的默认中心点为北京天安门
 const defaultLatitude = 39.909195;
@@ -44,9 +49,76 @@ const TAG = "sameLayerRender][NativeMap";
 @Component
 struct NativeMap {
   @ObjectLink params: MapParams;
+  private mapController?: map.MapComponentController;
   private callback?: AsyncCallback<map.MapComponentController>;
   private mapOption?: mapCommon.MapOptions;
-  private eventList: Array<string> = [];
+  private eventList: string[] = [];
+  private iconHandleCache: Map<string, Promise<string | image.PixelMap | undefined>> = new Map(); // 使用缓存机制避免多个相同marker图标重复处理
+
+  downloadIcon(iconPath: string): Promise<string | undefined> {
+    return new Promise((resolve) => {
+      // 使用场景化API中的download下载图片
+      as.downloadFile({
+        url: iconPath,
+        success: (res: ESObject) => {
+          // 下载成功后返回图片缓存路径
+          resolve(res.tempFilePath);
+        },
+        fail: (_res: ESObject) => {
+          // 下载失败
+          resolve(undefined);
+        }
+      })
+    })
+  }
+
+  iconHandle(iconPath: string, width?: number, height?: number): Promise<string | image.PixelMap | undefined> {
+    return new Promise(async (resolve) => {
+      if (iconPath.startsWith('http://') || iconPath.startsWith('https://')) {
+        // 等待图片下载完成
+        const iconCachePath = await this.downloadIcon(iconPath);
+        // as.downloadFile可能会下载失败，此时iconCachePath为undefined
+        if (iconCachePath) {
+          try {
+            // internal路径转为沙箱路径
+            const sandBoxPath = switchInternalToHapSandBox(iconCachePath);
+            // 打开图片，获取文件信息
+            const picFile = fs.openSync(sandBoxPath, fs.OpenMode.READ_ONLY);
+            // 通过文件描述符获取图像源
+            const imageSource: image.ImageSource = image.createImageSource(picFile.fd);
+            // 关闭图片
+            fs.closeSync(picFile);
+            // 获取原始图片宽高信息
+            const originalImgSize: Size = (await imageSource.getImageInfo()).size;
+            // 设置解码参数DecodingOptions
+            const decodingOptions: image.DecodingOptions = {
+              editable: true,
+              desiredPixelFormat: 3,
+              // 设置图片输出的大小，若有传入宽度则使用传入宽度，否则使用原始图片宽度，高度同理。
+              desiredSize: { width: width || originalImgSize.width, height: height || originalImgSize.height }
+            }
+            // 解码获取pixelMap图片对象
+            imageSource.createPixelMap(decodingOptions).then((pixelMap: image.PixelMap) => {
+              // API12支持传入pixelMap
+              resolve(pixelMap);
+            });
+          } catch (e) {
+            // 图片处理过程异常
+            taroLogger.error(TAG, `icon handle fail, error: ${e}`);
+            resolve(undefined);
+          }
+        } else {
+          // 图片下载失败
+          taroLogger.error(TAG, `icon download fail, url: ${iconPath}`);
+          resolve(undefined)
+        }
+      } else {
+        // base64字符串图片（已支持,但无法设置宽高）及其它入参直接返回由Map处理，若支持则会正常显示，若不支持则会默认使用系统marker。
+        taroLogger.warn(TAG, 'The current icon path may not be supported.');
+        resolve(iconPath);
+      }
+    })
+  }
 
   aboutToAppear(): void {
     taroLogger.info(TAG, 'aboutToApper')
@@ -72,10 +144,11 @@ struct NativeMap {
 
     this.callback = async (err, mapController) => {
       if (!err) {
+        this.mapController = mapController;
         // 设置地图的控制器类，用来操作地图
-        mapController.setTrafficEnabled(this.params.setTrafficEnabled ?? defaultTrafficEnabled);
-        mapController.setMyLocationEnabled(this.params.setMyLocationEnabled ?? defaultMyLocationEnabled);
-        mapController.setMyLocationControlsEnabled(this.params.setMyLocationEnabled ?? defaultMyLocationEnabled);
+        this.mapController.setTrafficEnabled(this.params.setTrafficEnabled ?? defaultTrafficEnabled);
+        this.mapController.setMyLocationEnabled(this.params.setMyLocationEnabled ?? defaultMyLocationEnabled);
+        this.mapController.setMyLocationControlsEnabled(this.params.setMyLocationEnabled ?? defaultMyLocationEnabled);
         // 获取监听事件函数，并注册监听事件
         const args = sameLayerManager.getSameLayerArgs(this.params.componentId);
         if (args) {
@@ -84,27 +157,63 @@ struct NativeMap {
               let eventName: string = key.replace(/^on/, '');
               eventName = eventName.charAt(0).toLowerCase() + eventName.slice(1);
               this.eventList.push(eventName);
-              mapController.on(eventName as ESObject, (e) => {
+              this.mapController?.on(eventName as ESObject, (e) => {
                 taroLogger.info(TAG, `${eventName} event is triggered`);
                 args[key](e);
               })
             }
           })
         }
+
+        this.params.markers?.forEach(async (marker) => {
+          let icon: string | image.PixelMap | undefined;
+          // 将web侧传递的marker图标参数转为原生支持的类型
+          if (marker.iconPath) {
+            // 检查icon是否已经在处理缓存中
+            if (this.iconHandleCache.has(marker.iconPath)) {
+              // 如果已经在缓存中，则等待之前的Promise完成
+              icon = await this.iconHandleCache.get(marker.iconPath);
+            } else {
+              // 如果不在缓存中，则进行异步处理并添加到缓存中
+              const iconHandlePromise = this.iconHandle(marker.iconPath, marker.width, marker.height);
+              this.iconHandleCache.set(marker.iconPath, iconHandlePromise);
+              icon = await iconHandlePromise;
+            }
+          }
+          // Marker初始化参数
+          const markerOptions: mapCommon.MarkerOptions = {
+            position: {
+              latitude: marker.latitude,
+              longitude: marker.longitude
+            },
+            title: marker.title,
+            zIndex: marker.zIndex,
+            icon: icon, // iconPath
+            rotation: marker.rotate, // rotate
+            alpha: marker.alpha,
+            anchorU: marker.anchor?.x, // anchor
+            anchorV: marker.anchor?.y, // anchor
+            clickable: true,
+          };
+          this.mapController?.addMarker(markerOptions);
+        })
+        this.mapController?.on('markerClick', (marker: map.Marker) => {
+          marker.setInfoWindowVisible(true);
+        })
         // 设置mapController实例，用于Map控制
-        mapControllerMap.set(this.params.componentId, mapController);
+        mapControllerMap.set(this.params.componentId, this.mapController);
       }
     };
   }
 
   aboutToDisappear(): void {
     taroLogger.info(TAG, 'aboutToDisappear');
-    const mapController = mapControllerMap.get(this.params.componentId);
     // 移除注册了的事件
     this.eventList.forEach((eventName: string) => {
-      taroLogger.info(TAG, `{eventName} event is removed`);
-      mapController?.off(eventName as ESObject, () => {});
+      taroLogger.info(TAG, `${eventName} event is removed`);
+      this.mapController?.off(eventName as ESObject, () => {});
     })
+    this.mapController?.off('markerClick', () => {});
     // 清理mapController实例
     mapControllerMap.delete(this.params.componentId);
     // 清理MapContext实例
