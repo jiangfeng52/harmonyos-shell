@@ -47,7 +47,7 @@ struct TaroHybridCore {
   storage: Storage = new Storage(GlobalThis.getInstance().getContext('context') as common.UIAbilityContext,
     bundleManager.getBundleInfoForSelfSync(bundleManager.BundleFlag.GET_BUNDLE_INFO_DEFAULT).name)
 
-  private devDomain: string = '';
+  @State devDomain: string = '';
   @State devUseCache: boolean = false;
   private isRoot: boolean = TaroHybridManager.isRootContainer(this.indexHtmlPath)
 
@@ -143,6 +143,9 @@ struct TaroHybridCore {
         refresh: (domain: string, indexHtmlPath: string, taroPath: string, useCache: boolean)=>{
           this.devUseCache = useCache
           this.devDomain = domain
+          setTimeout(() => {
+            this.taroWebController.webController.refresh()
+          }, 50)
         }
       })
   }
