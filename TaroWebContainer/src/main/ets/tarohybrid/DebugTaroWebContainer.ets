@@ -82,6 +82,7 @@ export struct DebugTaroWebContainer {
                 taroLogger.debug("CrossOrigin","重新加载："+this.useCache)
                 if(this.refresh) {
                   this.refresh(this.devDomain, this.indexHtmlPath, this.taroPath, this.useCache)
+                  this.debugLayoutVisible = Visibility.None
                 }
               })
           }
