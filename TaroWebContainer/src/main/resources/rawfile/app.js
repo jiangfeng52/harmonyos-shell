@@ -150,12 +150,14 @@ window.MethodChannel = {
         // @ts-ignore
         var result = window.Channel.nativeCall(window.MethodChannel.ChannelType, methodCall);
         if (!isAsync && result === 'Promise_Result') {
+          console.log('liuyang111', 'result is Promise_Result ***** ');
           var count = 0;
           while (count < 20000) {
             count++;
             if (count % 2000 === 0) {
               // @ts-ignore
               var promiseStatus = window.MethodChannel.getPromiseStatus();
+              console.log('liuyang111', "result is Promise_Result ***** getPromiseStatus ".concat(promiseStatus.status));
               if (promiseStatus.status === 'pending') {
                 continue;
               }

@@ -176,7 +176,7 @@ class TaroStorage {
   set(options: SetOptions){
     const key:string = options.key
     const data:string = options.data
-    taroLogger.debug(TARO_STORAGE, `setStorage`)
+    taroLogger.debug(TARO_STORAGE, 'set(key=%{public}s)', key)
 
     this.verifyKVStore(options.fail)
 
