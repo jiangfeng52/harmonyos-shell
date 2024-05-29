@@ -38,7 +38,7 @@ struct WebContainerPage {
   webUrl(): string {
     // 开发阶段可以把网站静态资源文件放置到src/main/resources/rawfile/目录下
     // 生产环境下把网站静态资源放置到web服务器, 这里填写实际的网站地址url
-    return 'resource://rawfile/index.html';
+    return 'resource://rawfile/spa/main/index.html';
   }
 
   webUrlPrefix() {

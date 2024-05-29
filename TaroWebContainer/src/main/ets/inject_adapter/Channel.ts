@@ -98,7 +98,7 @@ export class MethodChannel {
       return undefined;
     }
 
-    const {isFun, properties, funs, stubId, objectId} = arg
+    const {isFun, properties, funs, stubId} = arg
 
     let argProxy;
     if (stubId == -1) { // 没有回调函数
@@ -133,7 +133,7 @@ export class MethodChannel {
       // arg为对象
       argProxy = argObject;
     }
-    const result = fun.call(null, argProxy, objectId)
+    const result = fun.call(null, argProxy)
 
     // 支持Promise返回值
     if(!isAsync && (result instanceof Promise)) {
