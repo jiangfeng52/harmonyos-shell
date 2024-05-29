@@ -4,13 +4,13 @@ import { TaroWebContainer } from '../components/TaroWebContainer';
 import { InjectObject } from '../interfaces/InjectObject';
 import { GlobalThis } from '../utils/GlobalThis';
 import { Storage } from '../utils/Storage';
-import { DebugLayout } from './DebugDialog';
 import { TaroHybridManager } from './TaroHybridManager';
 import { TaroHybridUtils } from './TaroHybridUtils';
 import bundleManager from '@ohos.bundle.bundleManager';
 import { taroLogger } from '../utils/Logger';
 import { FileUtils } from '../utils/FileUtils';
 import { http } from '@kit.NetworkKit';
+import { DebugTaroWebContainer } from './DebugTaroWebContainer';
 
 export interface TaroHybridCoreBuilderData {
   domain: string
@@ -47,13 +47,10 @@ struct TaroHybridCore {
   storage: Storage = new Storage(GlobalThis.getInstance().getContext('context') as common.UIAbilityContext,
     bundleManager.getBundleInfoForSelfSync(bundleManager.BundleFlag.GET_BUNDLE_INFO_DEFAULT).name)
 
-  private devDomain: string = '';
-  private devUseCache: boolean = false;
+  @State devDomain: string = '';
+  @State devUseCache: boolean = false;
   private isRoot: boolean = TaroHybridManager.isRootContainer(this.indexHtmlPath)
 
-  // debugLayout相关
-  private debugLayoutHeight: number = 300;
-  @State debugLayoutVisible: Visibility = Visibility.None
   private navigationBarBackPressed: (taroWebController: TaroWebController)=>void = (taroWebController: TaroWebController)=>{
     const hasHandled = TaroHybridManager.onBack(taroWebController, this.indexHtmlPath, this.taroPath)
     if(!hasHandled) {
@@ -137,46 +134,20 @@ struct TaroHybridCore {
 
   @Builder
   debugFrameLayout(){
-    Column(){
-      DebugLayout({
+      DebugTaroWebContainer({
         devDomain: this.devDomain,
         indexHtmlPath: this.indexHtmlPath,
         taroPath: this.taroPath,
         useCache: this.devUseCache,
+        taroWebBuilderParam: ():void=>{this.taroWebLayout()},
         refresh: (domain: string, indexHtmlPath: string, taroPath: string, useCache: boolean)=>{
-          this.debugLayoutVisible = this.debugLayoutVisible == Visibility.Visible ? Visibility.None : Visibility.Visible
-          this.devDomain = domain
           this.devUseCache = useCache
-          this.taroWebController.webController.loadUrl(this.webUrl())
+          this.devDomain = domain
+          setTimeout(() => {
+            this.taroWebController.webController.refresh()
+          }, 50)
         }
       })
-        .height(this.debugLayoutHeight)
-        .width('100%')
-        .backgroundColor("#44bbccaa")
-        .visibility(this.debugLayoutVisible)
-        .position({
-          x: 0,
-          y: this.debugLayoutVisible == Visibility.Visible ? 0 : -this.debugLayoutHeight
-        })
-      Stack({alignContent: Alignment.TopEnd}){
-        this.taroWebLayout()
-        Button(`${this.debugLayoutVisible == Visibility.Visible ? '收起' : '调试'}`,  { type: ButtonType.Capsule, stateEffect: false })
-          .backgroundColor(0x317aff)
-          .height(25)
-          .margin({top: 10, right: 5})
-          .onClick(()=>{
-            this.debugLayoutVisible = this.debugLayoutVisible == Visibility.Visible ? Visibility.None : Visibility.Visible
-          })
-      }
-      .width("100%")
-      .layoutWeight(1)
-      .position({
-        x: 0,
-        y:  this.debugLayoutVisible == Visibility.Visible ? this.debugLayoutHeight : 0
-      })
-    }
-    .width("100%")
-    .height("100%")
   }
 
   build() {
