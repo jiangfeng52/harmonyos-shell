@@ -278,7 +278,7 @@ class TaroStorage {
   batchGetPageShowDataFromDisk(indexHtmlPath: string) : Promise<PageShowDataSuccessCallbackOptions>{
     return this.getByPromise(KEY_HOME_PAGE_KEYS_PREFIX + indexHtmlPath)
       .then((res: SuccessCallbackResult<string>)=>{
-        console.log('liuyang111', 'batchGetPageShowDataFromDisk111', res.data)
+        taroLogger.debug(TARO_STORAGE, 'batchGetPageShowDataFromDisk111 %{public}s', res.data)
 
         if(res.data === "") {
           // 不存在
@@ -295,7 +295,7 @@ class TaroStorage {
         }
       })
       .then((resArray: Array<SuccessCallbackResult<string>>)=>{
-        console.log('liuyang111', 'batchGetPageShowDataFromDisk222', resArray)
+        taroLogger.debug(TARO_STORAGE, 'batchGetPageShowDataFromDisk222 %{public}s', resArray)
 
         const result: PageShowDataSuccessCallbackOptions = {
           keys: [],
@@ -307,7 +307,7 @@ class TaroStorage {
           result.values.push(successCallbackResult.data)
         }
 
-        console.log('liuyang111', 'batchGetPageShowDataFromDisk333', result)
+        taroLogger.debug(TARO_STORAGE, 'batchGetPageShowDataFromDisk333 %{public}s', result)
         return result
       })
   }

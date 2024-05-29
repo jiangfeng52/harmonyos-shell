@@ -119,7 +119,6 @@ window.MethodChannel = {
       descriptor.value = function () {
         var _mode$autoRelease, _mode$isAsync;
         var firstArg = arguments.length >= 1 ? arguments.length <= 0 ? undefined : arguments[0] : '';
-        var objectId = arguments.length >= 2 ? arguments.length <= 1 ? undefined : arguments[1] : undefined;
         var argTypeIsFun = isFunction(firstArg);
         // @ts-ignore
         var stubId = window.MethodChannel.__registerArgStub(firstArg, argTypeIsFun, (_mode$autoRelease = mode === null || mode === void 0 ? void 0 : mode.autoRelease) !== null && _mode$autoRelease !== void 0 ? _mode$autoRelease : true);
@@ -145,21 +144,18 @@ window.MethodChannel = {
             isFun: argTypeIsFun,
             properties: firstArg,
             funs: getAllFuns(firstArg),
-            stubId: stubId,
-            objectId: objectId
+            stubId: stubId
           }
         };
         // @ts-ignore
         var result = window.Channel.nativeCall(window.MethodChannel.ChannelType, methodCall);
         if (!isAsync && result === 'Promise_Result') {
-          console.log('liuyang111', 'result is Promise_Result ***** ');
           var count = 0;
           while (count < 20000) {
             count++;
             if (count % 2000 === 0) {
               // @ts-ignore
               var promiseStatus = window.MethodChannel.getPromiseStatus();
-              console.log('liuyang111', "result is Promise_Result ***** getPromiseStatus ".concat(promiseStatus.status));
               if (promiseStatus.status === 'pending') {
                 continue;
               }
