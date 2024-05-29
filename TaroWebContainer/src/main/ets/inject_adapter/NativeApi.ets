@@ -469,10 +469,12 @@ export class NativeApi {
     },
 
     getStorage: (options: ESObject) => {
+      taroLogger.debug('taro_storage', 'getStorage({key: %{public}s}) from jsbridge', options?.key)
       taroStorage.get(options)
     },
 
     getStorageSync: (options: ESObject) => {
+      taroLogger.debug('taro_storage', 'getStorageSync({key: %{public}s}) from jsbridge', options?.key)
       return taroStorage.getByPromise(options)
     },
 
