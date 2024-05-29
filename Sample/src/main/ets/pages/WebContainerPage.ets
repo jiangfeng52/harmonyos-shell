@@ -54,6 +54,7 @@ struct WebContainerPage {
   build() {
     Column() {
       TaroWebContainer({
+        indexHtmlPath: 'index.html',
         pageState: this.pageState, // 页面状态同步到组件
         webUrl: this.webUrl(), // 初始Url
         webUrlPrefix: this.webUrlPrefix(),

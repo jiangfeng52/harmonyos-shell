@@ -118,6 +118,7 @@ export struct TaroWeb {
   onTitleReceive?: (title: string) => void;
   hookInterceptorWithoutCache?: (request: WebResourceRequest) => WebResourceResponse | null;
   onRefreshAccessedHistory?: () => void;
+  @Prop indexHtmlPath: string;
   @Prop webUrl: string;
   @Prop webUrlPrefix: string;
   @Prop useCache: boolean;
@@ -130,7 +131,7 @@ export struct TaroWeb {
   enableWebDebug: boolean = true;
   @Link channel: Channel
   @Link methodChannel: MethodChannel
-  private nativeAPI: NativeApi = new NativeApi()
+  private nativeAPI: NativeApi = new NativeApi(this.indexHtmlPath)
 
   aboutToAppear() {
     webView.WebviewController.setWebDebuggingAccess(this.enableWebDebug);

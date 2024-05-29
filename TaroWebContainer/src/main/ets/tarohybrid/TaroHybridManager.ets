@@ -8,6 +8,8 @@ import { TaroWebController } from '../components/TaroWeb';
 import { InjectObject } from '../interfaces/InjectObject';
 import { taroLogger } from '../utils/Logger';
 import { taroTrace } from '../utils/Trace';
+import { taroStorage } from '../inject_adapter/TaroStorage';
+import { bundleManager } from '@kit.AbilityKit';
 
 export class TaroHybridCoreInstance {
   private builderNode: BuilderNode<TaroHybridCoreBuilderData[]> | undefined
@@ -72,6 +74,7 @@ export class TaroHybridManager {
   static init(options: TaroHybridManagerOptions){
     TaroHybridManager.options = options
     GlobalThis.getInstance().setContext('context', options.uiAbilityContex);
+    taroStorage.init(options.uiAbilityContex, bundleManager.getBundleInfoForSelfSync(bundleManager.BundleFlag.GET_BUNDLE_INFO_DEFAULT).name)
   }
 
   static setDebuggable(debuggable: boolean) {

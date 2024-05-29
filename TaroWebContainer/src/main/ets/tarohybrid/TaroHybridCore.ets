@@ -11,6 +11,7 @@ import { taroLogger } from '../utils/Logger';
 import { FileUtils } from '../utils/FileUtils';
 import { http } from '@kit.NetworkKit';
 import { DebugTaroWebContainer } from './DebugTaroWebContainer';
+import { taroStorage } from '../inject_adapter/TaroStorage';
 
 export interface TaroHybridCoreBuilderData {
   domain: string
@@ -44,8 +45,8 @@ struct TaroHybridCore {
   private useCache: boolean = true
   injectObj: InjectObject = TaroHybridManager.getCoreInstance(this.indexHtmlPath)?.builderData.injectObj ?? {}
   // 构造时保存kvStore实例到GlobalThis中
-  storage: Storage = new Storage(GlobalThis.getInstance().getContext('context') as common.UIAbilityContext,
-    bundleManager.getBundleInfoForSelfSync(bundleManager.BundleFlag.GET_BUNDLE_INFO_DEFAULT).name)
+  // storage: Storage = new Storage(GlobalThis.getInstance().getContext('context') as common.UIAbilityContext,
+    // bundleManager.getBundleInfoForSelfSync(bundleManager.BundleFlag.GET_BUNDLE_INFO_DEFAULT).name)
 
   @State devDomain: string = '';
   @State devUseCache: boolean = false;
@@ -63,6 +64,11 @@ struct TaroHybridCore {
       this.devDomain = TaroHybridUtils.getSP(`${this.indexHtmlPath}_devdomain`, '') as string
       this.devUseCache = TaroHybridUtils.getSP(`${this.indexHtmlPath}_useCache`, this.useCache) as boolean
     }
+    taroStorage.pageToAppear(this.indexHtmlPath)
+  }
+
+  aboutToDisappear(): void {
+    taroStorage.pageToDisappear(this.indexHtmlPath)
   }
 
   webUrl(){
@@ -115,6 +121,7 @@ struct TaroHybridCore {
   @Builder
   taroWebLayout(){
     TaroWebContainer({
+      indexHtmlPath: this.indexHtmlPath,
       webUrl: this.webUrl(),
       webUrlPrefix: `${this.domain}/`,
       // want: this.want, // want信息

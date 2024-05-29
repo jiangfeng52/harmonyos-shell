@@ -47,6 +47,7 @@ const CONTAINER_TAG = 'TaroWebContainer';
 @Component
 export struct TaroWebContainer {
   // 初始化资源url
+  @Prop indexHtmlPath: string;
   @Prop webUrl: string;
   // 资源url的前缀
   @Prop webUrlPrefix: string;
@@ -199,6 +200,7 @@ export struct TaroWebContainer {
   build() {
     Stack({ alignContent: Alignment.TopEnd }) {
       TaroWeb({
+        indexHtmlPath: this.indexHtmlPath,
         webUrl: this.webUrl,
         webUrlPrefix: this.webUrlPrefix,
         hookInterceptorWithoutCache: this.hookInterceptorWithoutCache,

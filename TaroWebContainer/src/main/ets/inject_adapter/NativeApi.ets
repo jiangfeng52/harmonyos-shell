@@ -19,8 +19,9 @@ import { taroLogger } from '../utils/Logger'
 import { GlobalThis } from '../utils/GlobalThis'
 import { as } from '../utils/advancedapi.min';
 import { KEY_PREFIX } from '../utils/Storage'
+import { BusinessError } from '@ohos.base';
+import { taroStorage } from './TaroStorage';
 import { ClassInstanceApi, CallInstanceParam } from '../utils/ClassInstanceUtil';
-
 
 export interface StorageStatus {
   done: boolean; // 操作是否完成
@@ -37,19 +38,26 @@ class NativeApiConfig {
     }
     return NativeApiConfig.INSTANCE
   }
-  public storageStatusMap: Map<string, StorageStatus>
+  // public storageStatusMap: Map<string, StorageStatus>
 
   constructor() {
-    this.storageStatusMap = new Map()
+    // this.networkTaskMap = new Map()
+    // this.networkTaskID = 0
+    // this.innerAudioContextMap = new Map()
+    // this.innerAudioContextId = 0
+    // this.storageStatusMap = new Map()
+    // this.storageStatusMap = new Map()
   }
 }
 
 export class NativeApi {
+  private indexHtmlPath: string
   private classInstanceApi: ClassInstanceApi
-
-  constructor() {
+  constructor(indexHtmlPath: string) {
+    this.indexHtmlPath = indexHtmlPath
     this.classInstanceApi  = new ClassInstanceApi()
   }
+
   nativeObj: ESObject =  {
     getWindowInfo: as['getWindowInfo'],
     getSystemInfoSync: as['getSystemInfoSync'],
@@ -327,7 +335,7 @@ export class NativeApi {
         }
       }
     },
-  
+
     closeBLEConnection(options: ESObject): void {
       taroLogger.debug('JsBridgeNativeApi', `NativeApi$closeBLEConnection`)
       return as.closeBLEConnection(options)
@@ -439,156 +447,52 @@ export class NativeApi {
     },
 
     // data sharing
-    getExecStatus(options: ESObject): ESObject {
-      taroLogger.debug('JsBridgeNativeApi', `NativeApi$getExecStatus`)
-      const map = NativeApiConfig.getInstance().storageStatusMap
-      const mkey = options.method +'$'+ options.key
-      if ( !map.has(mkey) ) {
-        return { done: false, data: '', errorMsg: '' }
-      } else {
-        const res = map.get(mkey)
-        map.delete(mkey)
-        return res
-      }
+    // getExecStatus(options: ESObject): ESObject {
+    //   taroLogger.debug('JsBridgeNativeApi', `NativeApi$getExecStatus`)
+    //   const map = NativeApiConfig.getInstance().storageStatusMap
+    //   const mkey = options.method +'$'+ options.key
+    //   if ( !map.has(mkey) ) {
+    //     return { done: false, data: '', errorMsg: '' }
+    //   } else {
+    //     const res = map.get(mkey)
+    //     map.delete(mkey)
+    //     return res
+    //   }
+    // },
+
+    setStorage: (options: ESObject) => {
+      taroStorage.set(options)
     },
 
-    setStorage(options: ESObject): ESObject {
-      taroLogger.debug('JsBridgeNativeApi', `NativeApi$setStorageSync`)
-      const key:string = options.key
-      const data:string = options.data
-      const fail:ESObject = options.fail
-      const success:ESObject = options.success
-
-      const KvStore = GlobalThis.getInstance().getKvStore('kvStore')
-      const map = NativeApiConfig.getInstance().storageStatusMap
-      KvStore?.put(KEY_PREFIX + key, data, (err) => {
-        if (err) {
-          map.set(
-            'setStorageSync$' + key, { done: false, data: '' , errorMsg : `setStorageSync fail: ${JSON.stringify(err)}` }
-          )
-          if (fail) { fail( {errMsg:`setStorage fail: ${JSON.stringify(err)}`} ) }
-          taroLogger.error('JsBridgeNative', JSON.stringify(err))
-        } else {
-          map.set(
-            'setStorageSync$' + key, { done: true, data: '' , errorMsg : '' }
-          )
-          if (success) { success( {errMsg:'ok'} ) }
-        }
-      })
+    removeStorage: (options: ESObject) => {
+      taroStorage.remove(options)
     },
 
-    removeStorage(options: ESObject): ESObject {
-      taroLogger.debug('JsBridgeNativeApi', `NativeApi$removeStorageSync`)
-      const key:string = options.key
-      const fail:ESObject = options.fail
-      const success:ESObject = options.success
-
-      const kvStore = GlobalThis.getInstance().getKvStore('kvStore')
-      const map = NativeApiConfig.getInstance().storageStatusMap
-      kvStore?.delete(KEY_PREFIX + key, (err) => {
-        if (err) {
-          map.set(
-            'removeStorageSync$' + key, { done: false, data: '' , errorMsg : `removeStorageSync fail: ${JSON.stringify(err)}` }
-          )
-          if (fail) { fail({ errMsg:`removeStorage fail: ${JSON.stringify(err) }` }) }
-          taroLogger.error('JsBridgeNative', `delete data fail: ${JSON.stringify(err)}`)
-        } else{
-          map.set(
-            'removeStorageSync$' + key, { done: true, data: '' , errorMsg :'' }
-          )
-          if (success) { success( {errMsg:'ok'} ) }
-        }
-      })
+    getStorage: (options: ESObject) => {
+      taroLogger.debug('taro_storage', 'getStorage({key: %{public}s}) from jsbridge', options?.key)
+      taroStorage.get(options)
     },
 
-    getStorage(options: ESObject): void {
-      taroLogger.debug('JsBridgeNative', `NativeApi$getStorageSync`)
-      const key:string = options.key
-      const fail:ESObject = options.fail
-      const success:ESObject = options.success
-
-      const KvStore = GlobalThis.getInstance().getKvStore('kvStore')
-      const map = NativeApiConfig.getInstance().storageStatusMap
-      KvStore?.get(KEY_PREFIX + key, (err, data) => {
-        if (err) {
-          map.set(
-            'getStorageSync$' + key, { done: false, data: '' , errorMsg : `getStorageSync fail: ${JSON.stringify(err)}` }
-          )
-          if (fail) { fail({errMsg:`getStorage fail: ${JSON.stringify(err)}`}) }
-          taroLogger.error('JsBridgeNative', JSON.stringify(err))
-        } else {
-          map.set(
-            'getStorageSync$' + key, { done: true, data: data , errorMsg : '' }
-          )
-          if (success) { success( {errMsg:'ok', data: data } ) }
-        }
-      })
+    getStorageSync: (options: ESObject) => {
+      taroLogger.debug('taro_storage', 'getStorageSync({key: %{public}s}) from jsbridge', options?.key)
+      return taroStorage.getByPromise(options)
     },
 
-    getStorageInfo(options: ESObject): void {
-      taroLogger.debug('JsBridgeNative', `NativeApi$getStorageInfoSync`)
-      const fail:ESObject = options.fail
-      const success:ESObject = options.success
-      const kvStore = GlobalThis.getInstance().getKvStore('kvStore')
-      const map = NativeApiConfig.getInstance().storageStatusMap
-      kvStore?.getEntries(KEY_PREFIX, (err, items) => {
-        if (err) {
-          map.set(
-            'getStorageInfoSync$', { done: false, data: '' , errorMsg : `getStorageInfoSync fail: ${JSON.stringify(err)}` }
-          )
-          if (fail) { fail({errMsg:`getStorageInfo fail: ${JSON.stringify(err)}`}) }
-          taroLogger.error('JsBridgeNative', JSON.stringify(err))
-        } else {
-          const keys:string[] = []
-          for (let item of items) {
-            keys.push(item.key.substring(KEY_PREFIX.length))
-          }
-          map.set(
-            'getStorageInfoSync$', { done: true, data: JSON.stringify(keys) , errorMsg : '' }
-          )
-          if (success) { success({ data: JSON.stringify(keys) }) }
-        }
-      })
+    getStorageInfo: (options: ESObject) => {
+      taroStorage.getInfo(options)
     },
 
-    clearStorage(options: ESObject): void {
-      taroLogger.debug('JsBridgeNative', `NativeApi$clearStorage`)
+    clearStorage: (options: ESObject) => {
+      taroStorage.clear(options)
+    },
 
-      const fail:ESObject = options.fail
-      const success:ESObject = options.success
-      const kvStore = GlobalThis.getInstance().getKvStore('kvStore')
-      const map = NativeApiConfig.getInstance().storageStatusMap
-      try {
-        kvStore?.getEntries(KEY_PREFIX, (err, items) => {
-          if (err) {
-            map.set(
-              'clearStorageSync$', { done: false, data: '' , errorMsg : `clearStorageSync fail: ${JSON.stringify(err)}` }
-            )
-            if (fail) { fail({errMsg:`clearStorage fail: ${JSON.stringify(err)}`}) }
-            taroLogger.error('JsBridgeNative', JSON.stringify(err))
-          }
-          if (!items) {
-            return
-          }
-          for (let item of items) {
-            kvStore?.delete(item.key, (err) => {
-              if (err) {
-                taroLogger.error('JsBridgeNative', `Failed to delete.code is ${err.code}, message is ${err.message}`)
-              }
-            }
-            )
-            map.set(
-              'clearStorageSync$', { done: true, data: '' , errorMsg : '' }
-            )
-            if (success) { success({ errMsg:'ok' }) }
-          }
-        })
-      } catch (err) {
-        if (fail) { fail({errMsg:`clearStorage fail: ${JSON.stringify(err)}`}) }
-        taroLogger.error('JsBridgeNative', `Failed to clear data is ${err.code},message is ${err.message}`)
-      }
+    batchGetPageShowDataStorage: (options: ESObject) => {
+      taroStorage.batchGetPageShowData(this.indexHtmlPath, options)
+    },
+
+    updatePageShowDataKeys: (options: ESObject) => {
+      taroStorage.updatePageShowDataKeys(this.indexHtmlPath, options)
     }
-
   }
 }
 
