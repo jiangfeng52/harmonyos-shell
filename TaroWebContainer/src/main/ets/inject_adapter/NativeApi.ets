@@ -472,8 +472,8 @@ export class NativeApi {
       taroStorage.get(options)
     },
 
-    getStorageSync: (key: string) => {
-      return taroStorage.getByPromise(key)
+    getStorageSync: (options: ESObject) => {
+      return taroStorage.getByPromise(options)
     },
 
     getStorageInfo: (options: ESObject) => {

@@ -139,10 +139,10 @@ class TaroStorage {
     }
   }
 
-  getByPromise(key: string): Promise<SuccessCallbackResult<string>> {
+  getByPromise(options: GetOptions): Promise<SuccessCallbackResult<string>> {
     return new Promise((resolve: Function, reject: Function)=>{
       this.get({
-        key: key,
+        key: options.key,
         fail: (res: CallbackResult)=>{
           reject(res)
         },
@@ -161,14 +161,16 @@ class TaroStorage {
     this.kvStore?.get(KEY_PREFIX + key, (err, data) => {
       if (err?.code === 15100004) {
         // Not found.
+        taroLogger.debug(TARO_STORAGE, 'get(key=%{public}s), value=%{public}s', key, '')
         options.success && options.success({errMsg:'getStorage fail: not found.', data: '', key: key })
         return ;
       }
       if (err) {
+        taroLogger.error(TARO_STORAGE, 'get(key=%{public}s, err.code=%{public}s)', key, err?.code)
         options.fail && options.fail({errMsg:`getStorage fail: ${JSON.stringify(err)}`})
-        taroLogger.error(TARO_STORAGE, JSON.stringify(err))
         return ;
       }
+      taroLogger.debug(TARO_STORAGE, 'get(key=%{public}s), value=%{public}s', key, data)
       options.success && options.success({errMsg:'ok', data: data.toString(), key: key })
     })
   }
@@ -276,7 +278,7 @@ class TaroStorage {
   }
 
   batchGetPageShowDataFromDisk(indexHtmlPath: string) : Promise<PageShowDataSuccessCallbackOptions>{
-    return this.getByPromise(KEY_HOME_PAGE_KEYS_PREFIX + indexHtmlPath)
+    return this.getByPromise({key: KEY_HOME_PAGE_KEYS_PREFIX + indexHtmlPath})
       .then((res: SuccessCallbackResult<string>)=>{
         taroLogger.debug(TARO_STORAGE, 'batchGetPageShowDataFromDisk111 %{public}s', res.data)
 
@@ -288,7 +290,7 @@ class TaroStorage {
         // res 解析为数组
         try {
           const keys: string[] = JSON.parse(res.data)
-          const promises = keys.map((item)=>this.getByPromise(item))
+          const promises = keys.map((item)=>this.getByPromise({key: item}))
           return Promise.all(promises)
         } catch (err) {
           return Promise.reject(err)
