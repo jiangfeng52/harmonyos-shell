@@ -161,7 +161,7 @@ class TaroStorage {
     this.kvStore?.get(KEY_PREFIX + key, (err, data) => {
       if (err?.code === 15100004) {
         // Not found.
-        options.success && options.success({errMsg:'ok', data: '', key: key })
+        options.success && options.success({errMsg:'getStorage fail: not found.', data: '', key: key })
         return ;
       }
       if (err) {
@@ -261,11 +261,10 @@ class TaroStorage {
   }
 
   batchGetPageShowData(indexHtmlPath: string, options: BatchGetPageShowDataOptions) {
-    let batchPromise: Promise<PageShowDataSuccessCallbackOptions>
-    if (this.pageShowDataPromiseMap.hasKey(indexHtmlPath)) {
-      batchPromise = this.pageShowDataPromiseMap.get(indexHtmlPath);
-    } else {
-      batchPromise = this.batchGetPageShowDataFromDisk(indexHtmlPath);
+    const batchPromise = this.pageShowDataPromiseMap.get(indexHtmlPath);
+    if (batchPromise === undefined) {
+      options.fail && options.fail({errMsg:`getStorageInfo fail: batchPromise is not exist}`})
+      return ;
     }
     batchPromise
       .then((res: PageShowDataSuccessCallbackOptions)=>{
@@ -279,6 +278,13 @@ class TaroStorage {
   batchGetPageShowDataFromDisk(indexHtmlPath: string) : Promise<PageShowDataSuccessCallbackOptions>{
     return this.getByPromise(KEY_HOME_PAGE_KEYS_PREFIX + indexHtmlPath)
       .then((res: SuccessCallbackResult<string>)=>{
+        console.log('liuyang111', 'batchGetPageShowDataFromDisk111', res.data)
+
+        if(res.data === "") {
+          // 不存在
+          return Promise.reject({code: 404, data: 'page show data keys is not exist!!!'})
+        }
+
         // res 解析为数组
         try {
           const keys: string[] = JSON.parse(res.data)
@@ -289,6 +295,8 @@ class TaroStorage {
         }
       })
       .then((resArray: Array<SuccessCallbackResult<string>>)=>{
+        console.log('liuyang111', 'batchGetPageShowDataFromDisk222', resArray)
+
         const result: PageShowDataSuccessCallbackOptions = {
           keys: [],
           values: []
@@ -298,6 +306,8 @@ class TaroStorage {
           result.keys.push(successCallbackResult.key)
           result.values.push(successCallbackResult.data)
         }
+
+        console.log('liuyang111', 'batchGetPageShowDataFromDisk333', result)
         return result
       })
   }
