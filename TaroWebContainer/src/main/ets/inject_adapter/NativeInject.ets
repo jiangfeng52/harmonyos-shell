@@ -426,7 +426,8 @@ export class NativeInject {
       },
       chooseMediaAssets: (options: ChooseMediaOptions) => {
         taroLogger.debug('JsBridgeNative', `NativeApi$chooseMediaAssets`)
-        selectMediaAssets(options, this.chooseAlbumCallback!)
+        // selectMediaAssets(options, this.chooseAlbumCallback!)
+        selectMediumAssets(options)
       },
       chooseMediumAssets: (options: ChooseMediumOptions) => {
         taroLogger.debug('JsBridgeNative', `NativeApi$chooseMediumAssets`)
