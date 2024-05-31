@@ -58,7 +58,7 @@ import {
 import { NavigationBarData } from '../components/NavigationBar';
 import { setSystemBarProperties } from '../utils/WindowUtil';
 import { taroLogger } from '../utils/Logger';
-import { switchHapSandBoxToInternal, switchInternalToHapSandBox } from '../utils/InternalPath';
+import { switchInternalToHapSandBox } from '../utils/InternalPath';
 import { LocalUpdateManagerInstance } from '../update/LocalUpdateManager';
 import util from '@ohos.util';
 import { selectMediaAssets } from '../utils/MediaUtil';
@@ -135,7 +135,8 @@ export class NativeInject {
         const sandboxPath = `${context.cacheDir}/${Date.now()}_${fileName}`;
         const fd = fs.openSync(src, fs.OpenMode.READ_ONLY).fd;
         fs.copyFileSync(fd, sandboxPath);
-        return { internalCachePath: switchHapSandBoxToInternal(sandboxPath) }
+        // return { internalCachePath: switchHapSandBoxToInternal(sandboxPath) }
+        return { internalCachePath: sandboxPath }
       },
       setNavigationBarColor: (options) => {
         taroLogger.debug('JsBridgeNative', `NativeApi$setNavigationBarColor`)
