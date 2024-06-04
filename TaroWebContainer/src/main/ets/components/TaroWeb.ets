@@ -237,7 +237,7 @@ export struct TaroWeb {
         .domStorageAccess(true)
         .mixedMode(MixedMode.All)
         .databaseAccess(true)
-        .geolocationAccess(true)
+        .geolocationAccess(false)
         .javaScriptAccess(true)
         .javaScriptProxy({
           object: {
@@ -322,11 +322,11 @@ export struct TaroWeb {
           //     }
           //   })
         })
-        .onSslErrorEventReceive((event) => { // 通知用户加载资源时发生SSL错误
-          taroLogger.info(TARO_WEB_TAG, `onSslErrorEventReceive:${event.error}`)
-          event.handler.handleConfirm() // 通知Web组件继续使用SSL证书
-          return true
-        })
+        // .onSslErrorEventReceive((event) => { // 通知用户加载资源时发生SSL错误
+        //   taroLogger.info(TARO_WEB_TAG, `onSslErrorEventReceive:${event.error}`)
+        //   event.handler.handleConfirm() // 通知Web组件继续使用SSL证书
+        //   return true
+        // })
         .onTitleReceive((event) => {
           this.onTitleReceive && this.onTitleReceive(event?.title ?? '')
         })
