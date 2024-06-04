@@ -191,26 +191,21 @@ export struct TaroWeb {
       taroLogger.debug('TaroWeb', 'intercepter path=%{public}s', path)
       let biz = MiniRawFileDataSource.getBizByPath(path) //获取业务标识
       const lastVerInfo = LocalUpdateManagerInstance.getLastVersionInfo(biz)
-      if (lastVerInfo?.diskCachePath) { // 走本地缓存
-        if (!path || !MiniLocalFileDataSource.fileExist(lastVerInfo?.diskCachePath, path)) {
-          return null;
-        }
-        taroTrace.startTrace(TraceTask.MiniLocalFileDataSource)
+      // 优先走本地缓存，本地缓存不存在，走rawfile
+      if (lastVerInfo?.diskCachePath
+        && path
+        && MiniLocalFileDataSource.fileExist(lastVerInfo?.diskCachePath, path)) {
         taroLogger.debug('TaroWeb', 'useLocalCacheResource path=%{public}s', path)
-        const response = MiniLocalFileDataSource.getFileOnResponseWeb(lastVerInfo?.localVersion, lastVerInfo?.diskCachePath, path)
-        taroTrace.finishTrace(TraceTask.MiniLocalFileDataSource)
-        return response
+        return MiniLocalFileDataSource.getFileOnResponseWeb(lastVerInfo?.localVersion, lastVerInfo?.diskCachePath, path)
       }
+      // 兜底走rawfile
       if (lastVerInfo?.rawCachePath) { // 走App内置的Raw缓存
         let rawPath = MiniRawFileDataSource.rawfileExist(lastVerInfo.rawCachePath, path)
         if (!path || rawPath.trim() === '') {
           return null;
         }
         taroLogger.debug('TaroWeb', 'useRawCacheResource path=%{public}s', rawPath)
-        taroTrace.startTrace(TraceTask.MiniRawFileDataSource)
-        const response =  MiniRawFileDataSource.getRawfileOnResponseWeb(lastVerInfo?.localVersion, rawPath)
-        taroTrace.finishTrace(TraceTask.MiniRawFileDataSource)
-        return response
+        return MiniRawFileDataSource.getRawfileOnResponseWeb(lastVerInfo?.localVersion, rawPath)
       }
     }
     return null;
