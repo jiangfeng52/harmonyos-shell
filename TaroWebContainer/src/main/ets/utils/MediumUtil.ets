@@ -11,7 +11,7 @@ interface chooseCameraBack {
   isFail: boolean;
 }
 
- function coverMediumType(options?: string[]) {
+function coverMediumType(options?: string[]) {
   if (options === undefined) {
     return photoAccessHelper.PhotoViewMIMETypes.IMAGE_VIDEO_TYPE
   }
@@ -92,7 +92,7 @@ async function chooseCamera(options: ChooseMediumOptions, photoType: PHOTO_TYPE,
   ]
   options.sizeType ||= ['original', 'compressed'];
   options.sizeType = Array.from(new Set(options.sizeType));
-  let useOriginal = !(options.sizeType[0] === 'compressed');
+  let useOriginal = (options.sizeType.length === 2) || (options.sizeType[0] === 'original');
 
   const ret = await getChooseMediaRet(mediaList, useOriginal);
   options.success({
@@ -110,8 +110,8 @@ async function chooseMedium(options: ChooseMediumOptions, apiName: string, isFai
   PhotoSelectOptions.MIMEType = coverMediumType(options.mediaType);
   PhotoSelectOptions.maxSelectNumber = options.count;
   PhotoSelectOptions.isPhotoTakingSupported = Boolean(options.takingSupported);
-  PhotoSelectOptions.isEditSupported =Boolean(options.editSupported);
-  PhotoSelectOptions.isSearchSupported =Boolean(options.searchSupported);
+  PhotoSelectOptions.isEditSupported = Boolean(options.editSupported);
+  PhotoSelectOptions.isSearchSupported = Boolean(options.searchSupported);
   let photoPicker = new photoAccessHelper.PhotoViewPicker();
   let PhotoSelectResult: photoAccessHelper.PhotoSelectResult = await photoPicker.select(PhotoSelectOptions)
   if (PhotoSelectResult.photoUris.length === 0) {
@@ -160,7 +160,8 @@ async function chooseMedium(options: ChooseMediumOptions, apiName: string, isFai
   }
 
   try {
-    const ret = await getChooseMediaRet(mediaItemList, PhotoSelectResult.isOriginalPhoto)
+    let useOriginal = PhotoSelectResult.isOriginalPhoto;
+    const ret = await getChooseMediaRet(mediaItemList, useOriginal)
     options.success({
       tempFilePaths: ret.tempFilePaths,
       tempFiles: ret.tempFiles,
