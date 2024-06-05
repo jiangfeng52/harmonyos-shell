@@ -6,6 +6,7 @@ export class NativeRequest{
     if (option?.bufBase64){
       const buf = buffer.from(option.bufBase64, 'base64')
       option.data = buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.length)
+      option.bufBase64 = undefined
     }
     const request: ESObject = await as.request(option);
     requestMap.set(instanceId, request);
