@@ -10,7 +10,6 @@ import { taroLogger } from '../utils/Logger';
 import { taroTrace } from '../utils/Trace';
 import { taroStorage } from '../inject_adapter/TaroStorage';
 import { bundleManager } from '@kit.AbilityKit';
-import { URL } from '../utils/URL';
 
 export class TaroHybridCoreInstance {
   private builderNode: BuilderNode<TaroHybridCoreBuilderData[]> | undefined
@@ -176,9 +175,7 @@ export class TaroHybridManager {
       return false;
     }
 
-    let urlObj = new URL(curUrl)
-    let searches = urlObj.hash.includes('?') ? urlObj.hash.split('?')[1].split('&') : []
-    if (searches.includes('from=native')) {  //web回退到原生
+    if (curUrl.includes('?from=native') || curUrl.includes('&from=native')) {  //web回退到原生
       // Web先返回
       if (taroWebController.accessBackward()) {
         setTimeout(()=>{
