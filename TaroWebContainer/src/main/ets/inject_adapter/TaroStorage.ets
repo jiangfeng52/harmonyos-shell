@@ -263,10 +263,14 @@ class TaroStorage {
   }
 
   batchGetPageShowData(indexHtmlPath: string, options: BatchGetPageShowDataOptions) {
-    const batchPromise = this.pageShowDataPromiseMap.get(indexHtmlPath);
+    // 冷启动的Promise只使用一次
+    let batchPromise = this.pageShowDataPromiseMap.remove(indexHtmlPath);
+    // 如果冷启动的Promise已经使用过了，就重新创建重新获取，不再复用
+    // 场景：调试时，刷新页面时，如果一直复用容器进入时的Promise对象，会导致值不会更新
     if (batchPromise === undefined) {
-      options.fail && options.fail({errMsg:`getStorageInfo fail: batchPromise is not exist}`})
-      return ;
+      batchPromise = this.batchGetPageShowDataFromDisk(indexHtmlPath)
+      // options.fail && options.fail({errMsg:`getStorageInfo fail: batchPromise is not exist}`})
+      // return ;
     }
     batchPromise
       .then((res: PageShowDataSuccessCallbackOptions)=>{
