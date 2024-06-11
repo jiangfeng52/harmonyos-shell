@@ -32,7 +32,7 @@ import { NativeMapBuilder } from './SameLayer/NativeComponents/Map/Map';
 import { callMapContextFunction, createMapContext } from '../utils/MapManager';
 import { NativeCacheManager } from '../inject_adapter/NativeCacheManager';
 import { taroTrace, TraceTask } from '../utils/Trace';
-
+import { registerSceneApis } from '../scene_apis';
 
 const TARO_WEB_TAG = 'TaroWeb';
 
@@ -140,6 +140,8 @@ export struct TaroWeb {
     this.taroWebController.addRequestHandler(this.useLocalCacheResource);
 
     this.methodChannel.registerMethods('NativeApi', this.nativeAPI.nativeObj)
+    // 注册场景化API
+    registerSceneApis(this.methodChannel)
 
     if (!sameLayerManager.isAlreadyRegistered('hos-map')) {
       sameLayerManager.registerNativeComponentBuilders('hos-map', NativeMapBuilder);
@@ -243,12 +245,11 @@ export struct TaroWeb {
               taroTrace.finishTrace(TraceTask.nativeMethod)
               return obj
             },
-            transferSameLayerArgs: sameLayerManager.transferSameLayerArgs,
             callMapContextFunction: callMapContextFunction,
             createMapContext: createMapContext,
           },
           name: 'JSBridge',
-          methodList: ['nativeMethod', 'transferSameLayerArgs', 'callMapContextFunction', 'createMapContext'],
+          methodList: ['nativeMethod', 'callMapContextFunction', 'createMapContext'],
           controller: this.taroWebController.webController,
         })
         .onConsole((event) => {

@@ -12,6 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { taroLogger } from '../utils/Logger'
 
 export class Channel {
   // TODO-ly 当前的实现只适合单实例，如果出现多实例Web容器，当前的实现就会有问题
@@ -75,7 +76,10 @@ export class MethodChannel {
       if (typeof method === 'function') {
         // 注册
         let allName:string = `${className}$${methodName}`
-        this.registerMethod(allName, object[methodName])
+        this.registerMethod(allName, (arg: any) => {
+          taroLogger.debug('InvokeNativeApi', allName)
+          return object[methodName].call(null, arg)
+        })
       }
     }
   }

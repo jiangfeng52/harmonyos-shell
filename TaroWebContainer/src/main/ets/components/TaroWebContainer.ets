@@ -37,7 +37,6 @@ import { Channel, MethodChannel } from '../inject_adapter/Channel';
 import { GetWindowInfoCache } from '../inject_adapter/nativecache/GetWindowInfoCache';
 import { GetDeviceInfoCache } from '../inject_adapter/nativecache/GetDeviceInfoCache';
 import { GetSystemSettingCache } from '../inject_adapter/nativecache/GetSystemSettingCache';
-import { sceneApis } from '../scene_apis';
 
 const CONTAINER_TAG = 'TaroWebContainer';
 
@@ -281,7 +280,6 @@ export struct TaroWebContainer {
     })
 
     this.methodChannel.registerMethods('NativeApi', nativeInject.buildInjectObj(context))
-    this.methodChannel.registerMethods('NativeApi', sceneApis)
 
     if (!!this.injectObj){
       this.methodChannel.registerMethods('NativeApi', this.injectObj)
