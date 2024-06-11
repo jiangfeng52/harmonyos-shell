@@ -7,6 +7,7 @@ import { TaroHybridNativeMethods } from '../pages/TaroHybridNativeMethods';
 import router from '@ohos.router';
 import BuildProfile from 'BuildProfile';
 import { logger } from '../utils/Logger';
+import { BusinessError } from '@kit.BasicServicesKit';
 
 const ABILITY_TAG = 'EntryAbility';
 const storage = new LocalStorage();
@@ -40,6 +41,17 @@ export default class EntryAbility extends UIAbility {
       logger.info(ABILITY_TAG, 'Succeeded in obtaining the main window. Data');
     })
     windowStage.loadContent('pages/Index', storage, (err, data) => {
+
+      let windowClass: window.Window = windowStage.getMainWindowSync(); // 获取应用主窗口
+      // 1. 设置窗口全屏
+      windowClass.setWindowLayoutFullScreen(true)
+        .then(() => {
+          console.info('Succeeded in setting the window layout to full-screen mode.');
+        })
+        .catch((err: BusinessError) => {
+          console.error('Failed to set the window layout to full-screen mode. Cause:' + JSON.stringify(err));
+        });
+
       TaroHybridManager.init({
         uiAbilityContex: this.context,
         domain: 'http://domain',
