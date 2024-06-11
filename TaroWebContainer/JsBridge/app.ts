@@ -112,6 +112,11 @@ window.MethodChannel = {
     // @ts-ignore
     return window.Channel.nativeCall(window.MethodChannel.ChannelType, methodCall)
   },
+  unRegisterArgStub: function (argObject: any) {
+    const stubId = this._listenerMap.get(argObject);
+    delete this._stubMap[stubId];
+    this._listenerMap.delete(argObject)
+  },
   jsBridgeMode: function (mode: {
     isAsync: boolean,
     autoRelease?: boolean
@@ -199,9 +204,11 @@ window.MethodChannel = {
     if (autoRelease) {
       delete this._stubMap[stubId]
       delete this._listenerMap[object]
+      this._listenerMap.delete(object)
     } else if (call == 'complete') {
       delete this._stubMap[stubId]
       delete this._listenerMap[object]
+      this._listenerMap.delete(object)
     }
 
     if (isFun) {
