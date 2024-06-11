@@ -83,7 +83,7 @@ struct TaroHybridCore {
     }
 
     const url = request.getRequestUrl();
-    taroLogger.debug("CrossOrigin","拦截器收到的request: "+url);
+    taroLogger.debug("CrossOrigin","拦截器收到的request: %{public}s", url);
 
     if ( url.search(this.domain) != -1 ) {
       let actualRequestUrl = url.replace(this.domain,this.devDomain)

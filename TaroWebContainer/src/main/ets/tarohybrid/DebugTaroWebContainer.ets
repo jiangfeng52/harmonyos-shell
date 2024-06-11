@@ -79,7 +79,7 @@ export struct DebugTaroWebContainer {
               .onClick(() => {
                 TaroHybridUtils.setSP(`${this.indexHtmlPath}_devdomain`, this.devDomain)
                 TaroHybridUtils.setSP(`${this.indexHtmlPath}_useCache`, this.useCache)
-                taroLogger.debug("CrossOrigin","重新加载："+this.useCache)
+                taroLogger.debug("CrossOrigin","重新加载：%{public}s", this.useCache)
                 if(this.refresh) {
                   this.refresh(this.devDomain, this.indexHtmlPath, this.taroPath, this.useCache)
                   this.debugLayoutVisible = Visibility.None
