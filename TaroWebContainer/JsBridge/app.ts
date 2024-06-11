@@ -198,8 +198,10 @@ window.MethodChannel = {
     const {object, isFun, autoRelease} = stub
     if (autoRelease) {
       delete this._stubMap[stubId]
+      delete this._listenerMap[object]
     } else if (call == 'complete') {
       delete this._stubMap[stubId]
+      delete this._listenerMap[object]
     }
 
     if (isFun) {
