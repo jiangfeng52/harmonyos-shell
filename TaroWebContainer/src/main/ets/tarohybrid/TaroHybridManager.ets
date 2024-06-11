@@ -36,7 +36,7 @@ export class TaroHybridCoreInstance {
       taroLogger.debug(
         'TaroHybrid',
         '%{public}s create BuilderNode',
-        [this.builderData.indexHtmlPath]);
+        this.builderData.indexHtmlPath);
     }
     return this.builderNode
   }
@@ -49,7 +49,7 @@ export class TaroHybridCoreInstance {
       taroLogger.debug(
         'TaroHybrid',
         '%{public}s dispose BuilderNode',
-        [this.builderData.indexHtmlPath]);
+        this.builderData.indexHtmlPath);
     }
   }
 }
