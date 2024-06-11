@@ -23,13 +23,6 @@ export interface ErrorMsg {
   errMsg: string
 }
 
-export interface WantInfo {
-  deviceId: string;
-  bundleName: string;
-  abilityName: string;
-  parameters: NavigateToMiniProgramOptionsExtraData | {};
-}
-
 // ------------------- NavigationBar -------------------
 
 export interface MenuButtonOptions {
@@ -56,19 +49,6 @@ interface NavigationBarOptions {
   frontColor?: string;
   timingFunc?: 'linear' | 'easeIn' | 'easeOut' | 'easeInOut';
   animation?: NavigationBarAnimationOptions;
-}
-
-// ------------------- NavigateToMiniProgram -------------------
-interface NavigateToMiniProgramOptionsExtraData {
-  [key: string]: any;
-}
-
-interface NavigateToMiniProgramOptions {
-  appId: string;
-  path: string;
-  extraData: NavigateToMiniProgramOptionsExtraData;
-  success: Function;
-  fail: Function;
 }
 
 // ------------------- Settings -------------------
@@ -229,7 +209,6 @@ export interface InnerInjectObj {
   showNavigationBarLoading: () => void;
   hideNavigationBarLoading: () => void;
   getMenuButtonBoundingClientRect: () => MenuButtonBoundingClientResult;
-  navigateToMiniProgram: (options: NavigateToMiniProgramOptions) => void;
   setNavigationStyle: (navigationStyle: NavigationStyle) => void;
   openSetting: (options: SettingOptions) => void;
   getSetting: (options: SettingOptions) => void;

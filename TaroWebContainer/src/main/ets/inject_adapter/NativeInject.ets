@@ -176,49 +176,6 @@ export class NativeInject {
           height: this.capsuleOptions.height,
         }
       },
-      navigateToMiniProgram: async (options) => {
-        // options.path 格式:
-        // - EntryAbility:///pages/api/framework/index?paramA=good
-        // - /pages/api/framework/index?paramA=good
-        taroLogger.debug('JsBridgeNative', `NativeApi$navigateToMiniProgram`)
-        taroLogger.info(NATIVE_TAG, 'navigateToMiniProgram options:' + JSON.stringify(options));
-        const entryAbility = 'EntryAbility';
-        let abilityName = entryAbility;
-        let path = '';
-        let query = '';
-        if (options.path) {
-          const targetUri: string = options.path.startsWith('/') ? `${entryAbility}://${options.path}` : options.path;
-          const uriInfo = new uri.URI(targetUri);
-          abilityName = uriInfo.scheme;
-          path = uriInfo.path;
-          query = (!uriInfo.query || uriInfo.query === 'null') ? '' : uriInfo.query;
-        }
-        const wantInfo: Want = {
-          deviceId: '',
-          bundleName: options.appId,
-          abilityName,
-          parameters: {
-            extraData: options.extraData || {},
-            path,
-            query,
-          },
-        };
-        taroLogger.debug(NATIVE_TAG, `navigateToMiniProgram: ${JSON.stringify(wantInfo)}`);
-        try {
-          const context = getContext(this) as common.UIAbilityContext;
-          context.startAbility(wantInfo).then(() => {
-            options.success({ errMsg: '' });
-          }).catch(() => {
-            options.fail({ errMsg: 'invalid appid or path scheme' } as ErrorMsg);
-          })
-        } catch (paramError) {
-          taroLogger.warn(NATIVE_TAG, `navigateToMiniProgram failed: ${JSON.stringify(paramError)}`);
-          options.fail({
-            errMsg: `code: ${(paramError as BusinessError).code}, message ${(paramError as BusinessError).message}`
-          } as ErrorMsg
-          );
-        }
-      },
       setNavigationStyle: (navigationStyle: NavigationStyle) => {
         taroLogger.debug('JsBridgeNative', `NativeApi$setNavigationStyle`)
         this.navigationBarData.visible = navigationStyle.style !== 'custom';
