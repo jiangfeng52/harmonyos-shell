@@ -175,7 +175,7 @@ export class TaroHybridManager {
       return false;
     }
 
-    if (curUrl?.endsWith('?from=native')) {  //web回退到原生
+    if (curUrl.includes('?from=native') || curUrl.includes('&from=native')) {  //web回退到原生
       // Web先返回
       if (taroWebController.accessBackward()) {
         setTimeout(()=>{
