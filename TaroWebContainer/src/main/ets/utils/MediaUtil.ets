@@ -9,12 +9,20 @@ import fs from '@ohos.file.fs'
 import image from '@ohos.multimedia.image'
 import bundleManager from '@ohos.bundle.bundleManager';
 import { CompressorResponseCode, CompressQuality, VideoCompressor } from '@ohos/videocompressor';
-import { IMediaData, MediaFile, ChooseAlbumResult, ChooseMediaResults, MediaItemData, chooseAlbumOptions } from '../interfaces/Media'
+import {
+  IMediaData,
+  MediaFile,
+  ChooseAlbumResult,
+  ChooseMediaResults,
+  MediaItemData,
+  chooseAlbumOptions
+} from '../interfaces/Media'
 import { requestPermission } from '../utils/PermissionMapScopeUtil';
 import { Permissions } from '@ohos.abilityAccessCtrl';
 import { ChooseMediaOptions } from '../interfaces/InjectObject';
 import camera from '@ohos.multimedia.camera';
 import { BusinessError } from '@ohos.base';
+import { switchHapSandBoxToInternal } from './InternalPath'
 
 const MEDIA_UTIL = 'MediaUtil';
 
@@ -192,8 +200,7 @@ export async function compressImage(params: CompressImageParams): Promise<Compre
         const stat = FileUtils.getFileStatFromUri(tmpPath);
         fs.closeSync(fileOpen);
         return {
-          // tempFilePath: switchHapSandBoxToInternal(tmpPath),
-          tempFilePath: tmpPath,
+          tempFilePath: switchHapSandBoxToInternal(tmpPath),
           tempFileSize: stat.size,
           tempFileName: newFileName
         };
@@ -210,8 +217,7 @@ export async function compressImage(params: CompressImageParams): Promise<Compre
       })
       const stat = FileUtils.getFileStatFromUri(originTempPath);
       return {
-        // tempFilePath: switchHapSandBoxToInternal(originTempPath),
-        tempFilePath: originTempPath,
+        tempFilePath: switchHapSandBoxToInternal(originTempPath),
         tempFileSize: stat.size,
         tempFileName: newFileName,
       };
@@ -267,8 +273,7 @@ export async function compressVideo(src: string): Promise<CompressResult> {
       const length = data.outputPath.split('/').length - 1;
       const name = data.outputPath.split('/')[length]
       return {
-        // tempFilePath: switchHapSandBoxToInternal(data.outputPath),
-        tempFilePath: data.outputPath,
+        tempFilePath: switchHapSandBoxToInternal(data.outputPath),
         tempFileSize: stat.size,
         tempFileName: name.split('.')[0]
       };
@@ -303,8 +308,7 @@ export async function getChooseMediaRet(mediaList: IMediaData[], useOriginal: bo
         fs.copyFileSync(fd, originTempPath);
         asset?.close(fd);
       })
-      // const internalTempPath = switchHapSandBoxToInternal(originTempPath);
-      const internalTempPath = originTempPath;
+      const internalTempPath = switchHapSandBoxToInternal(originTempPath);
       const resMediaInfo: MediaFile = {
         tempFilePath: internalTempPath,
         size: media.originSize,
@@ -375,8 +379,7 @@ export async function generateThumbnailFile(asset: photoAccessHelper.PhotoAsset)
     const file = fs.openSync(sandboxThumbPath, fs.OpenMode.READ_WRITE | fs.OpenMode.CREATE);
     fs.writeSync(file.fd, buffer);
     fs.closeSync(file.fd);
-    // return switchHapSandBoxToInternal(sandboxThumbPath);
-    return sandboxThumbPath;
+    return switchHapSandBoxToInternal(sandboxThumbPath);
   } catch (err) {
     taroLogger.info(MEDIA_UTIL, 'generateThumbnailFile failed');
     return '';
@@ -500,7 +503,7 @@ async function applyPermission(options: ChooseMediaOptions, apiName: string, isF
       isFail = true;
       return { options, isFail };
     }
-  } 
+  }
   return { options, isFail };
 }
 
@@ -545,8 +548,8 @@ async function chooseMedia(options: ChooseMediaOptions, photoType: PHOTO_TYPE, a
       type: ret.type,
     })
   } catch (err) {
-     options.fail({ errMsg: 'cancel' })
-     isFail = true
+    options.fail({ errMsg: 'cancel' })
+    isFail = true
     return { options, isFail };
   }
   return { options, isFail };
