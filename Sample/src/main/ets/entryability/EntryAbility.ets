@@ -8,6 +8,7 @@ import router from '@ohos.router';
 import BuildProfile from 'BuildProfile';
 import { logger } from '../utils/Logger';
 import { BusinessError } from '@kit.BasicServicesKit';
+import { WindowUtil } from '../utils/WindowUtil';
 
 const ABILITY_TAG = 'EntryAbility';
 const storage = new LocalStorage();
@@ -33,13 +34,11 @@ export default class EntryAbility extends UIAbility {
     // Main window is created, set main page for this ability
     logger.info(ABILITY_TAG, 'Ability onWindowStageCreate');
 
-    windowStage.getMainWindow((err, data) => {
-      if (err.code) {
-        logger.error(ABILITY_TAG, `Failed to obtain the main window. Cause: ${JSON.stringify(err)}`);
-        return;
-      }
-      logger.info(ABILITY_TAG, 'Succeeded in obtaining the main window. Data');
-    })
+    // 设置屏幕方案
+    WindowUtil.getInstance()
+    ?.setWindowStage(windowStage)
+    ?.setMainWindowPortrait();
+
     windowStage.loadContent('pages/Index', storage, (err, data) => {
 
       let windowClass: window.Window = windowStage.getMainWindowSync(); // 获取应用主窗口
