@@ -1,7 +1,6 @@
 @Component
 export struct SafeArea {
-  private topRectHeight: string = AppStorage.get<number>('topRectHeight') + 'px';
-
+  @StorageProp('topRectHeight') topRectHeight: string = '0px'
   @BuilderParam child: ()=>void
 
   build() {
