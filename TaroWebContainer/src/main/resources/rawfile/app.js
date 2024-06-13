@@ -113,11 +113,6 @@ window.MethodChannel = {
     // @ts-ignore
     return window.Channel.nativeCall(window.MethodChannel.ChannelType, methodCall);
   },
-  unRegisterArgStub: function unRegisterArgStub(argObject) {
-    var stubId = this._listenerMap.get(argObject);
-    delete this._stubMap[stubId];
-    this._listenerMap["delete"](argObject);
-  },
   jsBridgeMode: function jsBridgeMode(mode) {
     return function (target, key, descriptor) {
       var className = target.constructor.name;
@@ -127,6 +122,16 @@ window.MethodChannel = {
         var argTypeIsFun = isFunction(firstArg);
         // @ts-ignore
         var stubId = window.MethodChannel.__registerArgStub(firstArg, argTypeIsFun, (_mode$autoRelease = mode === null || mode === void 0 ? void 0 : mode.autoRelease) !== null && _mode$autoRelease !== void 0 ? _mode$autoRelease : true);
+        if (argTypeIsFun) {
+          // @ts-ignore
+          if (window.MethodChannel._listenerMap.has(firstArg)) {
+            // @ts-ignore
+            stubId = window.MethodChannel._listenerMap.get(firstArg);
+          } else {
+            // @ts-ignore
+            window.MethodChannel._listenerMap.set(firstArg, stubId);
+          }
+        }
         var isAsync = (_mode$isAsync = mode === null || mode === void 0 ? void 0 : mode.isAsync) !== null && _mode$isAsync !== void 0 ? _mode$isAsync : true;
 
         // 方法调用转换为数据
@@ -172,19 +177,12 @@ window.MethodChannel = {
     if (!hasFun) {
       return -1;
     }
-    // 尝试从map中取出变量id，如果有，直接返回对应id
-    var objectId = this._listenerMap.get(argObject);
-    if (objectId) {
-      return objectId;
-    }
-    objectId = this._NextId++;
+    var objectId = this._NextId++;
     this._stubMap[objectId] = {
       object: argObject,
       isFun: isFun,
       autoRelease: autoRelease
     };
-    // 将变量存储到map中，防止相同变量多次注册
-    this._listenerMap.set(argObject, objectId);
     return objectId;
   },
   __ArgsMethodStub: function __ArgsMethodStub(nativeArg) {
@@ -201,12 +199,8 @@ window.MethodChannel = {
       autoRelease = stub.autoRelease;
     if (autoRelease) {
       delete this._stubMap[stubId];
-      delete this._listenerMap[object];
-      this._listenerMap["delete"](object);
     } else if (call == 'complete') {
       delete this._stubMap[stubId];
-      delete this._listenerMap[object];
-      this._listenerMap["delete"](object);
     }
     if (isFun) {
       object && object.apply(void 0, _toConsumableArray(args));
