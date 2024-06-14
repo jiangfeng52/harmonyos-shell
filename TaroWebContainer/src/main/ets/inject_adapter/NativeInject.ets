@@ -35,7 +35,8 @@ import {
   SettingOptions,
   NavigationStyle,
   ChooseMediumOptions,
-  NativeDataChangeListener
+  NativeDataChangeListener,
+  CapsuleState,
 } from '../interfaces/InjectObject';
 import {
   getBundleUsedPermission,
@@ -374,9 +375,9 @@ export class NativeInject {
           options.fail({ errMsg: 'error' });
         }
       },
-      setCapsuleState: (visible: boolean) => {
+      setCapsuleState: (state: CapsuleState) => {
         taroLogger.debug('JsBridgeNative', `NativeApi$setCapsuleState`)
-        this.capsuleController.changeCapsuleState(visible);
+        this.capsuleController.changeCapsuleState(state.visible);
       },
       getCapsuleState: () => {
         taroLogger.debug('JsBridgeNative', `NativeApi$getCapsuleState`)
