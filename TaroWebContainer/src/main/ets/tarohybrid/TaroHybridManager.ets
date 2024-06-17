@@ -1,5 +1,3 @@
-import { BuilderNode } from '@ohos.arkui.node';
-import { TaroHybridCoreBuilder, TaroHybridCoreBuilderData } from './TaroHybridCore';
 import common from '@ohos.app.ability.common';
 import HashMap from '@ohos.util.HashMap';
 import { TaroHybridUtils } from './TaroHybridUtils';
@@ -10,6 +8,7 @@ import { taroLogger } from '../utils/Logger';
 import { taroTrace } from '../utils/Trace';
 import { taroStorage } from '../inject_adapter/TaroStorage';
 import { bundleManager } from '@kit.AbilityKit';
+import { TaroHybridCoreInstance } from './TaroHybridCoreInstance';
 
 export function getFromParameter(url: string): number {
   const fromMatch = url.match(/[?&]from=(native(?:_\d+)?)(?:&|$)/);
@@ -24,48 +23,6 @@ export function getFromParameter(url: string): number {
   return number
 }
 
-export class TaroHybridCoreInstance {
-  private builderNode: BuilderNode<TaroHybridCoreBuilderData[]> | undefined
-  builderData: TaroHybridCoreBuilderData
-
-  constructor(domain: string, indexHtmlPath: string, taroPath: string, injectObj: InjectObject, forceDarkAccess: boolean) {
-    this.builderData = {
-      domain: domain,
-      indexHtmlPath: indexHtmlPath,
-      taroPath: taroPath,
-      taroWebController: new TaroWebController(),
-      injectObj: injectObj,
-      forceDarkAccess: forceDarkAccess
-    }
-  }
-
-  getBuilderNode(uiContext: UIContext){
-    if (!this.builderNode) {
-      this.builderNode = new BuilderNode(uiContext)
-      this.builderNode.build(
-          wrapBuilder<TaroHybridCoreBuilderData[]>(TaroHybridCoreBuilder),
-          this.builderData
-        )
-      taroLogger.debug(
-        'TaroHybrid',
-        '%{public}s create BuilderNode',
-        this.builderData.indexHtmlPath);
-    }
-    return this.builderNode
-  }
-
-  dispose(){
-    if (this.builderNode) {
-      this.builderNode.dispose()
-      this.builderNode = undefined
-
-      taroLogger.debug(
-        'TaroHybrid',
-        '%{public}s dispose BuilderNode',
-        this.builderData.indexHtmlPath);
-    }
-  }
-}
 
 export interface TaroHybridManagerOptions {
   uiAbilityContex: common.UIAbilityContext
