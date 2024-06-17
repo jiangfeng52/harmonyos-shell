@@ -11,6 +11,19 @@ import { taroTrace } from '../utils/Trace';
 import { taroStorage } from '../inject_adapter/TaroStorage';
 import { bundleManager } from '@kit.AbilityKit';
 
+export function getFromParameter(url: string): number {
+  const fromMatch = url.match(/[?&]from=(native(?:_\d+)?)(?:&|$)/);
+  const from = fromMatch ? fromMatch[1] : null;
+  let number: number = -1;
+
+  if (from) {
+    // 尝试从from参数中提取数字
+    const numberMatch = from.match(/native_(\d+)/);
+    number = numberMatch ? parseInt(numberMatch[1], 10) : 1;
+  }
+  return number
+}
+
 export class TaroHybridCoreInstance {
   private builderNode: BuilderNode<TaroHybridCoreBuilderData[]> | undefined
   builderData: TaroHybridCoreBuilderData
@@ -175,11 +188,15 @@ export class TaroHybridManager {
       return false;
     }
 
-    if (curUrl.includes('?from=native') || curUrl.includes('&from=native')) {  //web回退到原生
+    const nativeBack = getFromParameter(curUrl)
+
+    if(nativeBack > 0) { //web回退到原生
       // Web先返回
       if (taroWebController.accessBackward()) {
         setTimeout(()=>{
-          taroWebController.backward();
+          for (let i = 1; i <= nativeBack; i++) {
+            taroWebController.backward();
+          }
         }, 200)
       }
       // 回退到原生
