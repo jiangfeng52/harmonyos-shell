@@ -3,10 +3,8 @@ import { TaroWebController } from '../components/TaroWeb';
 import { TaroWebContainer } from '../components/TaroWebContainer';
 import { InjectObject } from '../interfaces/InjectObject';
 import { GlobalThis } from '../utils/GlobalThis';
-import { Storage } from '../utils/Storage';
 import { TaroHybridManager } from './TaroHybridManager';
 import { TaroHybridUtils } from './TaroHybridUtils';
-import bundleManager from '@ohos.bundle.bundleManager';
 import { taroLogger } from '../utils/Logger';
 import { FileUtils } from '../utils/FileUtils';
 import { http } from '@kit.NetworkKit';
@@ -53,7 +51,7 @@ struct TaroHybridCore {
   private isRoot: boolean = TaroHybridManager.isRootContainer(this.indexHtmlPath)
 
   private navigationBarBackPressed: (taroWebController: TaroWebController)=>void = (taroWebController: TaroWebController)=>{
-    const hasHandled = TaroHybridManager.onBack(taroWebController, this.indexHtmlPath, this.taroPath)
+    const hasHandled = TaroHybridManager.onBack(this.indexHtmlPath, this.taroPath)
     if(!hasHandled) {
       TaroHybridManager.nativeBack()
     }
