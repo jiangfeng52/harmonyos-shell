@@ -95,9 +95,11 @@ export class TaroHybridManager {
   static getCoreInstance(indexHtmlPath: string): TaroHybridCoreInstance | undefined{
     return TaroHybridManager.builderInstanceMaps.get(indexHtmlPath)
   }
-  static loadUrl(indexHtmlPath: string, taroPath: string){
+  static loadUrl(indexHtmlPath: string, taroPath: string): boolean{
     const instance = TaroHybridManager.getCoreInstance(indexHtmlPath)
     instance?.navigateTo(taroPath)
+    // instance存在，说明容器复用，loadUrl成功
+    return instance !== undefined
   }
 
   static nativeBack(){

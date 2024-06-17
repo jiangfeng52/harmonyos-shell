@@ -7,14 +7,21 @@ export interface TaroHybridRouterParams {
   taroPath: string
 }
 export const RouterToTaroHybrid = (params: TaroHybridRouterParams) => {
-  TaroHybridManager.loadUrl(params.indexHtmlPath, params.taroPath);
-
-  setTimeout(()=>{
+  const result = TaroHybridManager.loadUrl(params.indexHtmlPath, params.taroPath);
+  if (result) {
+    // 容器复用成功，等待loadUrl，不然会出现先看到上一个页面
+    setTimeout(()=>{
+      router.pushUrl({
+        url: 'pages/TaroHybridPage',
+        params: params
+      }, router.RouterMode.Standard)
+    }, 300)
+  } else {
     router.pushUrl({
       url: 'pages/TaroHybridPage',
       params: params
     }, router.RouterMode.Standard)
-  }, 200)
+  }
 }
 
 
