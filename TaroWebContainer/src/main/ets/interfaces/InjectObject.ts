@@ -180,6 +180,10 @@ export interface NavigationStyle {
   backgroundColor: string;
 }
 
+export interface CapsuleState {
+  visible: boolean;
+}
+
 /**
  * 系统数据更新监听器
  */
@@ -219,7 +223,7 @@ export interface InnerInjectObj {
   onUpdateReady: (options: ESObject) => ESObject;
   requestSubscribeMessage: (options: RequestSubscribeMessageOptions) => void;
   saveDataUrlToFile: (options: SaveDataUrlOptions) => void;
-  setCapsuleState: (visible: boolean) => void;
+  setCapsuleState: (state: CapsuleState) => void;
   getCapsuleState: () => CapsuleState;
   chooseMediaAssets: (options: ChooseMediaOptions) => void;
   chooseMediumAssets: (options: ChooseMediumOptions) => void;
