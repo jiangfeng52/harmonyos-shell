@@ -55,6 +55,7 @@ class TaroWebNodeController extends NodeController {
 
   onPageHide() {
     this.isPageShow = false
+    this.rebuild();
   }
 
   makeNode(uiContext: UIContext): FrameNode | null {
