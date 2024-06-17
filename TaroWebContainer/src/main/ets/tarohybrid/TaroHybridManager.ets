@@ -10,19 +10,6 @@ import { taroStorage } from '../inject_adapter/TaroStorage';
 import { bundleManager } from '@kit.AbilityKit';
 import { TaroHybridCoreInstance } from './TaroHybridCoreInstance';
 
-export function getFromParameter(url: string): number {
-  const fromMatch = url.match(/[?&]from=(native(?:_\d+)?)(?:&|$)/);
-  const from = fromMatch ? fromMatch[1] : null;
-  let number: number = -1;
-
-  if (from) {
-    // 尝试从from参数中提取数字
-    const numberMatch = from.match(/native_(\d+)/);
-    number = numberMatch ? parseInt(numberMatch[1], 10) : 1;
-  }
-  return number
-}
-
 
 export interface TaroHybridManagerOptions {
   uiAbilityContex: common.UIAbilityContext
@@ -110,64 +97,16 @@ export class TaroHybridManager {
   }
   static loadUrl(indexHtmlPath: string, taroPath: string){
     const instance = TaroHybridManager.getCoreInstance(indexHtmlPath)
-    if (!instance) {
-      return ;
-    }
-    const data = instance.builderData
-    let webUrl = `${data.domain}${indexHtmlPath}#${taroPath}`
-    webUrl = TaroHybridUtils.addQueryParamToHash(webUrl, 'from', 'native')
-
-    //如果处于未激活状态loadUrl会失效
-    data.taroWebController.webController.onActive();
-    data.taroWebController.loadUrl(webUrl);
+    instance?.navigateTo(taroPath)
   }
 
   static nativeBack(){
     TaroHybridManager.options?.nativeBack()
   }
 
-  static onBack(taroWebController: TaroWebController, indexHtmlPath: string, rootTaroPage: string): boolean {
-    // const instance = TaroHybridManager.getCoreInstance(indexHtmlPath)
-    // if (!instance) {
-    //   return false;
-    // }
-    // const data = instance.builderData
-
-    // let controller = data.taroWebController;
-
-    const rootPagePath = `${indexHtmlPath}#${rootTaroPage}`
-
-    let curUrl = taroWebController.webController.getUrl();
-
-    // 当前如果是根页面，即使accessBackward = true，也不返回了，模拟原生的体验
-    if(curUrl.includes(rootPagePath)) {
-      // 回退到原生
-      return false;
-    }
-
-    const nativeBack = getFromParameter(curUrl)
-
-    if(nativeBack > 0) { //web回退到原生
-      // Web先返回
-      if (taroWebController.accessBackward()) {
-        setTimeout(()=>{
-          for (let i = 1; i <= nativeBack; i++) {
-            taroWebController.backward();
-          }
-        }, 200)
-      }
-      // 回退到原生
-      return false;
-    }
-
-    if (taroWebController?.accessBackward()) { // web回退
-      taroWebController?.backward();
-      // 保留在当前Web页面
-      return true;
-    }
-
-    // 回退到原生
-    return false;
+  static onBack(indexHtmlPath: string, rootTaroPage: string): boolean {
+    const instance = TaroHybridManager.getCoreInstance(indexHtmlPath)
+    return instance?.navigateBack(rootTaroPage) ?? false;
   }
 
 }

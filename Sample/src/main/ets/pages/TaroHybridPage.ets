@@ -42,7 +42,6 @@ struct TaroHybridPage {
       return false;
     }
     return TaroHybridManager.onBack(
-      instance.builderData.taroWebController,
       instance.builderData.indexHtmlPath,
       instance.builderData.taroPath)
   }

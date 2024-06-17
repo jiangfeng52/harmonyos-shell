@@ -19,6 +19,8 @@ import { taroLogger } from '../utils/Logger'
 import { as } from '../utils/advancedapi.min';
 import { taroStorage } from './TaroStorage';
 import { ClassInstanceApi, CallInstanceParam } from '../utils/ClassInstanceUtil';
+import { NativeNavigateListener } from '../tarohybrid/TaroHybridCoreInstance';
+import { TaroHybridManager } from '../tarohybrid/TaroHybridManager';
 
 export interface StorageStatus {
   done: boolean; // 操作是否完成
@@ -414,6 +416,11 @@ export class NativeApi {
 
     updatePageShowDataKeys: (options: ESObject) => {
       taroStorage.updatePageShowDataKeys(this.indexHtmlPath, options)
+    },
+
+    onNativeNavigate: (options: NativeNavigateListener) => {
+      const coreInstance = TaroHybridManager.getCoreInstance(this.indexHtmlPath)
+      coreInstance?.setNativeNavigateListener(options)
     }
   }
 }
