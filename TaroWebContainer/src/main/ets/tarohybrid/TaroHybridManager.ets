@@ -25,13 +25,21 @@ export class TaroHybridManager {
   private static builderInstanceMaps: HashMap<string, TaroHybridCoreInstance> = new HashMap();
   // 回收机制：引用计数
   private static referenceCountMap: HashMap<string, number> = new HashMap();
-
+  // 添加自定义的user-agent
+  private static customUserAgent: string = ''
   private static debuggable = false
 
   static init(options: TaroHybridManagerOptions){
     TaroHybridManager.options = options
     GlobalThis.getInstance().setContext('context', options.uiAbilityContex);
     taroStorage.init(options.uiAbilityContex, bundleManager.getBundleInfoForSelfSync(bundleManager.BundleFlag.GET_BUNDLE_INFO_DEFAULT).name)
+  }
+
+  static setCustomUserAgent(customUserAgent: string){
+    TaroHybridManager.customUserAgent = customUserAgent;
+  }
+  static getCustomUserAgent(): string {
+    return TaroHybridManager.customUserAgent
   }
 
   static setDebuggable(debuggable: boolean) {
