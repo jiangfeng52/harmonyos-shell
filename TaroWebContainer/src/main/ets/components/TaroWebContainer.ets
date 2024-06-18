@@ -37,6 +37,8 @@ import { Channel, MethodChannel } from '../inject_adapter/Channel';
 import { GetWindowInfoCache } from '../inject_adapter/nativecache/GetWindowInfoCache';
 import { GetDeviceInfoCache } from '../inject_adapter/nativecache/GetDeviceInfoCache';
 import { GetSystemSettingCache } from '../inject_adapter/nativecache/GetSystemSettingCache';
+import { imageViewerManager, ImageViewerOptions } from '../scene_apis/media/image/imageviewer/utils/ImageViewerManager';
+import { ImageViewer } from '../scene_apis/media/image/imageviewer/view/ImageViewer';
 
 const CONTAINER_TAG = 'TaroWebContainer';
 
@@ -196,6 +198,24 @@ export struct TaroWebContainer {
     },
   }
 
+  // 图片预览模态窗触发器
+  imageViewerTrigger = (options: ImageViewerOptions) => {
+    let dialogController: CustomDialogController | null = null;
+    dialogController = new CustomDialogController({
+      builder: ImageViewer({
+        options: options,
+      }),
+      cancel: () => {
+        dialogController = null; // 清理dialogController
+      },
+      customStyle: true, // 自适应弹出容器样式
+    })
+
+    if (dialogController !== null) {
+      dialogController.open()
+    }
+  }
+
   build() {
     Stack({ alignContent: Alignment.TopEnd }) {
       TaroWeb({
@@ -265,6 +285,7 @@ export struct TaroWebContainer {
     const nativeInject = new NativeInject(this.navigationBarData, this.capsuleOptions, this.capsuleController,this.taroWebController.getNativeCacheManager());
     this.taroWebController.setAlbumBackward(this.albumBackward);
     nativeInject.setChooseAlbumCallback(this.chooseAlbumCallback);
+    imageViewerManager.setImageViewerTrigger(this.imageViewerTrigger);
 
     this.channel.setRunJavascriptFun((jsCode: string)=>{
       try {
