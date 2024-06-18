@@ -21,6 +21,7 @@ import { taroStorage } from './TaroStorage';
 import { ClassInstanceApi, CallInstanceParam } from '../utils/ClassInstanceUtil';
 import { NativeNavigateListener } from '../tarohybrid/TaroHybridCoreInstance';
 import { TaroHybridManager } from '../tarohybrid/TaroHybridManager';
+import { TaroWebController } from '../components/TaroWeb';
 
 export interface StorageStatus {
   done: boolean; // 操作是否完成
@@ -52,9 +53,12 @@ class NativeApiConfig {
 export class NativeApi {
   private indexHtmlPath: string
   private classInstanceApi: ClassInstanceApi
-  constructor(indexHtmlPath: string) {
+  private taroWebController: TaroWebController
+
+  constructor(indexHtmlPath: string, taroWebController: TaroWebController) {
     this.indexHtmlPath = indexHtmlPath
     this.classInstanceApi  = new ClassInstanceApi()
+    this.taroWebController = taroWebController
   }
 
   nativeObj: ESObject =  {
@@ -222,7 +226,7 @@ export class NativeApi {
     },
 
     createInstance: (options: ESObject) =>  {
-      return this.classInstanceApi.createInstance(options)
+      return this.classInstanceApi.createInstance(this.taroWebController, options)
     },
 
     syncAndReleaseInstance: (options: CallInstanceParam) =>  {

@@ -5,6 +5,7 @@ import { NetworkTask, NetworkTaskStatus } from '../bean/NetworkTask';
 import { taroLogger } from '../../../utils/Logger';
 import { UpdateConfig } from '../bean/UpdateConfig';
 import { LocalVersionInfo } from '../bean/LocalVersionInfo';
+import { TaroHybridManager } from '../../../tarohybrid/TaroHybridManager';
 
 interface VersionInfo {
   mini_version?: string;
@@ -24,7 +25,10 @@ export class MiniConfigNetworkDataSource {
     try {
       taroLogger.debug('network', '%{public}s request', url)
       const response = await httpRequest.request(url, {
-        header: [{ 'Content-Type': 'application/json' }],
+        header: {
+          'Content-Type': 'application/json',
+          'User-Agent': TaroHybridManager.getCustomUserAgent()
+        },
       })
       taroLogger.debug('network', '%{public}s request complete, result is %{public}s', url, response.result)
 
@@ -50,7 +54,10 @@ export class MiniConfigNetworkDataSource {
     try {
       taroLogger.debug('network', '%{public}s request', url)
       const response = await httpRequest.request(url, {
-        header: [{ 'Content-Type': 'application/json' }],
+        header: {
+          'Content-Type': 'application/json',
+          'User-Agent': TaroHybridManager.getCustomUserAgent()
+        },
       })
       taroLogger.debug('network', '%{public}s request complete, result is %{public}s', url, response.result)
 
