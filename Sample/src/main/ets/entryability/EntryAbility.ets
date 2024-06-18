@@ -21,6 +21,7 @@ export default class EntryAbility extends UIAbility {
 
   onCreate(want: Want) {
     TaroHybridManager.setDebuggable(BuildProfile.DEBUG)
+    TaroHybridManager.setCustomUserAgent('WUBA (Phone; OpenHarmony)')
     logger.info(ABILITY_TAG, '%{public}s', 'Ability onCreate');
     storage.setOrCreate('want', want);
     GlobalThis.getInstance().setRawFile('spa')

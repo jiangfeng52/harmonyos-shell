@@ -1,5 +1,6 @@
 import { describe, beforeAll, beforeEach, afterEach, afterAll, it, expect } from '@ohos/hypium'
-import { getFromParameter } from '../main/ets/tarohybrid/TaroHybridManager'
+import { getFromParameter } from '../main/ets/tarohybrid/TaroHybridCoreInstance'
+
 
 export default function TaroHybridManagerTest() {
   describe('TaroHybridManagerTest', () => {

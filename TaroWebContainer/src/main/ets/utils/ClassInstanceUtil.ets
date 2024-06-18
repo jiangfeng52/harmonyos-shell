@@ -1,3 +1,5 @@
+import { TaroWebController } from '../components/TaroWeb';
+import { TaroHybridManager } from '../tarohybrid/TaroHybridManager';
 import { InnerAudioContext } from './InnerAudioContext';
 import { taroLogger } from './Logger'
 import { NativeRequest } from './NativeRequest'
@@ -39,6 +41,8 @@ export class ClassInstanceApi {
   public uploadFileMap: Map<number, ESObject>;
   public requestMap: Map<number, ESObject>;
   public instanceId: number;
+  // 延时获取
+  private webUserAgent: string | undefined
 
   constructor() {
     this.innerAudioContextMap = new Map();
@@ -47,14 +51,17 @@ export class ClassInstanceApi {
     this.instanceId = 0;
   }
 
-  createInstance(options: ESObject): number{
+  createInstance(taroWebController: TaroWebController, options: ESObject): number{
     taroLogger.debug('ClassInstanceApi', `createInstance ${options.className}`);
     switch (options.className) {
       case 'NativeInnerAudioContext':
         InnerAudioContext.createInnerAudioContext(this.innerAudioContextMap, this.instanceId);
         return this.instanceId++
       case 'NativeRequest':
-        NativeRequest.createRequest(this.requestMap, this.instanceId, options);
+        if (this.webUserAgent === undefined) {
+          this.webUserAgent = taroWebController.webController.getUserAgent();
+        }
+        NativeRequest.createRequest(this.requestMap, this.instanceId, options, this.webUserAgent);
         return this.instanceId++
       case 'NativeUploadFile':
         NativeUploadFile.createUploadFile(this.uploadFileMap, this.instanceId, options);
