@@ -131,7 +131,7 @@ export struct TaroWeb {
   enableWebDebug: boolean = true;
   @Link channel: Channel
   @Link methodChannel: MethodChannel
-  private nativeAPI: NativeApi = new NativeApi(this.indexHtmlPath)
+  private nativeAPI: NativeApi | undefined = undefined
 
   aboutToAppear() {
     webView.WebviewController.setWebDebuggingAccess(this.enableWebDebug);
@@ -139,6 +139,7 @@ export struct TaroWeb {
     this.taroWebController.addRequestHandler(this.handleInternalResource);
     this.taroWebController.addRequestHandler(this.useLocalCacheResource);
 
+    this.nativeAPI = new NativeApi(this.indexHtmlPath, this.taroWebController)
     this.methodChannel.registerMethods('NativeApi', this.nativeAPI.nativeObj)
     // 注册场景化API
     registerSceneApis(this.methodChannel)
