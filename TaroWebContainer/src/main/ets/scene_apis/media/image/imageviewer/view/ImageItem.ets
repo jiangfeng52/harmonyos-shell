@@ -32,6 +32,7 @@ export struct ImageItem {
   build() {
     Stack() {
       Image(this.imageUrl)
+        .alt($r('app.media.ic_public_picture_filled'))
         .objectFit(ImageFit.Contain)
         .autoResize(false)
         .transform(this.matrix)
@@ -41,18 +42,6 @@ export struct ImageItem {
         .offset({
           x: this.imageOffsetInfo.currentX,
           y: this.imageOffsetInfo.currentY
-        })
-      SaveButton({ icon: SaveIconStyle.FULL_FILLED, text:SaveDescription.SAVE_IMAGE, buttonType:ButtonType.Capsule })
-        .offset({ x: -25, y: -35 })
-        .fontSize(12)
-        .backgroundColor(Color.Grey)
-        .onClick(async (event: ClickEvent, result: SaveButtonOnClickResult) => {
-          if (result == SaveButtonOnClickResult.SUCCESS) {
-            const context = getContext(this) as common.UIAbilityContext;
-            loadAndSaveImage(this.imageUrl, context);
-          } else {
-            promptAction.showToast({ message: '设置权限失败' })
-          }
         })
     }
     .onBlur(() => {
@@ -64,6 +53,27 @@ export struct ImageItem {
     .gesture(
       GestureGroup(
         GestureMode.Exclusive, // 互斥识别手势
+        LongPressGesture()
+          .onAction(() => {
+            let dialogController: CustomDialogController | null = null;
+            dialogController = new CustomDialogController({
+              builder: SelectDialog({
+                url: this.imageUrl,
+                cancel: () => {
+                  dialogController = null; // 清理dialogController
+                }
+              }),
+              cancel: () => {
+                dialogController = null; // 清理dialogController
+              },
+              alignment: DialogAlignment.Bottom,
+              offset: { dx: 0, dy: -20 },
+              autoCancel: true
+            })
+            if (dialogController !== null) {
+              dialogController.open()
+            }
+          }),
         TapGesture({ count: 2 })
           .onAction(() => {
             let fn: Function;
@@ -146,5 +156,48 @@ export struct ImageItem {
           })
       ),
     )
+  }
+}
+
+@CustomDialog
+struct SelectDialog {
+  url: string = '';
+  cancel: () => void = () => {};
+  dialogController: CustomDialogController;
+
+  build() {
+    Column() {
+      Row() {
+        SaveButton({ text:SaveDescription.SAVE_IMAGE, buttonType:ButtonType.Normal })
+          .width('100%')
+          .fontSize(14)
+          .fontColor(Color.Black)
+          .backgroundColor(Color.White)
+          .onClick(async (event: ClickEvent, result: SaveButtonOnClickResult) => {
+            this.dialogController.close();
+            if (result == SaveButtonOnClickResult.SUCCESS) {
+              const context = getContext(this) as common.UIAbilityContext;
+              loadAndSaveImage(this.url, context);
+            } else {
+              promptAction.showToast({ message: '设置权限失败' })
+            }
+            this.cancel();
+          })
+      }
+      .width('100%')
+      .height(50)
+      Divider()
+      Text('取消')
+        .width('100%')
+        .height(20)
+        .textAlign(TextAlign.Center)
+        .fontSize(14)
+        .fontColor(Color.Blue)
+        .margin({ top: 15, bottom: 15 })
+        .onClick(() => {
+          this.dialogController.close();
+          this.cancel();
+        })
+    }
   }
 }

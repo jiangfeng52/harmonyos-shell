@@ -2,7 +2,7 @@ export class ImageViewerConstants {
   // 缩放动画的持续时间
   static readonly ANIMATE_DURATION: number = 200;
   // swiper中缓存图片的数量
-  static readonly SWIPER_CACHE_COUNT: number = 2;
+  static readonly SWIPER_CACHE_COUNT: number = 5;
   // swiper中ImageItem的宽度
   static readonly IMAGE_ITEM_WIDTH: string = '100%';
   // swiper中ImageItem的高度
