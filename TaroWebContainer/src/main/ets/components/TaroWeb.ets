@@ -185,9 +185,15 @@ export struct TaroWeb {
       return this.hookInterceptorWithoutCache(request)
     }
 
-    //优先使用本地缓存，再使用RawFile缓存，没有则直接网络请求
     const url = request.getRequestUrl();
-    if (url && this.useCache && this.webUrlPrefix) {
+    if (url
+      && this.useCache
+      && this.webUrlPrefix
+      && url.startsWith(this.webUrlPrefix)) {
+      // 优先使用本地缓存
+      // 再使用RawFile缓存
+      // 没有则返回空数据，不能让其走网络，因为webUrlPrefix域名为假域名，与微信小程序的机制一样，需要走真实不一样的全路径
+
       // const path: string | undefined = url?.replace(this.webUrlPrefix, '');
       let path: string = url.replace(this.webUrlPrefix, '');
       path = path.split('#')[0]
@@ -210,6 +216,16 @@ export struct TaroWeb {
         taroLogger.debug('TaroWeb', 'useRawCacheResource path=%{public}s', rawPath)
         return MiniRawFileDataSource.getRawfileOnResponseWeb(lastVerInfo?.localVersion, rawPath)
       }
+
+      // 没有则返回空数据，不能让其走网络，因为webUrlPrefix域名为假域名，与微信小程序的机制一样，需要走真实不一样的全路径
+      const emptyResponse = new WebResourceResponse();
+      emptyResponse.setResponseMimeType("application/octet-stream")
+      emptyResponse.setResponseEncoding('utf-8')
+      emptyResponse.setResponseData(new Uint8Array());
+      emptyResponse.setResponseIsReady(true)
+      emptyResponse.setResponseCode(200);
+      emptyResponse.setReasonMessage('OK');
+      return emptyResponse
     }
     return null;
   }
