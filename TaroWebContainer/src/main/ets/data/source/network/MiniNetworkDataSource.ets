@@ -29,13 +29,13 @@ export class MiniNetworkDataSource {
           })
           downloadTask.on('fail', (err: number) => {
             taroLogger.debug("UpdateManager", '%{public}s download error, errCode is %{public}s', url, err.toString())
-            FileUtils.delTempFile(tempPath)
+            FileUtils.removeFileOrDirSync(tempPath)
             resolve(null)
           })
         })
         .catch((err: Object) => {
           taroLogger.debug("UpdateManager", '%{public}s download error, err is %{public}s', url, err.toString())
-          FileUtils.delTempFile(tempPath)
+          FileUtils.removeFileOrDirSync(tempPath)
           resolve(null)
         })
     })

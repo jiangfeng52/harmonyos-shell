@@ -45,7 +45,7 @@ export class MiniLocalFileDataSource {
         })
         if (filenames.length === 2) {
           //保证在下载前只有一个版本
-          FileUtils.delTempFile(`${miniPath}/${filenames[0]}`)
+          FileUtils.removeFileOrDirSync(`${miniPath}/${filenames[0]}`)
         }
         let splits = filenames[filenames.length-1].split('@');
         if (splits&&splits?.length>1) {
@@ -87,14 +87,14 @@ export class MiniLocalFileDataSource {
           } else {
             taroLogger.debug("UpdateManager", '%{public}s decompressFile success. decompressPath is %{public}s', filePath, savePath)
           }
-          FileUtils.delTempFile(filePath)
+          FileUtils.removeFileOrDirSync(filePath)
           resolve(errData == null ? savePath : '')
         })
       } catch (errData) {
         let code = (errData as BusinessError).code;
         let message = (errData as BusinessError).message;
         taroLogger.debug("UpdateManager", '%{public}s decompressFile failed. code is %{public}d, message is %{public}s', filePath, code, message)
-        FileUtils.delTempFile(filePath)
+        FileUtils.removeFileOrDirSync(filePath)
         resolve('')
       }
     })

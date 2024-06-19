@@ -4,6 +4,7 @@ import { MiniLocalFileDataSource } from './local/MiniLocalFileDataSource'
 import { MiniRawFileDataSource } from './local/MiniRawFileDataSource'
 import { MiniNetworkDataSource } from './network/MiniNetworkDataSource'
 import common from '@ohos.app.ability.common';
+import { FileUtils } from '../../utils/FileUtils'
 
 export class MiniRepository {
   private miniNetworkDataSource: MiniNetworkDataSource
@@ -31,7 +32,7 @@ export class MiniRepository {
   }
 
   copyMiniRawUnzipDisk(context: common.Context,versionInfo:LocalVersionInfo): LocalVersionInfo|null {
-    return this.miniRawFileDataSource.copyMiniRawUnzipDisk(context,versionInfo)
+    return this.miniRawFileDataSource.copyMiniRawUnzipDiskSync(context,versionInfo)
   }
 
   getMiniRawList(context: common.Context) : Array<string>{
@@ -40,5 +41,9 @@ export class MiniRepository {
 
   getRawCachePath(fileMame:string):string{
     return this.miniRawFileDataSource.getRawCachePath(fileMame)
+  }
+
+  removeLocalVersionSync(versionInfo:LocalVersionInfo) {
+    FileUtils.removeFileOrDirSync(versionInfo.diskCachePath)
   }
 }
