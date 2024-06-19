@@ -32,7 +32,7 @@ import { NativeMapBuilder } from './SameLayer/NativeComponents/Map/Map';
 import { callMapContextFunction, createMapContext } from '../utils/MapManager';
 import { NativeCacheManager } from '../inject_adapter/NativeCacheManager';
 import { taroTrace, TraceTask } from '../utils/Trace';
-import { registerSceneApis } from '../scene_apis';
+import { registerSceneApis } from '../scene_apis/Index';
 
 const TARO_WEB_TAG = 'TaroWeb';
 
