@@ -15,5 +15,5 @@ export { TaroHybrid } from './src/main/ets/tarohybrid/TaroHybrid'
 export { Storage } from './src/main/ets/utils/Storage'
 export { sameLayerManager } from './src/main/ets/utils/SameLayerManager'
 export { NativeCacheManager, NativeApiPair, NativeRegister } from './src/main/ets/inject_adapter/NativeCacheManager'
-export { memoryManager } from './src/main/ets/scene_apis/device/memory/memorymanager/MemoryManager.ets'
+export { memoryManager } from './src/main/ets/scene_apis/device/memory/memorymanager/MemoryManager'
 
