@@ -1,4 +1,4 @@
-import fs from '@ohos.file.fs'
+import fs from '@ohos.file.fs';
 import { taroLogger } from './Logger';
 import { http } from '@kit.NetworkKit';
 
@@ -79,11 +79,15 @@ export class FileUtils {
     return `${name}@${version}`
   }
 
-  static delTempFile(tempPath: string) {
-    if (!fs.accessSync(tempPath)) {
+  static removeFileOrDirSync(path: string) {
+    if (!fs.accessSync(path)) {
       return
     }
-    fs.unlinkSync(tempPath)
+    if (fs.statSync(path).isDirectory()) {
+      fs.rmdirSync(path)
+    } else {
+      fs.unlinkSync(path)
+    }
   }
 
   static mkFilesDir(filePath:string){

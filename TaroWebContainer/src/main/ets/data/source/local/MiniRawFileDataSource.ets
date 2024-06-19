@@ -12,11 +12,11 @@ export class MiniRawFileDataSource {
   constructor() {
   }
   /**
-   *  异步拷贝raw文件到磁盘应用文件目录并解压
+   *  同步拷贝raw文件到磁盘应用文件目录并解压
    * @param context
    * @returns
    */
-  copyMiniRawUnzipDisk(context: common.Context,versionInfo:LocalVersionInfo): LocalVersionInfo | null {
+  copyMiniRawUnzipDiskSync(context: common.Context,versionInfo:LocalVersionInfo): LocalVersionInfo | null {
       let localVersionInfo: LocalVersionInfo | null = null
       let fileName = FileUtils.buildMiniFileFormatName(versionInfo.biz,versionInfo.localVersion)
       let desFileDirPath = `${MiniLocalFileDataSource.getDiskPath(context)}/${fileName}`
