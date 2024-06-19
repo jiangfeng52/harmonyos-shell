@@ -1,8 +1,21 @@
 import { sameLayerManager } from '../utils/SameLayerManager';
 import { as } from '../utils/advancedapi.min';
-import { openLocation, chooseLocation } from './location/location';
+import { openLocation, chooseLocation } from './location/Location';
 import { MethodChannel } from '../inject_adapter/Channel';
-import { NativeLocation, NativeWifi, SameLayerRender } from './interface';
+import { previewImage } from './media/image/Image';
+import { NativeImage, NativeLocation, NativeMemory, NativeWifi, SameLayerRender } from './interface/Index';
+import { offMemoryWarning, onMemoryWarning } from './device/memory/Memory';
+
+// 设备-内存模块
+const nativeMemory: NativeMemory = {
+  onMemoryWarning,
+  offMemoryWarning
+}
+
+// 媒体-图片模块
+const nativeImage: NativeImage = {
+  previewImage,
+}
 
 // 同层渲染
 const sameLayerRender: SameLayerRender = {
@@ -39,7 +52,9 @@ const nativeWifi: NativeWifi = {
 }
 
 export function registerSceneApis(methodChannel: MethodChannel) {
+  methodChannel.registerMethods('NativeImage', nativeImage)
   methodChannel.registerMethods('SameLayerRender', sameLayerRender)
   methodChannel.registerMethods('NativeLocation', nativeLocation)
   methodChannel.registerMethods('NativeWifi', nativeWifi)
+  methodChannel.registerMethods('NativeMemory', nativeMemory)
 }

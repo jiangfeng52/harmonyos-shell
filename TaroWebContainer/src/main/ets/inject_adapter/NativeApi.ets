@@ -73,6 +73,7 @@ export class NativeApi {
     startSoterAuthentication: as['startSoterAuthentication'],
     checkIsSupportSoterAuthentication: as['checkIsSupportSoterAuthentication'],
     checkIsSoterEnrolledInDevice: as['checkIsSoterEnrolledInDevice'],
+    getFileInfo: as['getFileInfo],
 
     saveImageToPhotosAlbum: (options: ESObject) => {
       as.saveImageToPhotosAlbum(options)
@@ -244,7 +245,7 @@ export class NativeApi {
       return NativeApiConfig.getInstance().fileManager.access(options)
     },
 
-    getFileInfo(options: ESObject): ESObject {
+    getFileInformation(options: ESObject): ESObject {
       return NativeApiConfig.getInstance().fileManager.getFileInfo(options)
     },
 

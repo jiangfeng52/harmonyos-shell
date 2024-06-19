@@ -1,14 +1,12 @@
 import { MapComponent, map, mapCommon } from '@kit.MapKit';
-import { AsyncCallback } from '@kit.BasicServicesKit';
+import { AsyncCallback, BusinessError } from '@kit.BasicServicesKit';
 import { sameLayerManager } from '../../../../utils/SameLayerManager';
 import { MapParams } from '../../Interfaces/SameLayer';
 import { taroLogger } from '../../../../utils/Logger';
 import { mapContextMap, mapControllerMap } from '../../../../utils/MapManager';
-import { as } from '../../../../utils/advancedapi.min';
-import { switchInternalToHapSandBox } from '../../../../utils/InternalPath';
 import { image } from '@kit.ImageKit';
 import { Size } from '@kit.ArkUI';
-import fs from '@ohos.file.fs';
+import { http } from '@kit.NetworkKit';
 
 // 地图的默认中心点为北京天安门
 const defaultLatitude = 39.909195;
@@ -55,62 +53,46 @@ struct NativeMap {
   private eventList: string[] = [];
   private iconHandleCache: Map<string, Promise<string | image.PixelMap | undefined>> = new Map(); // 使用缓存机制避免多个相同marker图标重复处理
 
-  downloadIcon(iconPath: string): Promise<string | undefined> {
-    return new Promise((resolve) => {
-      // 使用场景化API中的download下载图片
-      as.downloadFile({
-        url: iconPath,
-        success: (res: ESObject) => {
-          // 下载成功后返回图片缓存路径
-          resolve(res.tempFilePath);
-        },
-        fail: (_res: ESObject) => {
-          // 下载失败
-          resolve(undefined);
-        }
-      })
-    })
-  }
-
-  iconHandle(iconPath: string, width?: number, height?: number): Promise<string | image.PixelMap | undefined> {
+  iconHandler(iconPath: string, width?: number, height?: number): Promise<string | image.PixelMap | undefined> {
     return new Promise(async (resolve) => {
       if (iconPath.startsWith('http://') || iconPath.startsWith('https://')) {
-        // 等待图片下载完成
-        const iconCachePath = await this.downloadIcon(iconPath);
-        // as.downloadFile可能会下载失败，此时iconCachePath为undefined
-        if (iconCachePath) {
-          try {
-            // internal路径转为沙箱路径
-            const sandBoxPath = switchInternalToHapSandBox(iconCachePath);
-            // 打开图片，获取文件信息
-            const picFile = fs.openSync(sandBoxPath, fs.OpenMode.READ_ONLY);
-            // 通过文件描述符获取图像源
-            const imageSource: image.ImageSource = image.createImageSource(picFile.fd);
-            // 关闭图片
-            fs.closeSync(picFile);
-            // 获取原始图片宽高信息
-            const originalImgSize: Size = (await imageSource.getImageInfo()).size;
-            // 设置解码参数DecodingOptions
-            const decodingOptions: image.DecodingOptions = {
-              editable: true,
-              desiredPixelFormat: 3,
-              // 设置图片输出的大小，若有传入宽度则使用传入宽度，否则使用原始图片宽度，高度同理。
-              desiredSize: { width: width || originalImgSize.width, height: height || originalImgSize.height }
+        try {
+          let httpRequest = http.createHttp();
+          httpRequest.request(iconPath, {
+            method: http.RequestMethod.GET,
+            expectDataType: http.HttpDataType.ARRAY_BUFFER
+          }).then(async (data: http.HttpResponse) => {
+            const result = data.result;
+            httpRequest.destroy();
+            if (result && result instanceof ArrayBuffer) {
+              const imageSource: image.ImageSource = image.createImageSource(result);
+              // 获取原始图片宽高信息
+              const originalImgSize: Size = (await imageSource.getImageInfo()).size;
+              // 设置解码参数DecodingOptions
+              const decodingOptions: image.DecodingOptions = {
+                editable: true,
+                desiredPixelFormat: 3,
+                // 设置图片输出的大小，若有传入宽度则使用传入宽度，否则使用原始图片宽度，高度同理。
+                desiredSize: { width: width || originalImgSize.width, height: height || originalImgSize.height }
+              }
+              // 解码获取pixelMap图片对象
+              imageSource.createPixelMap(decodingOptions).then((pixelMap: image.PixelMap) => {
+                // API12支持传入pixelMap
+                resolve(pixelMap);
+              });
+            } else {
+              taroLogger.error(TAG, 'icon get fail');
+              resolve(undefined);
             }
-            // 解码获取pixelMap图片对象
-            imageSource.createPixelMap(decodingOptions).then((pixelMap: image.PixelMap) => {
-              // API12支持传入pixelMap
-              resolve(pixelMap);
-            });
-          } catch (e) {
-            // 图片处理过程异常
-            taroLogger.error(TAG, `icon handle fail, error: ${e}`);
+          }).catch((err: BusinessError) => {
+            httpRequest.destroy();
+            taroLogger.error(TAG, `icon get fail ${JSON.stringify(err)}`);
             resolve(undefined);
-          }
-        } else {
-          // 图片下载失败
-          taroLogger.error(TAG, `icon download fail, url: ${iconPath}`);
-          resolve(undefined)
+          })
+        } catch (e) {
+          // 图片处理过程异常
+          taroLogger.error(TAG, `icon handle fail, error: ${e}`);
+          resolve(undefined);
         }
       } else {
         // base64字符串图片（已支持,但无法设置宽高）及其它入参直接返回由Map处理，若支持则会正常显示，若不支持则会默认使用系统marker。
@@ -175,7 +157,7 @@ struct NativeMap {
               icon = await this.iconHandleCache.get(marker.iconPath);
             } else {
               // 如果不在缓存中，则进行异步处理并添加到缓存中
-              const iconHandlePromise = this.iconHandle(marker.iconPath, marker.width, marker.height);
+              const iconHandlePromise = this.iconHandler(marker.iconPath, marker.width, marker.height);
               this.iconHandleCache.set(marker.iconPath, iconHandlePromise);
               icon = await iconHandlePromise;
             }
