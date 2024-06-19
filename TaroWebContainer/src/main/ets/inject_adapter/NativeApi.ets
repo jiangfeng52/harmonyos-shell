@@ -73,7 +73,7 @@ export class NativeApi {
     startSoterAuthentication: as['startSoterAuthentication'],
     checkIsSupportSoterAuthentication: as['checkIsSupportSoterAuthentication'],
     checkIsSoterEnrolledInDevice: as['checkIsSoterEnrolledInDevice'],
-    getFileInfo: as['getFileInfo],
+    getFileInfo: as['getFileInfo'],
 
     saveImageToPhotosAlbum: (options: ESObject) => {
       as.saveImageToPhotosAlbum(options)
