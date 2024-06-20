@@ -33,6 +33,9 @@ export struct ImageItem {
   build() {
     Stack() {
       Image(this.imageUrl)
+        .onComplete(() => {
+          this.showLoading = false;
+        })
         .objectFit(ImageFit.Contain)
         .autoResize(false)
         .transform(this.matrix)
