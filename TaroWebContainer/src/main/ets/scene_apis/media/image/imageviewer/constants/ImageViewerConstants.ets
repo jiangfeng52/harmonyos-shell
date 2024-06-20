@@ -17,4 +17,6 @@ export class ImageViewerConstants {
   static readonly EXTRA_SCALE_VALUE: number = 0.5;
   // 图片预览模态窗背景色
   static readonly IMAGE_VIEWER_BACKGROUND_COLOR: string = '#ff000000';
+  // 图片加载中Loading图标高度
+  static readonly LOADING_IMAGE_HEIGHT: number = 200;
 }

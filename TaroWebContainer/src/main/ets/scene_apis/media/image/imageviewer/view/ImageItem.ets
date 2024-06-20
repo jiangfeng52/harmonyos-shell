@@ -12,6 +12,7 @@ export struct ImageItem {
   @State imageScaleInfo: ScaleModel = new ScaleModel(); // 缩放数据
   @State imageOffsetInfo: OffsetModel = new OffsetModel(); // 偏移数据
   @State matrix: matrix4.Matrix4Transit = matrix4.identity().copy();
+  @State showLoading: boolean = true;
   imageUrl: string = ""; // 当前图片url
   controller?: SwiperController;
 
@@ -32,7 +33,6 @@ export struct ImageItem {
   build() {
     Stack() {
       Image(this.imageUrl)
-        .alt($r('app.media.ic_public_picture_filled'))
         .objectFit(ImageFit.Contain)
         .autoResize(false)
         .transform(this.matrix)
@@ -43,6 +43,16 @@ export struct ImageItem {
           x: this.imageOffsetInfo.currentX,
           y: this.imageOffsetInfo.currentY
         })
+      if (this.showLoading) {
+        Row () {
+          LoadingProgress()
+            .color(Color.White)
+            .width(ImageViewerConstants.IMAGE_ITEM_WIDTH)
+            .height(ImageViewerConstants.LOADING_IMAGE_HEIGHT)
+        }
+        .width(ImageViewerConstants.IMAGE_ITEM_WIDTH)
+        .height(ImageViewerConstants.IMAGE_ITEM_WIDTH)
+      }
     }
     .onBlur(() => {
       this.init();
