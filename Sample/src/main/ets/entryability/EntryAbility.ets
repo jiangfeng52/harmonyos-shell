@@ -1,7 +1,7 @@
 import UIAbility from '@ohos.app.ability.UIAbility';
 import window from '@ohos.window';
 import Want from '@ohos.app.ability.Want';
-import { GlobalThis, LocalUpdateManagerInstance, memoryManager, TaroHybridManager } from '@hybrid/web-container';
+import { GlobalThis, LocalUpdateManagerInstance, TaroHybridManager } from '@hybrid/web-container';
 import common from '@ohos.app.ability.common';
 import { TaroHybridNativeMethods } from '../pages/TaroHybridNativeMethods';
 import router from '@ohos.router';
@@ -9,16 +9,10 @@ import BuildProfile from 'BuildProfile';
 import { logger } from '../utils/Logger';
 import { BusinessError } from '@kit.BasicServicesKit';
 import { WindowUtil } from '../utils/WindowUtil';
-import AbilityConstant from '@ohos.app.ability.AbilityConstant';
-
 const ABILITY_TAG = 'EntryAbility';
 const storage = new LocalStorage();
 
 export default class EntryAbility extends UIAbility {
-  // onMemoryLevel(level: AbilityConstant.MemoryLevel): void {
-  //   memoryManager.triggerListener(level);
-  // }
-
   onCreate(want: Want) {
     TaroHybridManager.setDebuggable(BuildProfile.DEBUG)
     TaroHybridManager.setCustomUserAgent('WUBA (Phone; OpenHarmony)')
@@ -58,7 +52,7 @@ export default class EntryAbility extends UIAbility {
         });
 
       TaroHybridManager.init({
-        uiAbilityContex: this.context,
+        uiAbilityContext: this.context,
         domain: 'http://domain',
         injectNativeMethod: (indexHtmlPath: string, uiAbilityContext: common.UIAbilityContext) => {
           return new TaroHybridNativeMethods(uiAbilityContext).nativeObj
@@ -67,7 +61,8 @@ export default class EntryAbility extends UIAbility {
         nativeBack: ()=>{
           router.back()
         },
-        forceDarkAccess: true
+        forceDarkAccess: true,
+        windowClass,
       })
       TaroHybridManager.preLoader(
         windowStage.getMainWindowSync().getUIContext(),
