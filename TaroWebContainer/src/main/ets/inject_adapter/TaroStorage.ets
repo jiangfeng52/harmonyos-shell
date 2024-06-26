@@ -1,6 +1,6 @@
 import { distributedKVStore } from '@kit.ArkData';
 import { taroLogger } from '../utils/Logger';
-import { AsyncCallback, BusinessError } from '@ohos.base';
+import { BusinessError } from '@ohos.base';
 import { CallbackResult, SuccessCallbackResult } from './TaroApi';
 import { HashMap } from '@kit.ArkTS';
 
