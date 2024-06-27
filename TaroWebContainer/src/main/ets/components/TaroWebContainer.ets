@@ -39,6 +39,7 @@ import { GetDeviceInfoCache } from '../inject_adapter/nativecache/GetDeviceInfoC
 import { GetSystemSettingCache } from '../inject_adapter/nativecache/GetSystemSettingCache';
 import { imageViewerManager, ImageViewerOptions } from '../scene_apis/media/image/imageviewer/utils/ImageViewerManager';
 import { ImageViewer } from '../scene_apis/media/image/imageviewer/view/ImageViewer';
+import { TaroHybridManager } from '../tarohybrid/TaroHybridManager';
 
 const CONTAINER_TAG = 'TaroWebContainer';
 
@@ -274,12 +275,8 @@ export struct TaroWebContainer {
     this.handleWantInfo();
     let context = GlobalThis.getInstance().getContext('context') as common.UIAbilityContext;
     if (!context) {
-      context = getContext(this) as common.UIAbilityContext;
-      GlobalThis.getInstance().setContext('context', context);
+      throw new Error('Env not init yet! Please call TaroHybridManager.init first')
     }
-    // 使用UIAbility的context初始化对象
-    AdvancedAPI.init(context);
-
     // 创建高阶API适配器，合并注入的对象
     this.adapter = new ApiAdapter();
     const nativeInject = new NativeInject(this.navigationBarData, this.capsuleOptions, this.capsuleController,this.taroWebController.getNativeCacheManager());
@@ -304,6 +301,11 @@ export struct TaroWebContainer {
 
     if (!!this.injectObj){
       this.methodChannel.registerMethods('NativeApi', this.injectObj)
+    }
+
+    const nativeMethod = TaroHybridManager.getOptions()?.injectNativeMethod?.(this.indexHtmlPath, context)
+    if (nativeMethod) {
+      this.methodChannel.registerMethods('NativeApi', nativeMethod)
     }
 
     getBundleInfoPermissions().then((permissions: bundleManager.ReqPermissionDetail[]) => {
