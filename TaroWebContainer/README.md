@@ -65,7 +65,8 @@ ohpm install @hybrid/web-container
   // entry/src/main/ets/pages/Index.ets
   import Url from '@ohos.url';
   import { TaroWebContainer, InjectObject, HostPageState, TaroWebController } from '@hybrid/web-container';
-
+  
+  @Entry
   @Component
   struct TaroMpharmonySample {
     @State pageState: HostPageState = HostPageState.PageInit;
