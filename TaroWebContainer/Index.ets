@@ -12,7 +12,7 @@ export { NotificationRequest, SendMessageOptions, NotificationContent, Notificat
 export { GlobalThis } from './src/main/ets/utils/GlobalThis'
 export { TaroHybridManager } from './src/main/ets/tarohybrid/TaroHybridManager'
 export { TaroHybrid } from './src/main/ets/tarohybrid/TaroHybrid'
-export { Storage } from './src/main/ets/utils/Storage'
+export { taroStorage } from './src/main/ets/inject_adapter/TaroStorage'
 export { sameLayerManager } from './src/main/ets/utils/SameLayerManager'
 export { NativeCacheManager, NativeApiPair, NativeRegister } from './src/main/ets/inject_adapter/NativeCacheManager'
 export { memoryManager } from './src/main/ets/scene_apis/device/memory/memorymanager/MemoryManager'
