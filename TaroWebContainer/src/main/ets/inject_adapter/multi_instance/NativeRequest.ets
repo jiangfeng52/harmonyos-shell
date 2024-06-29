@@ -1,6 +1,6 @@
-import { as } from './advancedapi.min';
+import { as } from '../../utils/advancedapi.min';
 import buffer from '@ohos.buffer';
-import { TaroHybridManager } from '../tarohybrid/TaroHybridManager';
+import { TaroHybridManager } from '../../tarohybrid/TaroHybridManager';
 
 export function addCustomUserAgent(option: ESObject, webUserAgent: string, customUserAgent: string){
   const fullUserAgent = webUserAgent + ' ' + customUserAgent

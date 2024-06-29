@@ -1,4 +1,4 @@
-import { as } from './advancedapi.min';
+import { as } from '../../utils/advancedapi.min';
 
 export class InnerAudioContext{
   static createInnerAudioContext(innerAudioContextMap: Map<number, ESObject>, instanceId: number): ESObject {

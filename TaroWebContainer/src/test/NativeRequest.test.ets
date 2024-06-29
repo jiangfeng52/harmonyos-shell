@@ -1,5 +1,5 @@
 import { describe, beforeAll, beforeEach, afterEach, afterAll, it, expect } from '@ohos/hypium'
-import { addCustomUserAgent } from '../main/ets/utils/NativeRequest'
+import { addCustomUserAgent } from '../main/ets/inject_adapter/multi_instance/NativeRequest'
 import { http } from '@kit.NetworkKit'
 
 

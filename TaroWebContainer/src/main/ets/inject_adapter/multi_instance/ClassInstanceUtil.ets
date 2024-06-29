@@ -1,19 +1,15 @@
-import { TaroWebController } from '../components/TaroWeb';
-import { TaroHybridManager } from '../tarohybrid/TaroHybridManager';
+import { TaroWebController } from '../../components/TaroWeb';
+import { TaroHybridManager } from '../../tarohybrid/TaroHybridManager';
 import { InnerAudioContext } from './InnerAudioContext';
-import { taroLogger } from './Logger'
+import { taroLogger } from '../../utils/Logger'
 import { NativeRequest } from './NativeRequest'
 import { NativeUploadFile } from './NativeUploadFile'
+import { CallInstanceParam, listenerOnOff } from '../ListenerWrap';
 
 type classReturnType = object | number | string | boolean | void
 
-export interface CallInstanceParam {
-  option: ESObject;
-  className: string;
-  type: string;
-  property: string;
-  objectId: number;
-}
+export { CallInstanceParam } from '../ListenerWrap';
+
 //
 function getInstanceFromMap(instanceMap: Map<number, ESObject>, options: CallInstanceParam): ESObject{
   if (!instanceMap.has(options?.objectId ?? -1)) {
@@ -109,7 +105,9 @@ export class ClassInstanceApi {
     if (options.type === 'function') {
       taroLogger.debug('ClassInstanceApi', `function call ${options.property}`);
       if (options.option) {
-        instance[options.property].call(instance, options.option);
+        if (!listenerOnOff(instance, options)) {
+          instance[options.property].call(instance, options.option);
+        }
         return ;
       }
       instance[options.property].call(instance);
@@ -136,6 +134,8 @@ export class ClassInstanceApi {
       taroLogger.error('ClassInstanceApi', 'invalid param', options.type);
       return ;
     }
-    instance[options.property].call(instance, options.option);
+    if (!listenerOnOff(instance, options)) {
+      instance[options.property].call(instance, options.option);
+    }
   }
 }
