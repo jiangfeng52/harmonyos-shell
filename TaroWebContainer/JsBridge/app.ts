@@ -179,19 +179,19 @@ window.MethodChannel = {
       return -1
     }
     // 尝试从map中取出变量id，如果有，直接返回对应id
-    let objectId = this._listenerMap.get(argObject)
-    if (objectId){
-      return objectId
+    let stubId = this._listenerMap.get(argObject)
+    if (stubId){
+      return stubId
     }
-    objectId = this._NextId++
-    this._stubMap[objectId] = {
+    stubId = this._NextId++
+    this._stubMap[stubId] = {
       object: argObject,
       isFun: isFun,
       autoRelease: autoRelease
     }
     // 将变量存储到map中，防止相同变量多次注册
-    this._listenerMap.set(argObject, objectId)
-    return objectId
+    this._listenerMap.set(argObject, stubId)
+    return stubId
   },
   __ArgsMethodStub: function (nativeArg: any) {
     const {call, args, stubId} = nativeArg

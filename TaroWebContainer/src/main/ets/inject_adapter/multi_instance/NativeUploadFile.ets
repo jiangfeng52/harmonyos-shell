@@ -1,4 +1,4 @@
-import { as } from './advancedapi.min';
+import { as } from '../../utils/advancedapi.min';
 
 export class NativeUploadFile{
   static async createUploadFile(UploadFileMap: Map<number, ESObject>, instanceId: number, option: ESObject): Promise<ESObject> {

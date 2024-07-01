@@ -18,7 +18,7 @@ import buffer from '@ohos.buffer';
 import { taroLogger } from '../utils/Logger'
 import { as } from '../utils/advancedapi.min';
 import { taroStorage } from './TaroStorage';
-import { ClassInstanceApi, CallInstanceParam } from '../utils/ClassInstanceUtil';
+import { ClassInstanceApi, CallInstanceParam } from './multi_instance/ClassInstanceUtil';
 import { NativeNavigateListener } from '../tarohybrid/TaroHybridCoreInstance';
 import { TaroHybridManager } from '../tarohybrid/TaroHybridManager';
 import { TaroWebController } from '../components/TaroWeb';
