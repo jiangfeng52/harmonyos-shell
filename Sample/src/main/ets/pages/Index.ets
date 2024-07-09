@@ -22,7 +22,7 @@ struct Index {
               })
             })
 
-          Button('多容器与容器共用', { type: ButtonType.Normal, stateEffect: true })
+          Button('TaroHybrid例子', { type: ButtonType.Normal, stateEffect: true })
             .borderRadius(8)
             .backgroundColor(0x317aff)
             .height(40)
@@ -32,6 +32,7 @@ struct Index {
                 taroPath: "/pages/index/index"
               })
             })
+
           Button('TaroWebContainer组件', { type: ButtonType.Normal, stateEffect: true })
             .borderRadius(8)
             .backgroundColor(0x317aff)

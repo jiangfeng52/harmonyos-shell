@@ -426,6 +426,9 @@ export class NativeApi {
     onNativeNavigate: (options: NativeNavigateListener) => {
       const coreInstance = TaroHybridManager.getCoreInstance(this.indexHtmlPath)
       coreInstance?.setNativeNavigateListener(options)
+    },
+    nativeBack: ()=>{
+      TaroHybridManager.nativeBack()
     }
   }
 }

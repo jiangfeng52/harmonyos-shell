@@ -1,6 +1,9 @@
 import { HostPageState, TaroHybrid, TaroHybridManager } from '@hybrid/web-container/Index';
 import router from '@ohos.router';
 import { SafeArea } from '../components/SafeArea';
+import { logger } from '../utils/Logger';
+
+const TAG = 'TaroHybridPage'
 
 export interface TaroHybridRouterParams {
   indexHtmlPath: string,
@@ -9,6 +12,7 @@ export interface TaroHybridRouterParams {
 export const RouterToTaroHybrid = (params: TaroHybridRouterParams) => {
   const result = TaroHybridManager.loadUrl(params.indexHtmlPath, params.taroPath);
   if (result) {
+    logger.debug(TAG, 'navigateToTaryHybrid wait 300ms')
     // 容器复用成功，等待loadUrl，不然会出现先看到上一个页面
     setTimeout(()=>{
       router.pushUrl({
@@ -17,6 +21,7 @@ export const RouterToTaroHybrid = (params: TaroHybridRouterParams) => {
       }, router.RouterMode.Standard)
     }, 300)
   } else {
+    logger.debug(TAG, 'navigateToTaryHybrid immediately')
     router.pushUrl({
       url: 'pages/TaroHybridPage',
       params: params
