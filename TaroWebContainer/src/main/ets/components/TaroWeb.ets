@@ -132,6 +132,7 @@ export struct TaroWeb {
   @Link channel: Channel
   @Link methodChannel: MethodChannel
   private nativeAPI: NativeApi | undefined = undefined
+  @Prop userAgent: string;
 
   aboutToAppear() {
     webView.WebviewController.setWebDebuggingAccess(this.enableWebDebug);
@@ -348,6 +349,13 @@ export struct TaroWeb {
         })
         .darkMode(WebDarkMode.Auto)
         .forceDarkAccess(this.forceDarkAccess)
+        .onControllerAttached(() => {
+          try {
+            this.userAgent && this.taroWebController.webController.setCustomUserAgent(this.userAgent)
+          } catch (error) {
+            taroLogger.error(TARO_WEB_TAG, `setCustomUserAgent error: ${(error as BusinessError).message}`);
+          }
+        })
       // .webLite(true)  // 需要 osChannel sdk
     }
   }
