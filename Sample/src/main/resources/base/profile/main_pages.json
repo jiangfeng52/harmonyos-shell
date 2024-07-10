@@ -4,6 +4,7 @@
     "pages/Capsule",
     "pages/Developer",
     "pages/TaroHybridPage",
-    "pages/WebContainerPage"
+    "pages/WebContainerPage",
+    "pages/NativeList"
   ]
 }
