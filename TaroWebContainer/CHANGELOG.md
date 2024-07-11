@@ -1,3 +1,6 @@
+## 3.6.29-harmony-hybrid-alpha.36
+- 修改命名空间
+
 ## 3.6.29-harmony-hybrid-alpha.35
 - 添加版本修改命令，用于正式发布
 - 修改版本号：与Taro的版本号配对
