@@ -10,7 +10,7 @@
     "hybrid"
   ],
   "author": "huawei",
-  "name": "@hybrid/web-container",
+  "name": "@wuba/web-container",
   "description": "web-container是一个提供定制化Web容器以及热更新等功能的模块。支持运行Taro生成的harmony-hybrid应用",
   "main": "Index.ets",
   "version": "3.6.29-harmony-hybrid-alpha.35",
