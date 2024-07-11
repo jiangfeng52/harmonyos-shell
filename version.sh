@@ -25,11 +25,11 @@ TEMP_FILE=$(mktemp)
     echo "- $line"
   done
   echo ""
-  cat ./TaroWebContainer/CHANGELOG.md
+  cat ./TaroWebContainer/changelog.md
 } > "$TEMP_FILE"
 
-# 将临时文件内容写入到 CHANGELOG.md 文件
-mv "$TEMP_FILE" ./TaroWebContainer/CHANGELOG.md
+# 将临时文件内容写入到 changelog.md 文件
+mv "$TEMP_FILE" ./TaroWebContainer/changelog.md
 
 # 提交更改
 git add .
