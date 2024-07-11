@@ -1,3 +1,6 @@
+## 3.6.29-harmony-hybrid-alpha.37
+- 把changelog.md由大写改为小写
+
 ## 3.6.29-harmony-hybrid-alpha.36
 - 修改命名空间
 
