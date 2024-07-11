@@ -118,8 +118,7 @@ window.MethodChannel = {
     this._listenerMap.delete(argObject)
   },
   jsBridgeMode: function (mode: {
-    isAsync: boolean,
-    autoRelease?: boolean
+    isAsync: boolean
   }) {
     return function (target: any, key: string, descriptor: PropertyDescriptor) {
       const className = target.constructor.name
@@ -129,7 +128,7 @@ window.MethodChannel = {
 
         let argTypeIsFun = isFunction(firstArg)
         // @ts-ignore
-        let stubId = window.MethodChannel.__registerArgStub(firstArg, argTypeIsFun, mode?.autoRelease ?? true)
+        let stubId = window.MethodChannel.__registerArgStub(firstArg, argTypeIsFun)
 
         const isAsync = mode?.isAsync ?? true;
 
@@ -173,7 +172,7 @@ window.MethodChannel = {
   _NextId: 0, // 初始ID值
   _stubMap: {},
   _listenerMap: new Map(),
-  __registerArgStub: function (argObject: any, isFun: boolean, autoRelease: boolean) {
+  __registerArgStub: function (argObject: any, isFun: boolean) {
     const hasFun = isFunctionOrObjectWithFunction(argObject)
     if (!hasFun) {
       return -1
@@ -186,8 +185,7 @@ window.MethodChannel = {
     objectId = this._NextId++
     this._stubMap[objectId] = {
       object: argObject,
-      isFun: isFun,
-      autoRelease: autoRelease
+      isFun: isFun
     }
     // 将变量存储到map中，防止相同变量多次注册
     this._listenerMap.set(argObject, objectId)
@@ -200,12 +198,8 @@ window.MethodChannel = {
       console.debug('nativeapi', 'appjs argsStub hash been deleted ')
       return;
     }
-    const {object, isFun, autoRelease} = stub
-    if (autoRelease) {
-      delete this._stubMap[stubId]
-      delete this._listenerMap[object]
-      this._listenerMap.delete(object)
-    } else if (call == 'complete') {
+    const {object, isFun} = stub
+    if (call == 'success' || call == 'fail') {
       delete this._stubMap[stubId]
       delete this._listenerMap[object]
       this._listenerMap.delete(object)
@@ -225,3 +219,22 @@ window.MethodChannel = {
 // @ts-ignore
 window.MethodChannel.init()
 
+// @ts-ignore
+window.NativeMethod = {
+  sync: function () {
+    // @ts-ignore
+    return window.MethodChannel.jsBridgeMode({isAsync: false})
+  },
+  async: function () {
+    // @ts-ignore
+    return window.MethodChannel.jsBridgeMode({isAsync: true})
+  },
+  listener: function () {
+    // @ts-ignore
+    return window.MethodChannel.jsBridgeMode({isAsync: true})
+  },
+  removeListener: function () {
+    // @ts-ignore
+    return window.MethodChannel.jsBridgeMode({isAsync: true})
+  }
+}
