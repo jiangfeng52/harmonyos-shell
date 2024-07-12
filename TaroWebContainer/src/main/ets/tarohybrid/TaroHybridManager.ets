@@ -1,23 +1,24 @@
 import common from '@ohos.app.ability.common';
 import HashMap from '@ohos.util.HashMap';
-import { TaroHybridUtils } from './TaroHybridUtils';
 import { GlobalThis } from '../utils/GlobalThis';
-import { TaroWebController } from '../components/TaroWeb';
 import { InjectObject } from '../interfaces/InjectObject';
 import { taroLogger } from '../utils/Logger';
 import { taroTrace } from '../utils/Trace';
 import { taroStorage } from '../inject_adapter/TaroStorage';
 import { bundleManager } from '@kit.AbilityKit';
 import { TaroHybridCoreInstance } from './TaroHybridCoreInstance';
-
+import AdvancedAPI from '../utils/advancedapi.min';
+import { window } from '@kit.ArkUI';
 
 export interface TaroHybridManagerOptions {
-  uiAbilityContex: common.UIAbilityContext
-  domain: string
-  injectNativeMethod: (indexHtmlPath: string, uiAbilityContext: common.UIAbilityContext) => InjectObject,
+  uiAbilityContext: common.UIAbilityContext,
+  windowClass: window.Window,
+  domain?: string,
+  injectNativeMethod?: (indexHtmlPath: string, uiAbilityContext: common.UIAbilityContext) => InjectObject,
   rootIndexHtmlPath?: string,
-  nativeBack: ()=>void,
-  forceDarkAccess: boolean
+  nativeBack?: () => void,
+  forceDarkAccess?: boolean,
+
 }
 
 export class TaroHybridManager {
@@ -31,8 +32,13 @@ export class TaroHybridManager {
 
   static init(options: TaroHybridManagerOptions){
     TaroHybridManager.options = options
-    GlobalThis.getInstance().setContext('context', options.uiAbilityContex);
-    taroStorage.init(options.uiAbilityContex, bundleManager.getBundleInfoForSelfSync(bundleManager.BundleFlag.GET_BUNDLE_INFO_DEFAULT).name)
+    GlobalThis.getInstance().setContext('context', options.uiAbilityContext)
+    AdvancedAPI.init(options.uiAbilityContext, options.windowClass)
+    taroStorage.init(options.uiAbilityContext, bundleManager.getBundleInfoForSelfSync(bundleManager.BundleFlag.GET_BUNDLE_INFO_DEFAULT).name)
+  }
+
+  static getOptions(): TaroHybridManagerOptions | null {
+    return TaroHybridManager.options
   }
 
   static setCustomUserAgent(customUserAgent: string){
@@ -75,7 +81,6 @@ export class TaroHybridManager {
         TaroHybridManager?.options?.domain??'',
         indexHtmlPath,
         taroPath,
-        TaroHybridManager?.options?.injectNativeMethod(indexHtmlPath, GlobalThis.getInstance().getContext('context') as common.UIAbilityContext) ?? {},
         TaroHybridManager?.options?.forceDarkAccess?? false
       )
       // 一定要先保存到Map里，再build
@@ -111,7 +116,7 @@ export class TaroHybridManager {
   }
 
   static nativeBack(){
-    TaroHybridManager.options?.nativeBack()
+    TaroHybridManager.options?.nativeBack?.()
   }
 
   static onBack(indexHtmlPath: string, rootTaroPage: string): boolean {
