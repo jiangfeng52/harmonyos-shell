@@ -1,6 +1,6 @@
 import { distributedKVStore } from '@kit.ArkData';
 import { taroLogger } from '../utils/Logger';
-import { AsyncCallback, BusinessError } from '@ohos.base';
+import { BusinessError } from '@ohos.base';
 import { CallbackResult, SuccessCallbackResult } from './TaroApi';
 import { HashMap } from '@kit.ArkTS';
 
@@ -119,7 +119,7 @@ class TaroStorage {
         // 获取首屏keys
       })
       .catch((err: BusinessError)=>{
-        taroLogger.error(TARO_STORAGE, `Failed to getKVStore is ${err.code},message is ${err.message}`);
+        taroLogger.error(TARO_STORAGE, 'Failed to getKVStore: code is %{public}s, message is %{public}s', err.code, err.message);
       })
   }
 
@@ -158,21 +158,26 @@ class TaroStorage {
 
     this.verifyKVStore(options.fail)
 
-    this.kvStore?.get(KEY_PREFIX + key, (err, data) => {
-      if (err?.code === 15100004) {
-        // Not found.
-        taroLogger.debug(TARO_STORAGE, 'get(key=%{public}s), value=%{public}s', key, '')
-        options.success && options.success({errMsg:'getStorage fail: not found.', data: '', key: key })
-        return ;
-      }
-      if (err) {
-        taroLogger.error(TARO_STORAGE, 'get(key=%{public}s, err.code=%{public}s)', key, err?.code)
-        options.fail && options.fail({errMsg:`getStorage fail: ${JSON.stringify(err)}`})
-        return ;
-      }
-      taroLogger.debug(TARO_STORAGE, 'get(key=%{public}s), value=%{public}s', key, data)
-      options.success && options.success({errMsg:'ok', data: data.toString(), key: key })
-    })
+    try {
+      this.kvStore?.get(KEY_PREFIX + key, (err, data) => {
+        if (err?.code === 15100004) {
+          // Not found.
+          taroLogger.debug(TARO_STORAGE, 'get(key=%{public}s), value=%{public}s', key, '')
+          options.success && options.success({errMsg:'getStorage fail: not found.', data: '', key: key })
+          return ;
+        }
+        if (err) {
+          taroLogger.error(TARO_STORAGE, 'get(key=%{public}s, err.code=%{public}s)', key, err?.code)
+          options.fail && options.fail({errMsg:`getStorage fail: ${JSON.stringify(err)}`})
+          return ;
+        }
+        taroLogger.debug(TARO_STORAGE, 'get(key=%{public}s), value=%{public}s', key, data)
+        options.success && options.success({errMsg:'ok', data: data.toString(), key: key })
+      })
+    } catch (err) {
+      taroLogger.error(TARO_STORAGE, 'get(key=%{public}s, err.code=%{public}s)', key, err?.code)
+      options.fail && options.fail({errMsg:`getStorage fail: ${JSON.stringify(err)}`})
+    }
   }
 
   set(options: SetOptions){
@@ -182,14 +187,19 @@ class TaroStorage {
 
     this.verifyKVStore(options.fail)
 
-    this.kvStore?.put(KEY_PREFIX + key, data, (err) => {
-      if (err) {
-        options.fail && options.fail( {errMsg:`setStorage fail: ${JSON.stringify(err)}`})
-        taroLogger.error(TARO_STORAGE, JSON.stringify(err))
-      } else {
-        options.success && options.success({errMsg:'ok'})
-      }
-    })
+    try {
+      this.kvStore?.put(KEY_PREFIX + key, data, (err) => {
+        if (err) {
+          options.fail && options.fail( {errMsg:`setStorage fail: ${JSON.stringify(err)}`})
+          taroLogger.error(TARO_STORAGE, JSON.stringify(err))
+        } else {
+          options.success && options.success({errMsg:'ok'})
+        }
+      })
+    } catch (err) {
+      options.fail && options.fail( {errMsg:`setStorage fail: ${JSON.stringify(err)}`})
+      taroLogger.error(TARO_STORAGE, JSON.stringify(err))
+    }
   }
 
   remove(options: RemoveOptions){
@@ -198,14 +208,19 @@ class TaroStorage {
 
     this.verifyKVStore(options.fail)
 
-    this.kvStore?.delete(KEY_PREFIX + key, (err) => {
-      if (err) {
-        options.fail && options.fail({ errMsg:`removeStorage fail: ${JSON.stringify(err) }` })
-        taroLogger.error(TARO_STORAGE, `delete data fail: ${JSON.stringify(err)}`)
-      } else{
-        options.success && options.success({errMsg:'ok'})
-      }
-    })
+    try {
+      this.kvStore?.delete(KEY_PREFIX + key, (err) => {
+        if (err) {
+          options.fail && options.fail({ errMsg:`removeStorage fail: ${JSON.stringify(err) }` })
+          taroLogger.error(TARO_STORAGE, 'delete(key=%{public}s, err.code=%{public}s)', key, err?.code)
+        } else{
+          options.success && options.success({errMsg:'ok'})
+        }
+      })
+    } catch (err) {
+      options.fail && options.fail({ errMsg:`removeStorage fail: ${JSON.stringify(err) }` })
+      taroLogger.error(TARO_STORAGE, 'delete(key=%{public}s, err.code=%{public}s)', key, err?.code)
+    }
   }
 
   clear(options: ClearOptions){
@@ -228,18 +243,27 @@ class TaroStorage {
         for (let item of items) {
           keys.push(item.key)
         }
-        this.kvStore?.deleteBatch(keys, (err) => {
-          if (err) {
-            options.fail && options.fail({errMsg:`clearStorage fail: ${JSON.stringify(err)}`})
-          }
-          else {
-            options.success && options.success({ errMsg:'ok' })
-          }
-        })
+        if (keys.length === 0) {
+          options.success && options.success({ errMsg:'ok' })
+          return
+        }
+        try {
+          this.kvStore?.deleteBatch(keys, (err) => {
+            if (err) {
+              options.fail && options.fail({errMsg:`clearStorage fail: ${JSON.stringify(err)}`})
+            }
+            else {
+              options.success && options.success({ errMsg:'ok' })
+            }
+          })
+        } catch (err) {
+          options.fail && options.fail({errMsg:`clearStorage fail: ${JSON.stringify(err)}`})
+          taroLogger.error(TARO_STORAGE, 'Failed to clearStorage: %{public}s', JSON.stringify(err))
+        }
       })
     } catch (err) {
       options.fail && options.fail({errMsg:`clearStorage fail: ${JSON.stringify(err)}`})
-      taroLogger.error(TARO_STORAGE, `Failed to clear data is ${err.code},message is ${err.message}`)
+      taroLogger.error(TARO_STORAGE, 'Failed to clearStorage: %{public}s', JSON.stringify(err))
     }
   }
 
@@ -248,18 +272,23 @@ class TaroStorage {
 
     taroLogger.debug(TARO_STORAGE, `getStorageInfo`)
 
-    this.kvStore?.getEntries(KEY_PREFIX, (err, items) => {
-      if (err) {
-        options.fail && options.fail({errMsg:`getStorageInfo fail: ${JSON.stringify(err)}`})
-        taroLogger.error(TARO_STORAGE, JSON.stringify(err))
-      } else {
-        const keys:string[] = []
-        for (let item of items) {
-          keys.push(item.key.substring(KEY_PREFIX.length))
+    try {
+      this.kvStore?.getEntries(KEY_PREFIX, (err, items) => {
+        if (err) {
+          options.fail && options.fail({errMsg:`getStorageInfo fail: ${JSON.stringify(err)}`})
+          taroLogger.error(TARO_STORAGE, JSON.stringify(err))
+        } else {
+          const keys:string[] = []
+          for (let item of items) {
+            keys.push(item.key.substring(KEY_PREFIX.length))
+          }
+          options.success && options.success({ keys: keys })
         }
-        options.success && options.success({ keys: keys })
-      }
-    })
+      })
+    } catch (err) {
+      options.fail && options.fail({errMsg:`getStorageInfo fail: ${JSON.stringify(err)}`})
+      taroLogger.error(TARO_STORAGE, 'Failed to getStorageInfo: %{public}s', JSON.stringify(err))
+    }
   }
 
   batchGetPageShowData(indexHtmlPath: string, options: BatchGetPageShowDataOptions) {
