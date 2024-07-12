@@ -13,6 +13,8 @@
  * limitations under the License.
  */
 import router from '@ohos.router';
+import { ConfigurationConstant } from '@kit.AbilityKit';
+import { invertColor } from '../utils/ColorUtils';
 
 const DEFAULT_TITLE_LEFT = 16;
 
@@ -37,8 +39,17 @@ export class NavigationBarData {
 @Component
 export struct NavigationBar {
   @ObjectLink navigationBarData: NavigationBarData;
+  @Prop colorMode: ConfigurationConstant.ColorMode | undefined;
   onBackPressed?: ()=>void;
   // @Consume routerController: RouterController;
+
+  genColorUseMode(color:string) {
+    try {
+      return this.colorMode == ConfigurationConstant.ColorMode.COLOR_MODE_DARK ? invertColor(color) : color
+    } catch (e) {
+      return color
+    }
+  }
 
   build() {
     if (this.navigationBarData.visible) {
@@ -46,7 +57,7 @@ export struct NavigationBar {
         Row() {
           if (this.navigationBarData.canBackward) {
             Image($r('app.media.back'))
-              .fillColor(this.navigationBarData.barFrontColor)
+              .fillColor(this.genColorUseMode(this.navigationBarData.barFrontColor))
               .width(40)
               .height(40)
               .padding(5)
@@ -73,7 +84,7 @@ export struct NavigationBar {
                 .width(25)
                 .height(25)
                 .margin({ left: 5 })
-                .foregroundColor(this.navigationBarData.barFrontColor)
+                .foregroundColor(this.genColorUseMode(this.navigationBarData.barFrontColor))
             }
           }
           .width('60%')
@@ -85,8 +96,8 @@ export struct NavigationBar {
         .width('100%')
         .alignItems(VerticalAlign.Center)
       }
-      .backgroundColor(this.navigationBarData.barColor)
-      .foregroundColor(this.navigationBarData.barFrontColor)
+      .backgroundColor(this.genColorUseMode(this.navigationBarData.barColor))
+      .foregroundColor(this.genColorUseMode(this.navigationBarData.barFrontColor))
       .animation({
         duration: this.navigationBarData.animationDuration,
         curve: this.navigationBarData.animationCurve,

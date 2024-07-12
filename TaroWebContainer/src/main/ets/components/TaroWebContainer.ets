@@ -17,21 +17,20 @@ import Want from '@ohos.app.ability.Want';
 import window from '@ohos.window';
 import common from '@ohos.app.ability.common';
 import bundleManager from '@ohos.bundle.bundleManager';
-import  AdvancedAPI from '../utils/advancedapi.min';
 import { NavigationBar, NavigationBarData } from './NavigationBar';
 import { TaroWeb, TaroWebController } from './TaroWeb';
 import { Album } from './Album/Album';
-import { ApiAdapter } from '../inject_adapter/ApiAdapter'
-import { NativeInject  } from '../inject_adapter/NativeInject';
+import { ApiAdapter } from '../inject_adapter/ApiAdapter';
+import { NativeInject } from '../inject_adapter/NativeInject';
 import { LaunchOptions } from '../interfaces/LaunchOptions';
-import { InjectObject, MenuButtonOptions, CapsuleController } from '../interfaces/InjectObject';
-import { setFullScreen, setSystemBarProperties, getWindowWidth, getSystemBarHeight } from '../utils/WindowUtil';
+import { CapsuleController, InjectObject, MenuButtonOptions } from '../interfaces/InjectObject';
+import { getSystemBarHeight, getWindowWidth, setFullScreen, setSystemBarProperties } from '../utils/WindowUtil';
 import { GlobalThis } from '../utils/GlobalThis';
 import { getBundleInfoPermissions } from '../utils/PermissionMapScopeUtil';
 import { HostPageState } from '../interfaces/HostPageState';
 import { RouterUtils } from '../utils/RouterUtils';
 import { taroLogger } from '../utils/Logger';
-import { AlbumBackward, ChooseAlbumResult, MediaItemData, chooseAlbumOptions } from '../interfaces/Media'
+import { AlbumBackward, chooseAlbumOptions, ChooseAlbumResult, MediaItemData } from '../interfaces/Media';
 import { BusinessError } from '@ohos.base';
 import { Channel, MethodChannel } from '../inject_adapter/Channel';
 import { GetWindowInfoCache } from '../inject_adapter/nativecache/GetWindowInfoCache';
@@ -40,6 +39,7 @@ import { GetSystemSettingCache } from '../inject_adapter/nativecache/GetSystemSe
 import { imageViewerManager, ImageViewerOptions } from '../scene_apis/media/image/imageviewer/utils/ImageViewerManager';
 import { ImageViewer } from '../scene_apis/media/image/imageviewer/view/ImageViewer';
 import { TaroHybridManager } from '../tarohybrid/TaroHybridManager';
+import { ConfigurationConstant, EnvironmentCallback } from '@kit.AbilityKit';
 
 const CONTAINER_TAG = 'TaroWebContainer';
 
@@ -48,6 +48,7 @@ const CONTAINER_TAG = 'TaroWebContainer';
  */
 @Component
 export struct TaroWebContainer {
+  @State colorMode : ConfigurationConstant.ColorMode | undefined = ConfigurationConstant.ColorMode.COLOR_MODE_LIGHT;
   // 初始化资源url
   @Prop indexHtmlPath: string;
   @Prop webUrl: string;
@@ -91,6 +92,8 @@ export struct TaroWebContainer {
 
   // 路由控制器
   @Link taroWebController: TaroWebController;
+
+  @State environmentCallbackId: number | undefined = undefined
 
   hookInterceptorWithoutCache?: (request: WebResourceRequest) => WebResourceResponse | null;
 
@@ -217,6 +220,15 @@ export struct TaroWebContainer {
     }
   }
 
+  environmentCallback: EnvironmentCallback  =  {
+    onConfigurationUpdated: (config) => {
+      this.colorMode = config.colorMode
+    },
+
+    onMemoryLevel(level){
+    }
+  };
+
   build() {
     Stack({ alignContent: Alignment.TopEnd }) {
       TaroWeb({
@@ -236,7 +248,8 @@ export struct TaroWebContainer {
       })
       NavigationBar({
         navigationBarData: this.navigationBarData,
-        onBackPressed: this.defaultNavigationBarBackPressed
+        onBackPressed: this.defaultNavigationBarBackPressed,
+        colorMode: this.colorMode
       })
       if(this.showCapsule) {
         Image($r("app.media.capsule"))
@@ -269,6 +282,8 @@ export struct TaroWebContainer {
   }
 
   aboutToAppear() {
+    this.colorMode = GlobalThis.getInstance().getContext('context')?.resourceManager.getConfigurationSync().colorMode.valueOf()
+    this.environmentCallbackId = GlobalThis.getInstance().getContext('context')?.getApplicationContext().on('environment', this.environmentCallback)
     // 加载组件时，url更新
     this.originIndexUrl = this.webUrl;
     this.navigationBarData.visible = this.navigationInitVisible
@@ -331,6 +346,7 @@ export struct TaroWebContainer {
   }
 
   aboutToDisappear(): void {
+    this.environmentCallbackId && GlobalThis.getInstance().getContext('context')?.getApplicationContext().off('environment', this.environmentCallbackId)
     this.taroWebController.getNativeCacheManager().dispose()
   }
 
