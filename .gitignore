@@ -9,4 +9,3 @@ oh_modules
 /.clang-tidy
 oh-package-lock.json5
 hvigor-wrapper.js
-.DS_Store
