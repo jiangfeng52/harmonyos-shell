@@ -42,6 +42,7 @@ class TaroWebNodeController extends NodeController {
 
   private isPageShow: boolean = false
   private coreInstance: TaroHybridCoreInstance
+  private rootNode: FrameNode | undefined
 
   constructor(coreInstance: TaroHybridCoreInstance) {
     super();
@@ -56,7 +57,6 @@ class TaroWebNodeController extends NodeController {
 
   onPageHide() {
     this.isPageShow = false
-    this.rebuild();
   }
 
   makeNode(uiContext: UIContext): FrameNode | null {
@@ -64,6 +64,16 @@ class TaroWebNodeController extends NodeController {
       return null
     }
 
-    return this.coreInstance.getBuilderNode(uiContext).getFrameNode()
+    if(!this.rootNode){
+      this.rootNode = new FrameNode(uiContext)
+    }
+
+    const frameNode = this.coreInstance.getBuilderNode(uiContext).getFrameNode()
+    // 如果frameNode有父节点，说明已经上树了，需要先下树
+    frameNode?.getParent()?.removeChild(frameNode)
+    // 上树
+    this.rootNode?.appendChild(frameNode)
+
+    return this.rootNode;
   }
 }
