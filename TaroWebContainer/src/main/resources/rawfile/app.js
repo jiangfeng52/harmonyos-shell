@@ -70,7 +70,7 @@ window.Channel = {
   /**
    * methodCall的对象结构为：{call: string, argsJson: string, stubId: number}
    */
-  nativeCall: function nativeCall(channelType, object) {
+  jsCallNative: function jsCallNative(channelType, object) {
     // 最终调用原生Channel的通信方法
     var objectJson = JSON.stringify(object);
     // @ts-ignore
@@ -78,9 +78,9 @@ window.Channel = {
     return resultJson && JSON.parse(resultJson);
   },
   /**
-   * 给原生暴露的通信方法，原生调用"window.Channel.jsCall(objectId, 'xxx', 'xxxx')"
+   * 给原生暴露的通信方法，原生调用"window.Channel.nativeCallJS(objectId, 'xxx', 'xxxx')"
    */
-  jsCall: function jsCall(channelType, object) {
+  nativeCallJS: function nativeCallJS(channelType, object) {
     var fun = this.jsCallListeners.get(channelType);
     fun && fun(object);
   }
@@ -111,7 +111,7 @@ window.MethodChannel = {
       }
     };
     // @ts-ignore
-    return window.Channel.nativeCall(window.MethodChannel.ChannelType, methodCall);
+    return window.Channel.jsCallNative(window.MethodChannel.ChannelType, methodCall);
   },
   unRegisterArgStub: function unRegisterArgStub(argObject) {
     var stubId = this._listenerMap.get(argObject);
@@ -143,7 +143,7 @@ window.MethodChannel = {
           }
         };
         // @ts-ignore
-        var result = window.Channel.nativeCall(window.MethodChannel.ChannelType, methodCall);
+        var result = window.Channel.jsCallNative(window.MethodChannel.ChannelType, methodCall);
         if (!isAsync && result === 'Promise_Result') {
           var count = 0;
           while (count < 20000) {
@@ -216,31 +216,3 @@ window.MethodChannel = {
 };
 // @ts-ignore
 window.MethodChannel.init();
-
-// @ts-ignore
-window.NativeMethod = {
-  sync: function sync() {
-    // @ts-ignore
-    return window.NativeMethod.jsBridgeMode({
-      isAsync: false
-    });
-  },
-  async: function async() {
-    // @ts-ignore
-    return window.NativeMethod.jsBridgeMode({
-      isAsync: true
-    });
-  },
-  listener: function listener() {
-    // @ts-ignore
-    return window.NativeMethod.jsBridgeMode({
-      isAsync: true
-    });
-  },
-  removeListener: function removeListener() {
-    // @ts-ignore
-    return window.NativeMethod.jsBridgeMode({
-      isAsync: true
-    });
-  }
-};

@@ -67,7 +67,7 @@ window.Channel = {
   /**
    * methodCall的对象结构为：{call: string, argsJson: string, stubId: number}
    */
-  nativeCall: function (channelType: string, object: any) {
+  jsCallNative: function (channelType: string, object: any) {
     // 最终调用原生Channel的通信方法
     var objectJson = JSON.stringify(object)
     // @ts-ignore
@@ -76,9 +76,9 @@ window.Channel = {
   },
 
   /**
-   * 给原生暴露的通信方法，原生调用"window.Channel.jsCall(objectId, 'xxx', 'xxxx')"
+   * 给原生暴露的通信方法，原生调用"window.Channel.nativeCallJS(objectId, 'xxx', 'xxxx')"
    */
-  jsCall: function (channelType: string, object: any) {
+  nativeCallJS: function (channelType: string, object: any) {
     var fun = this.jsCallListeners.get(channelType)
     fun && fun(object)
   }
@@ -110,7 +110,7 @@ window.MethodChannel = {
       },
     }
     // @ts-ignore
-    return window.Channel.nativeCall(window.MethodChannel.ChannelType, methodCall)
+    return window.Channel.jsCallNative(window.MethodChannel.ChannelType, methodCall)
   },
   unRegisterArgStub: function (argObject: any) {
     const stubId = this._listenerMap.get(argObject);
@@ -146,7 +146,7 @@ window.MethodChannel = {
           },
         }
         // @ts-ignore
-        const result = window.Channel.nativeCall(window.MethodChannel.ChannelType, methodCall)
+        const result = window.Channel.jsCallNative(window.MethodChannel.ChannelType, methodCall)
 
         if (!isAsync && result === 'Promise_Result') {
           let count = 0
@@ -219,22 +219,3 @@ window.MethodChannel = {
 // @ts-ignore
 window.MethodChannel.init()
 
-// @ts-ignore
-window.NativeMethod = {
-  sync: function () {
-    // @ts-ignore
-    return window.MethodChannel.jsBridgeMode({isAsync: false})
-  },
-  async: function () {
-    // @ts-ignore
-    return window.MethodChannel.jsBridgeMode({isAsync: true})
-  },
-  listener: function () {
-    // @ts-ignore
-    return window.MethodChannel.jsBridgeMode({isAsync: true})
-  },
-  removeListener: function () {
-    // @ts-ignore
-    return window.MethodChannel.jsBridgeMode({isAsync: true})
-  }
-}
