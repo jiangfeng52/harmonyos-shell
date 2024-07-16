@@ -96,30 +96,30 @@ export class MethodChannel {
   }
 
   call(object): any{
-    const {call, arg, isAsync} = object
-    const fun = this.methodPools.get(call)
+    const {callName, optionsMsg, callType} = object
+    const fun = this.methodPools.get(callName)
     if(!fun) {
       return undefined;
     }
 
-    const {isFun, properties, funs, stubId} = arg
+    const {type, properties, funs, objId} = optionsMsg
 
     let argProxy;
-    if (stubId == -1) { // 没有回调函数
+    if (objId == -1) { // 没有回调函数
       argProxy = properties;
-    } else if(isFun) { // arg为函数
-      if (this.listenerMap.has(stubId)) {
-        argProxy = this.listenerMap.get(stubId)
+    } else if(type == 'function') { // arg为函数
+      if (this.listenerMap.has(objId)) {
+        argProxy = this.listenerMap.get(objId)
       } else {
         argProxy = (...args)=>{//function (...args){
           const object = {
             call: '',
             args: args,
-            stubId: stubId,
+            stubId: objId,
           }
           this.channel.jsCall(this.ChannelType, object)
         }
-        this.listenerMap.set(stubId, argProxy)
+        this.listenerMap.set(objId, argProxy)
       }
     } else {
       let argObject = properties ?? {};
@@ -129,7 +129,7 @@ export class MethodChannel {
           const object = {
             call: value,
             args: args,
-            stubId: stubId
+            stubId: objId
           }
           this.channel.jsCall(this.ChannelType, object)
         }
@@ -140,7 +140,7 @@ export class MethodChannel {
     const result = fun.call(null, argProxy)
 
     // 支持Promise返回值
-    if(!isAsync && (result instanceof Promise)) {
+    if(callType == 'sync' && (result instanceof Promise)) {
       this.promiseStatus.status = PROMISE_STATUS_PENDING
       this.promiseStatus.result = undefined
       result

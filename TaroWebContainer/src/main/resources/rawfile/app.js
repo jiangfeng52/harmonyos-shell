@@ -6,6 +6,12 @@ function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o =
 function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && iter[Symbol.iterator] != null || iter["@@iterator"] != null) return Array.from(iter); }
 function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) return _arrayLikeToArray(arr); }
 function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, _toPropertyKey(descriptor.key), descriptor); } }
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
+function _defineProperty(obj, key, value) { key = _toPropertyKey(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : i + ""; }
+function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 /*
  * Copyright (c) 2022-2023 Huawei Device Co., Ltd.
@@ -58,14 +64,16 @@ function isFunctionOrObjectWithFunction(object) {
   }
   return false;
 }
-
 // 通信Channel层
 // @ts-ignore
 window.Channel = {
-  jsCallListeners: new Map(),
+  channelHandlerMap: new Map(),
   // listenerMap: {}, 弱引用自动取消
   registerJsCall: function registerJsCall(channelType, fun) {
-    this.jsCallListeners.set(channelType, fun);
+    this.channelHandlerMap.set(channelType, fun);
+  },
+  jsBridge: function jsBridge(options) {
+    return this.channelHandlerMap.get(options.channelType).registerJSBridge(options, this.jsCallNative);
   },
   /**
    * methodCall的对象结构为：{call: string, argsJson: string, stubId: number}
@@ -81,138 +89,136 @@ window.Channel = {
    * 给原生暴露的通信方法，原生调用"window.Channel.nativeCallJS(objectId, 'xxx', 'xxxx')"
    */
   nativeCallJS: function nativeCallJS(channelType, object) {
-    var fun = this.jsCallListeners.get(channelType);
-    fun && fun(object);
+    var handler = this.channelHandlerMap.get(channelType);
+    handler && handler.onNativeCallJS(object);
   }
 };
-// @ts-ignore
-window.MethodChannel = {
-  ChannelType: 'MethodChannel',
-  init: function init() {
-    // @ts-ignore
-    window.Channel.registerJsCall(this.ChannelType, function (object) {
-      // @ts-ignore
-      window.MethodChannel.__ArgsMethodStub(object);
-    });
-  },
-  getPromiseStatus: function getPromiseStatus() {
-    // 方法调用转换为数据
-    var methodCall = {
-      //修改了名称
-      isAsync: false,
-      // 调用函数名
-      call: "GetPromiseStatus",
-      arg: {
-        isFun: false,
-        properties: '',
-        funs: '',
-        stubId: -1,
-        objectId: -1
-      }
-    };
-    // @ts-ignore
-    return window.Channel.jsCallNative(window.MethodChannel.ChannelType, methodCall);
-  },
-  unRegisterArgStub: function unRegisterArgStub(argObject) {
-    var stubId = this._listenerMap.get(argObject);
-    delete this._stubMap[stubId];
-    this._listenerMap["delete"](argObject);
-  },
-  jsBridgeMode: function jsBridgeMode(mode) {
-    return function (target, key, descriptor) {
-      var className = target.constructor.name;
-      descriptor.value = function () {
-        var _mode$isAsync;
-        var firstArg = arguments.length >= 1 ? arguments.length <= 0 ? undefined : arguments[0] : '';
-        var argTypeIsFun = isFunction(firstArg);
-        // @ts-ignore
-        var stubId = window.MethodChannel.__registerArgStub(firstArg, argTypeIsFun);
-        var isAsync = (_mode$isAsync = mode === null || mode === void 0 ? void 0 : mode.isAsync) !== null && _mode$isAsync !== void 0 ? _mode$isAsync : true;
+var MethodChannelType = 'MethodChannel';
+var MethodChannelHandler = /*#__PURE__*/function () {
+  function MethodChannelHandler() {
+    _classCallCheck(this, MethodChannelHandler);
+    _defineProperty(this, "_NextTranscationId", 0);
+    // 初始TranscationID值
+    _defineProperty(this, "_NextId", 0);
+    // 初始ID值
+    _defineProperty(this, "_stubMap", {});
+    _defineProperty(this, "_transcationMap", new Map());
+  }
+  return _createClass(MethodChannelHandler, [{
+    key: "registerJSBridge",
+    value: function registerJSBridge(options, callNative) {
+      var _this = this;
+      return function (target, key, descriptor) {
+        var className = target.constructor.name;
+        descriptor.value = function () {
+          var firstArg = arguments.length >= 1 ? arguments.length <= 0 ? undefined : arguments[0] : '';
+          var argTypeIsFun = isFunction(firstArg);
+          var objId = _this.__registerArgStub(firstArg, argTypeIsFun);
 
-        // 方法调用转换为数据
-        var methodCall = {
-          //修改了名称
-          isAsync: isAsync,
-          // 调用函数名
-          call: "".concat(className ? className : '', "$").concat(key.toString()),
-          arg: {
-            isFun: argTypeIsFun,
-            properties: firstArg,
-            funs: getAllFuns(firstArg),
-            stubId: stubId
-          }
-        };
-        // @ts-ignore
-        var result = window.Channel.jsCallNative(window.MethodChannel.ChannelType, methodCall);
-        if (!isAsync && result === 'Promise_Result') {
-          var count = 0;
-          while (count < 20000) {
-            count++;
-            if (count % 2000 === 0) {
-              // @ts-ignore
-              var promiseStatus = window.MethodChannel.getPromiseStatus();
-              if (promiseStatus.status === 'pending') {
-                continue;
-              }
-              return promiseStatus.result;
+          // 方法调用转换为数据
+          var methodCall = {
+            transcationId: 1,
+            //修改了名称
+            callType: options.callType,
+            from: 'Global',
+            // 调用函数名
+            callName: "".concat(className ? className : '', "$").concat(key.toString()),
+            optionsMsg: {
+              type: argTypeIsFun ? 'function' : 'object',
+              properties: firstArg,
+              funs: getAllFuns(firstArg),
+              objId: objId
             }
+          };
+          var result = callNative(MethodChannelType, methodCall);
+          if (options.callType == 'sync' && result === 'Promise_Result') {
+            var count = 0;
+            while (count < 20000) {
+              count++;
+              if (count % 2000 === 0) {
+                var promiseStatus = _this.getPromiseStatus(callNative);
+                if (promiseStatus.status === 'pending') {
+                  continue;
+                }
+                return promiseStatus.result;
+              }
+            }
+            return undefined;
           }
-          return undefined;
-        }
-        return result;
+          return result;
+        };
       };
-    };
-  },
-  _NextId: 0,
-  // 初始ID值
-  _stubMap: {},
-  _listenerMap: new Map(),
-  __registerArgStub: function __registerArgStub(argObject, isFun) {
-    var hasFun = isFunctionOrObjectWithFunction(argObject);
-    if (!hasFun) {
-      return -1;
     }
-    // 尝试从map中取出变量id，如果有，直接返回对应id
-    var objectId = this._listenerMap.get(argObject);
-    if (objectId) {
+  }, {
+    key: "onNativeCallJS",
+    value: function onNativeCallJS(nativeArg) {
+      var call = nativeArg.call,
+        args = nativeArg.args,
+        stubId = nativeArg.stubId;
+      var stub = this._stubMap[stubId];
+      if (!stub) {
+        console.debug('nativeapi', 'appjs argsStub hash been deleted ');
+        return;
+      }
+      var object = stub.object,
+        isFun = stub.isFun;
+      if (call == 'success' || call == 'fail') {
+        delete this._stubMap[stubId];
+      }
+      if (isFun) {
+        object && object.apply(void 0, _toConsumableArray(args));
+        return;
+      }
+      if (args) {
+        var _object$call;
+        (_object$call = object[call]).call.apply(_object$call, [object].concat(_toConsumableArray(args)));
+      } else {
+        object[call].call(object);
+      }
+    }
+  }, {
+    key: "getPromiseStatus",
+    value: function getPromiseStatus(callNative) {
+      // 方法调用转换为数据
+      var methodCall = {
+        //修改了名称
+        isAsync: false,
+        // 调用函数名
+        call: "GetPromiseStatus",
+        arg: {
+          isFun: false,
+          properties: '',
+          funs: '',
+          stubId: -1,
+          objectId: -1
+        }
+      };
+      return callNative(MethodChannelType, methodCall);
+    }
+  }, {
+    key: "__registerArgStub",
+    value: function __registerArgStub(argObject, isFun) {
+      var hasFun = isFunctionOrObjectWithFunction(argObject);
+      if (!hasFun) {
+        return -1;
+      }
+      var objectId = this._NextId++;
+      this._stubMap[objectId] = {
+        object: argObject,
+        isFun: isFun
+      };
       return objectId;
     }
-    objectId = this._NextId++;
-    this._stubMap[objectId] = {
-      object: argObject,
-      isFun: isFun
-    };
-    // 将变量存储到map中，防止相同变量多次注册
-    this._listenerMap.set(argObject, objectId);
-    return objectId;
+  }]);
+}(); // @ts-ignore
+window.MethodChannel = {
+  jsBridgeMode: function jsBridgeMode(mode) {
+    mode['channelType'] = MethodChannelType;
+    // @ts-ignore
+    return window.Channel.jsBridge(mode);
   },
-  __ArgsMethodStub: function __ArgsMethodStub(nativeArg) {
-    var call = nativeArg.call,
-      args = nativeArg.args,
-      stubId = nativeArg.stubId;
-    var stub = this._stubMap[stubId];
-    if (!stub) {
-      console.debug('nativeapi', 'appjs argsStub hash been deleted ');
-      return;
-    }
-    var object = stub.object,
-      isFun = stub.isFun;
-    if (call == 'success' || call == 'fail') {
-      delete this._stubMap[stubId];
-      delete this._listenerMap[object];
-      this._listenerMap["delete"](object);
-    }
-    if (isFun) {
-      object && object.apply(void 0, _toConsumableArray(args));
-      return;
-    }
-    if (args) {
-      var _object$call;
-      (_object$call = object[call]).call.apply(_object$call, [object].concat(_toConsumableArray(args)));
-    } else {
-      object[call].call(object);
-    }
-  }
+  //TODO 同层绘制时会调用此方法，后续处理
+  unRegisterArgStub: function unRegisterArgStub(argObject) {}
 };
 // @ts-ignore
-window.MethodChannel.init();
+window.Channel.registerJsCall(MethodChannelType, new MethodChannelHandler());

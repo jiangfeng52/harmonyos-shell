@@ -54,20 +54,33 @@ function isFunctionOrObjectWithFunction(object: any): boolean {
   return false
 }
 
+interface ChannelHandler {
+  registerJSBridge(options: any, callNative: (channelType: string, object: any) => any): any
+
+  onNativeCallJS(object: any): void
+}
+
 
 // 通信Channel层
 // @ts-ignore
 window.Channel = {
-  jsCallListeners: new Map(),
+  channelHandlerMap: new Map<string, ChannelHandler>(),
   // listenerMap: {}, 弱引用自动取消
   registerJsCall(channelType: string, fun: Function) {
-    this.jsCallListeners.set(channelType, fun)
+    this.channelHandlerMap.set(channelType, fun)
+  },
+
+  jsBridge: function (options: {
+    channelType: string,
+    callType: 'async' | 'sync' | 'listener' | 'removeListener'
+  }) {
+    return this.channelHandlerMap.get(options.channelType).registerJSBridge(options, this.jsCallNative)
   },
 
   /**
    * methodCall的对象结构为：{call: string, argsJson: string, stubId: number}
    */
-  jsCallNative: function (channelType: string, object: any) {
+  jsCallNative:  (channelType: string, object: any) => {
     // 最终调用原生Channel的通信方法
     var objectJson = JSON.stringify(object)
     // @ts-ignore
@@ -79,22 +92,85 @@ window.Channel = {
    * 给原生暴露的通信方法，原生调用"window.Channel.nativeCallJS(objectId, 'xxx', 'xxxx')"
    */
   nativeCallJS: function (channelType: string, object: any) {
-    var fun = this.jsCallListeners.get(channelType)
-    fun && fun(object)
+    var handler = this.channelHandlerMap.get(channelType)
+    handler && handler.onNativeCallJS(object)
   }
 }
-// @ts-ignore
-window.MethodChannel = {
-  ChannelType: 'MethodChannel',
 
-  init: function () {
-    // @ts-ignore
-    window.Channel.registerJsCall(this.ChannelType, function (object) {
-      // @ts-ignore
-      window.MethodChannel.__ArgsMethodStub(object)
-    })
-  },
-  getPromiseStatus: function (){
+const MethodChannelType = 'MethodChannel'
+
+class MethodChannelHandler implements ChannelHandler {
+  registerJSBridge(options: any, callNative: (channelType: string, object: any) => any): any {
+    return (target: any, key: string, descriptor: PropertyDescriptor) => {
+      const className = target.constructor.name
+      descriptor.value = (...args: any[]) => {
+
+        const firstArg = args.length >= 1 ? args[0] : ''
+
+        let argTypeIsFun = isFunction(firstArg)
+        let objId = this.__registerArgStub(firstArg, argTypeIsFun)
+
+        // 方法调用转换为数据
+        var methodCall = {
+          transcationId: 1,
+          //修改了名称
+          callType: options.callType,
+          from: 'Global',
+          // 调用函数名
+          callName: `${className ? className : ''}\$${key.toString()}`,
+          optionsMsg: {
+            type: argTypeIsFun ? 'function' : 'object',
+            properties: firstArg,
+            funs: getAllFuns(firstArg),
+            objId: objId,
+          },
+        }
+        const result = callNative(MethodChannelType, methodCall)
+
+        if (options.callType == 'sync' && result === 'Promise_Result') {
+          let count = 0
+          while (count < 20000) {
+            count++
+            if (count % 2000 === 0) {
+              const promiseStatus = this.getPromiseStatus(callNative)
+              if (promiseStatus.status === 'pending') {
+                continue
+              }
+              return promiseStatus.result
+            }
+          }
+          return undefined
+        }
+
+        return result
+      }
+    }
+  }
+
+  onNativeCallJS(nativeArg: any): void {
+    const { call, args, stubId } = nativeArg
+    const stub = this._stubMap[stubId];
+    if (!stub) {
+      console.debug('nativeapi', 'appjs argsStub hash been deleted ')
+      return;
+    }
+    const { object, isFun } = stub
+    if (call == 'success' || call == 'fail') {
+      delete this._stubMap[stubId]
+    }
+
+    if (isFun) {
+      object && object(...args)
+      return
+    }
+    if (args) {
+      object[call].call(object, ...args)
+    } else {
+      object[call].call(object)
+    }
+  }
+
+  getPromiseStatus(callNative: (channelType: string, object: any) => any) {
     // 方法调用转换为数据
     var methodCall = {
       //修改了名称
@@ -109,113 +185,41 @@ window.MethodChannel = {
         objectId: -1,
       },
     }
-    // @ts-ignore
-    return window.Channel.jsCallNative(window.MethodChannel.ChannelType, methodCall)
-  },
-  unRegisterArgStub: function (argObject: any) {
-    const stubId = this._listenerMap.get(argObject);
-    delete this._stubMap[stubId];
-    this._listenerMap.delete(argObject)
-  },
-  jsBridgeMode: function (mode: {
-    isAsync: boolean
-  }) {
-    return function (target: any, key: string, descriptor: PropertyDescriptor) {
-      const className = target.constructor.name
-      descriptor.value = function (...args: any[]) {
+    return callNative(MethodChannelType, methodCall)
+  }
 
-        const firstArg = args.length >= 1 ? args[0] : ''
+  _NextTranscationId = 0 // 初始TranscationID值
+  _NextId = 0 // 初始ID值
+  _stubMap = {}
+  _transcationMap = new Map()
 
-        let argTypeIsFun = isFunction(firstArg)
-        // @ts-ignore
-        let stubId = window.MethodChannel.__registerArgStub(firstArg, argTypeIsFun)
-
-        const isAsync = mode?.isAsync ?? true;
-
-        // 方法调用转换为数据
-        var methodCall = {
-          //修改了名称
-          isAsync:isAsync,
-          // 调用函数名
-          call: `${className ? className : ''}\$${key.toString()}`,
-          arg: {
-            isFun: argTypeIsFun,
-            properties: firstArg,
-            funs: getAllFuns(firstArg),
-            stubId: stubId,
-          },
-        }
-        // @ts-ignore
-        const result = window.Channel.jsCallNative(window.MethodChannel.ChannelType, methodCall)
-
-        if (!isAsync && result === 'Promise_Result') {
-          let count = 0
-          while (count < 20000) {
-            count++
-            if (count % 2000 === 0) {
-              // @ts-ignore
-              const promiseStatus = window.MethodChannel.getPromiseStatus()
-              if (promiseStatus.status === 'pending') {
-                continue
-              }
-              return promiseStatus.result
-            }
-          }
-          return undefined
-        }
-
-        return result
-      }
-    }
-  },
-
-  _NextId: 0, // 初始ID值
-  _stubMap: {},
-  _listenerMap: new Map(),
-  __registerArgStub: function (argObject: any, isFun: boolean) {
+  __registerArgStub(argObject: any, isFun: boolean) {
     const hasFun = isFunctionOrObjectWithFunction(argObject)
     if (!hasFun) {
       return -1
     }
-    // 尝试从map中取出变量id，如果有，直接返回对应id
-    let objectId = this._listenerMap.get(argObject)
-    if (objectId){
-      return objectId
-    }
-    objectId = this._NextId++
+    let objectId = this._NextId++
     this._stubMap[objectId] = {
       object: argObject,
       isFun: isFun
     }
-    // 将变量存储到map中，防止相同变量多次注册
-    this._listenerMap.set(argObject, objectId)
     return objectId
-  },
-  __ArgsMethodStub: function (nativeArg: any) {
-    const {call, args, stubId} = nativeArg
-    const stub = this._stubMap[stubId];
-    if (!stub) {
-      console.debug('nativeapi', 'appjs argsStub hash been deleted ')
-      return;
-    }
-    const {object, isFun} = stub
-    if (call == 'success' || call == 'fail') {
-      delete this._stubMap[stubId]
-      delete this._listenerMap[object]
-      this._listenerMap.delete(object)
-    }
+  }
+}
 
-    if (isFun) {
-      object && object(...args)
-      return
-    }
-    if (args) {
-      object[call].call(object, ...args)
-    } else {
-      object[call].call(object)
-    }
+// @ts-ignore
+window.MethodChannel = {
+
+  jsBridgeMode: function (mode: {callType: 'async' | 'sync' | 'listener' | 'removeListener'}) {
+    mode['channelType'] = MethodChannelType
+    // @ts-ignore
+    return window.Channel.jsBridge(mode)
+  },
+
+  //TODO 同层绘制时会调用此方法，后续处理
+  unRegisterArgStub: function (argObject: any) {
   }
 }
 // @ts-ignore
-window.MethodChannel.init()
+window.Channel.registerJsCall(MethodChannelType, new MethodChannelHandler())
 
