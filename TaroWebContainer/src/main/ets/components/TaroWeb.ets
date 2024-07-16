@@ -33,6 +33,7 @@ import { callMapContextFunction, createMapContext } from '../utils/MapManager';
 import { NativeCacheManager } from '../inject_adapter/NativeCacheManager';
 import { taroTrace, TraceTask } from '../utils/Trace';
 import { registerSceneApis } from '../scene_apis/Index';
+import { TaroHybridManager } from '../tarohybrid/TaroHybridManager';
 
 const TARO_WEB_TAG = 'TaroWeb';
 
@@ -132,6 +133,7 @@ export struct TaroWeb {
   @Link channel: Channel
   @Link methodChannel: MethodChannel
   private nativeAPI: NativeApi | undefined = undefined
+  @Prop userAgent: string | undefined = undefined
 
   aboutToAppear() {
     webView.WebviewController.setWebDebuggingAccess(this.enableWebDebug);
@@ -348,6 +350,17 @@ export struct TaroWeb {
         })
         .darkMode(WebDarkMode.Auto)
         .forceDarkAccess(this.forceDarkAccess)
+        .onControllerAttached(() => {
+          try {
+            if (this.userAgent) {
+              this.taroWebController.webController.setCustomUserAgent(this.userAgent)
+            } else if (TaroHybridManager.getCustomUserAgent()) {
+              this.taroWebController.webController.setCustomUserAgent(TaroHybridManager.getCustomUserAgent())
+            }
+          } catch (error) {
+            taroLogger.error(TARO_WEB_TAG, `setCustomUserAgent error: ${(error as BusinessError).message}`);
+          }
+        })
       // .webLite(true)  // 需要 osChannel sdk
     }
   }
