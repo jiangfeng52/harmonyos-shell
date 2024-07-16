@@ -93,6 +93,9 @@ export struct TaroWebContainer {
   // 路由控制器
   @Link taroWebController: TaroWebController;
 
+  // 自定义用户代理
+  @Prop userAgent: string | undefined = undefined;
+
   @State environmentCallbackId: number | undefined = undefined
 
   hookInterceptorWithoutCache?: (request: WebResourceRequest) => WebResourceResponse | null;
@@ -244,7 +247,8 @@ export struct TaroWebContainer {
         enableWebDebug: this.enableWebDebug,
         channel: this.channel,
         methodChannel: this.methodChannel,
-        forceDarkAccess: this.forceDarkAccess
+        forceDarkAccess: this.forceDarkAccess,
+        userAgent: this.userAgent
       })
       NavigationBar({
         navigationBarData: this.navigationBarData,
