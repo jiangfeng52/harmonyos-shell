@@ -27,7 +27,7 @@ export class TaroHybridManager {
   // 回收机制：引用计数
   private static referenceCountMap: HashMap<string, number> = new HashMap();
   // 添加自定义的user-agent
-  private static customUserAgent: string | undefined = undefined
+  private static customUserAgent: string = ''
   private static debuggable = false
 
   static init(options: TaroHybridManagerOptions){
@@ -44,7 +44,7 @@ export class TaroHybridManager {
   static setCustomUserAgent(customUserAgent: string){
     TaroHybridManager.customUserAgent = customUserAgent;
   }
-  static getCustomUserAgent(): string | undefined {
+  static getCustomUserAgent(): string {
     return TaroHybridManager.customUserAgent
   }
 
