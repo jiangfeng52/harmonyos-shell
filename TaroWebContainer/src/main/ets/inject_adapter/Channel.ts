@@ -64,7 +64,7 @@ export class MethodChannel {
   }
 
   // TODO-ly 改为装饰器实现
-  registerMethod(methodName: string, fun: (arg: any, objectId?: number)=>any) {
+  registerMethod(methodName: string, fun: (arg: any, callId?: number)=>any) {
     if(this.methodPools.has(methodName)){
       return
     }
@@ -90,36 +90,36 @@ export class MethodChannel {
       return this.call(object)
     })
     // 注册"GetPromiseStatus"方法
-    this.registerMethod('GetPromiseStatus', (arg: any, objectId?: number)=>{
+    this.registerMethod('GetPromiseStatus', (arg: any, callId?: number)=>{
       return this.promiseStatus
     })
   }
 
   call(object): any{
-    const {callName, optionsMsg, callType} = object
+    const {callName, optionsMsg, callType, transcationId} = object
     const fun = this.methodPools.get(callName)
     if(!fun) {
       return undefined;
     }
 
-    const {type, properties, funs, objId} = optionsMsg
+    const {type, properties, funs, callId} = optionsMsg
 
     let argProxy;
-    if (objId == -1) { // 没有回调函数
+    if (callId == -1) { // 没有回调函数
       argProxy = properties;
     } else if(type == 'function') { // arg为函数
-      if (this.listenerMap.has(objId)) {
-        argProxy = this.listenerMap.get(objId)
+      if (this.listenerMap.has(callId)) {
+        argProxy = this.listenerMap.get(callId)
       } else {
         argProxy = (...args)=>{//function (...args){
           const object = {
             call: '',
             args: args,
-            stubId: objId,
+            callId: callId,
           }
           this.channel.jsCall(this.ChannelType, object)
         }
-        this.listenerMap.set(objId, argProxy)
+        this.listenerMap.set(callId, argProxy)
       }
     } else {
       let argObject = properties ?? {};
@@ -129,7 +129,7 @@ export class MethodChannel {
           const object = {
             call: value,
             args: args,
-            stubId: objId
+            callId: callId
           }
           this.channel.jsCall(this.ChannelType, object)
         }

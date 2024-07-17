@@ -54,9 +54,28 @@ function isFunctionOrObjectWithFunction(object: any): boolean {
   return false
 }
 
+/**
+ * JSBridge通道处理器
+ */
 interface ChannelHandler {
+  /**
+   * 获取当前ChannelHandler对应的ChannelType
+   * @returns ChannelType
+   */
+  getChannelType(): string
+
+  /**
+   * 前端装饰器方法
+   * @param options
+   * @param callNative 调用native的方法
+   * @returns
+   */
   registerJSBridge(options: any, callNative: (channelType: string, object: any) => any): any
 
+  /**
+   * 原生调用JS方法
+   * @param object
+   */
   onNativeCallJS(object: any): void
 }
 
@@ -65,31 +84,34 @@ interface ChannelHandler {
 // @ts-ignore
 window.Channel = {
   channelHandlerMap: new Map<string, ChannelHandler>(),
-  // listenerMap: {}, 弱引用自动取消
-  registerJsCall(channelType: string, fun: Function) {
-    this.channelHandlerMap.set(channelType, fun)
+
+  /**
+   * 注册Channel处理类
+   * @param channelHandler
+   */
+  registerChannelHandler(channelHandler: ChannelHandler) {
+    this.channelHandlerMap.set(channelHandler.getChannelType(), channelHandler)
   },
 
+  /**
+   * 对前端暴露的装饰器方法
+   */
   jsBridge: function (options: {
     channelType: string,
     callType: 'async' | 'sync' | 'listener' | 'removeListener'
   }) {
-    return this.channelHandlerMap.get(options.channelType).registerJSBridge(options, this.jsCallNative)
+    return this.channelHandlerMap.get(options.channelType)
+      .registerJSBridge(options, (channelType: string, object: any) => {
+        // 最终调用原生Channel的通信方法
+        var objectJson = JSON.stringify(object)
+        // @ts-ignore
+        var resultJson = window.JSBridge && window.JSBridge.nativeMethod(channelType, objectJson)
+        return resultJson && JSON.parse(resultJson)
+      })
   },
 
   /**
-   * methodCall的对象结构为：{call: string, argsJson: string, stubId: number}
-   */
-  jsCallNative:  (channelType: string, object: any) => {
-    // 最终调用原生Channel的通信方法
-    var objectJson = JSON.stringify(object)
-    // @ts-ignore
-    var resultJson = window.JSBridge && window.JSBridge.nativeMethod(channelType, objectJson)
-    return resultJson && JSON.parse(resultJson)
-  },
-
-  /**
-   * 给原生暴露的通信方法，原生调用"window.Channel.nativeCallJS(objectId, 'xxx', 'xxxx')"
+   * 给原生暴露的通信方法，原生调用"window.Channel.nativeCallJS(channelType, object)"
    */
   nativeCallJS: function (channelType: string, object: any) {
     var handler = this.channelHandlerMap.get(channelType)
@@ -97,9 +119,16 @@ window.Channel = {
   }
 }
 
-const MethodChannelType = 'MethodChannel'
-
 class MethodChannelHandler implements ChannelHandler {
+  channelType = 'MethodChannel'
+  _NextTranscationId = 1 // 初始TranscationID值
+
+  _transcationMap = new Map<number, Map<number, any>>()
+
+  getChannelType(): string {
+    return this.channelType
+  }
+
   registerJSBridge(options: any, callNative: (channelType: string, object: any) => any): any {
     return (target: any, key: string, descriptor: PropertyDescriptor) => {
       const className = target.constructor.name
@@ -108,11 +137,13 @@ class MethodChannelHandler implements ChannelHandler {
         const firstArg = args.length >= 1 ? args[0] : ''
 
         let argTypeIsFun = isFunction(firstArg)
-        let objId = this.__registerArgStub(firstArg, argTypeIsFun)
+        let callId = this.generateCallId(firstArg)
+
+        let transcationId = this.registerTranscation(callId, firstArg, argTypeIsFun ? 'functino' : 'object', options.callType, 'Global')
 
         // 方法调用转换为数据
         var methodCall = {
-          transcationId: 1,
+          transcationId: transcationId,
           //修改了名称
           callType: options.callType,
           from: 'Global',
@@ -122,10 +153,10 @@ class MethodChannelHandler implements ChannelHandler {
             type: argTypeIsFun ? 'function' : 'object',
             properties: firstArg,
             funs: getAllFuns(firstArg),
-            objId: objId,
+            callId: callId,
           },
         }
-        const result = callNative(MethodChannelType, methodCall)
+        const result = callNative(this.channelType, methodCall)
 
         if (options.callType == 'sync' && result === 'Promise_Result') {
           let count = 0
@@ -148,25 +179,30 @@ class MethodChannelHandler implements ChannelHandler {
   }
 
   onNativeCallJS(nativeArg: any): void {
-    const { call, args, stubId } = nativeArg
-    const stub = this._stubMap[stubId];
-    if (!stub) {
-      console.debug('nativeapi', 'appjs argsStub hash been deleted ')
+    const { call, args, transcationId, optionsMsg } = nativeArg
+    let transcation = this._transcationMap.get(transcationId)
+    if (!transcation) {
+      console.debug('nativeapi', 'appjs transcation hash been deleted ')
       return;
     }
-    const { object, isFun } = stub
+    let obj = transcation.get(optionsMsg.callId);
+    if (!obj) {
+      console.debug('nativeapi', 'appjs obj hash been deleted ')
+      return;
+    }
+    const { options, isFun } = obj
     if (call == 'success' || call == 'fail') {
-      delete this._stubMap[stubId]
+      this._transcationMap.delete(transcationId)
     }
 
     if (isFun) {
-      object && object(...args)
+      options && options(...args)
       return
     }
     if (args) {
-      object[call].call(object, ...args)
+      options[call].call(options, ...args)
     } else {
-      object[call].call(object)
+      options[call].call(options)
     }
   }
 
@@ -181,37 +217,48 @@ class MethodChannelHandler implements ChannelHandler {
         isFun: false,
         properties: '',
         funs: '',
-        stubId: -1,
-        objectId: -1,
+        callId: -1,
       },
     }
-    return callNative(MethodChannelType, methodCall)
+    return callNative(this.channelType, methodCall)
   }
 
-  _NextTranscationId = 0 // 初始TranscationID值
-  _NextId = 0 // 初始ID值
-  _stubMap = {}
-  _transcationMap = new Map()
+  _NextId = 1 // 初始ID值
 
-  __registerArgStub(argObject: any, isFun: boolean) {
+  // _stubMap = {}
+
+  generateCallId(argObject: any) {
     const hasFun = isFunctionOrObjectWithFunction(argObject)
     if (!hasFun) {
       return -1
     }
-    let objectId = this._NextId++
-    this._stubMap[objectId] = {
-      object: argObject,
-      isFun: isFun
+    let callId = this._NextId++
+    return callId
+  }
+
+  registerTranscation(callId: number, argObject: any, argType: string, callType: string, fromType: string) {
+    if (callId === -1) {
+      return -1
     }
-    return objectId
+    let transcationId = this._NextTranscationId++
+    let obj = {
+      type: argType,
+      options: argObject,
+      callType: callType,
+      fromType: fromType
+    }
+    let callMap = new Map()
+    callMap.set(callId, obj)
+    this._transcationMap.set(transcationId, callMap)
+    return transcationId
   }
 }
 
 // @ts-ignore
 window.MethodChannel = {
 
-  jsBridgeMode: function (mode: {callType: 'async' | 'sync' | 'listener' | 'removeListener'}) {
-    mode['channelType'] = MethodChannelType
+  jsBridgeMode: function (mode: { callType: 'async' | 'sync' | 'listener' | 'removeListener' }) {
+    mode['channelType'] = 'MethodChannel'
     // @ts-ignore
     return window.Channel.jsBridge(mode)
   },
@@ -221,5 +268,5 @@ window.MethodChannel = {
   }
 }
 // @ts-ignore
-window.Channel.registerJsCall(MethodChannelType, new MethodChannelHandler())
+window.Channel.registerChannelHandler(new MethodChannelHandler())
 

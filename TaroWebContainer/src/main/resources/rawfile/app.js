@@ -64,47 +64,57 @@ function isFunctionOrObjectWithFunction(object) {
   }
   return false;
 }
+
+/**
+ * JSBridge通道处理器
+ */
+
 // 通信Channel层
 // @ts-ignore
 window.Channel = {
   channelHandlerMap: new Map(),
-  // listenerMap: {}, 弱引用自动取消
-  registerJsCall: function registerJsCall(channelType, fun) {
-    this.channelHandlerMap.set(channelType, fun);
-  },
-  jsBridge: function jsBridge(options) {
-    return this.channelHandlerMap.get(options.channelType).registerJSBridge(options, this.jsCallNative);
-  },
   /**
-   * methodCall的对象结构为：{call: string, argsJson: string, stubId: number}
+   * 注册Channel处理类
+   * @param channelHandler
    */
-  jsCallNative: function jsCallNative(channelType, object) {
-    // 最终调用原生Channel的通信方法
-    var objectJson = JSON.stringify(object);
-    // @ts-ignore
-    var resultJson = window.JSBridge && window.JSBridge.nativeMethod(channelType, objectJson);
-    return resultJson && JSON.parse(resultJson);
+  registerChannelHandler: function registerChannelHandler(channelHandler) {
+    this.channelHandlerMap.set(channelHandler.getChannelType(), channelHandler);
   },
   /**
-   * 给原生暴露的通信方法，原生调用"window.Channel.nativeCallJS(objectId, 'xxx', 'xxxx')"
+   * 对前端暴露的装饰器方法
+   */
+  jsBridge: function jsBridge(options) {
+    return this.channelHandlerMap.get(options.channelType).registerJSBridge(options, function (channelType, object) {
+      // 最终调用原生Channel的通信方法
+      var objectJson = JSON.stringify(object);
+      // @ts-ignore
+      var resultJson = window.JSBridge && window.JSBridge.nativeMethod(channelType, objectJson);
+      return resultJson && JSON.parse(resultJson);
+    });
+  },
+  /**
+   * 给原生暴露的通信方法，原生调用"window.Channel.nativeCallJS(channelType, object)"
    */
   nativeCallJS: function nativeCallJS(channelType, object) {
     var handler = this.channelHandlerMap.get(channelType);
     handler && handler.onNativeCallJS(object);
   }
 };
-var MethodChannelType = 'MethodChannel';
 var MethodChannelHandler = /*#__PURE__*/function () {
   function MethodChannelHandler() {
     _classCallCheck(this, MethodChannelHandler);
-    _defineProperty(this, "_NextTranscationId", 0);
+    _defineProperty(this, "channelType", 'MethodChannel');
+    _defineProperty(this, "_NextTranscationId", 1);
     // 初始TranscationID值
-    _defineProperty(this, "_NextId", 0);
-    // 初始ID值
-    _defineProperty(this, "_stubMap", {});
     _defineProperty(this, "_transcationMap", new Map());
+    _defineProperty(this, "_NextId", 1);
   }
   return _createClass(MethodChannelHandler, [{
+    key: "getChannelType",
+    value: function getChannelType() {
+      return this.channelType;
+    }
+  }, {
     key: "registerJSBridge",
     value: function registerJSBridge(options, callNative) {
       var _this = this;
@@ -113,11 +123,12 @@ var MethodChannelHandler = /*#__PURE__*/function () {
         descriptor.value = function () {
           var firstArg = arguments.length >= 1 ? arguments.length <= 0 ? undefined : arguments[0] : '';
           var argTypeIsFun = isFunction(firstArg);
-          var objId = _this.__registerArgStub(firstArg, argTypeIsFun);
+          var callId = _this.generateCallId(firstArg);
+          var transcationId = _this.registerTranscation(callId, firstArg, argTypeIsFun ? 'functino' : 'object', options.callType, 'Global');
 
           // 方法调用转换为数据
           var methodCall = {
-            transcationId: 1,
+            transcationId: transcationId,
             //修改了名称
             callType: options.callType,
             from: 'Global',
@@ -127,10 +138,10 @@ var MethodChannelHandler = /*#__PURE__*/function () {
               type: argTypeIsFun ? 'function' : 'object',
               properties: firstArg,
               funs: getAllFuns(firstArg),
-              objId: objId
+              callId: callId
             }
           };
-          var result = callNative(MethodChannelType, methodCall);
+          var result = callNative(_this.channelType, methodCall);
           if (options.callType == 'sync' && result === 'Promise_Result') {
             var count = 0;
             while (count < 20000) {
@@ -154,26 +165,32 @@ var MethodChannelHandler = /*#__PURE__*/function () {
     value: function onNativeCallJS(nativeArg) {
       var call = nativeArg.call,
         args = nativeArg.args,
-        stubId = nativeArg.stubId;
-      var stub = this._stubMap[stubId];
-      if (!stub) {
-        console.debug('nativeapi', 'appjs argsStub hash been deleted ');
+        transcationId = nativeArg.transcationId,
+        optionsMsg = nativeArg.optionsMsg;
+      var transcation = this._transcationMap.get(transcationId);
+      if (!transcation) {
+        console.debug('nativeapi', 'appjs transcation hash been deleted ');
         return;
       }
-      var object = stub.object,
-        isFun = stub.isFun;
+      var obj = transcation.get(optionsMsg.callId);
+      if (!obj) {
+        console.debug('nativeapi', 'appjs obj hash been deleted ');
+        return;
+      }
+      var options = obj.options,
+        isFun = obj.isFun;
       if (call == 'success' || call == 'fail') {
-        delete this._stubMap[stubId];
+        this._transcationMap["delete"](transcationId);
       }
       if (isFun) {
-        object && object.apply(void 0, _toConsumableArray(args));
+        options && options.apply(void 0, _toConsumableArray(args));
         return;
       }
       if (args) {
-        var _object$call;
-        (_object$call = object[call]).call.apply(_object$call, [object].concat(_toConsumableArray(args)));
+        var _options$call;
+        (_options$call = options[call]).call.apply(_options$call, [options].concat(_toConsumableArray(args)));
       } else {
-        object[call].call(object);
+        options[call].call(options);
       }
     }
   }, {
@@ -189,31 +206,49 @@ var MethodChannelHandler = /*#__PURE__*/function () {
           isFun: false,
           properties: '',
           funs: '',
-          stubId: -1,
-          objectId: -1
+          callId: -1
         }
       };
-      return callNative(MethodChannelType, methodCall);
+      return callNative(this.channelType, methodCall);
     }
   }, {
-    key: "__registerArgStub",
-    value: function __registerArgStub(argObject, isFun) {
+    key: "generateCallId",
+    value:
+    // 初始ID值
+
+    // _stubMap = {}
+
+    function generateCallId(argObject) {
       var hasFun = isFunctionOrObjectWithFunction(argObject);
       if (!hasFun) {
         return -1;
       }
-      var objectId = this._NextId++;
-      this._stubMap[objectId] = {
-        object: argObject,
-        isFun: isFun
+      var callId = this._NextId++;
+      return callId;
+    }
+  }, {
+    key: "registerTranscation",
+    value: function registerTranscation(callId, argObject, argType, callType, fromType) {
+      if (callId === -1) {
+        return -1;
+      }
+      var transcationId = this._NextTranscationId++;
+      var obj = {
+        type: argType,
+        options: argObject,
+        callType: callType,
+        fromType: fromType
       };
-      return objectId;
+      var callMap = new Map();
+      callMap.set(callId, obj);
+      this._transcationMap.set(transcationId, callMap);
+      return transcationId;
     }
   }]);
 }(); // @ts-ignore
 window.MethodChannel = {
   jsBridgeMode: function jsBridgeMode(mode) {
-    mode['channelType'] = MethodChannelType;
+    mode['channelType'] = 'MethodChannel';
     // @ts-ignore
     return window.Channel.jsBridge(mode);
   },
@@ -221,4 +256,4 @@ window.MethodChannel = {
   unRegisterArgStub: function unRegisterArgStub(argObject) {}
 };
 // @ts-ignore
-window.Channel.registerJsCall(MethodChannelType, new MethodChannelHandler());
+window.Channel.registerChannelHandler(new MethodChannelHandler());
