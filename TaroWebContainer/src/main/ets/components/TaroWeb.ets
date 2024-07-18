@@ -353,9 +353,11 @@ export struct TaroWeb {
         .onControllerAttached(() => {
           try {
             if (this.userAgent) {
-              this.taroWebController.webController.setCustomUserAgent(this.userAgent)
+              let customUserAgent = this.taroWebController.webController.getUserAgent() + this.userAgent
+              this.taroWebController.webController.setCustomUserAgent(customUserAgent)
             } else if (TaroHybridManager.getCustomUserAgent()) {
-              this.taroWebController.webController.setCustomUserAgent(TaroHybridManager.getCustomUserAgent())
+              let customUserAgent = this.taroWebController.webController.getUserAgent() + TaroHybridManager.getCustomUserAgent()
+              this.taroWebController.webController.setCustomUserAgent(customUserAgent)
             }
           } catch (error) {
             taroLogger.error(TARO_WEB_TAG, `setCustomUserAgent error: ${(error as BusinessError).message}`);
