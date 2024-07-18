@@ -1,3 +1,9 @@
+## 2.0.0-rc.4
+- TaroWebContainer增加userAgent属性，支持设置自定义用户代理
+- 修复advanceAPI的uploadFile接口报错
+- 解决混合路由bug,直接从Taro返回时，原生侧不能同步返回
+- 导航栏适配深色模式
+
 ## 2.0.0-rc.3
 - 修复TaroHybridManagerOptions接口的uiAbilityContext拼写问题
 - TaroWebContainer支持使用TaroHybridManager.init的injectNativeMethod参数注入API
