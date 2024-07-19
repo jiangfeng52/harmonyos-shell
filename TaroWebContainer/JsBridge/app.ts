@@ -179,13 +179,13 @@ class MethodChannelHandler implements ChannelHandler {
   }
 
   onNativeCallJS(nativeArg: any): void {
-    const { call, args, transcationId, optionsMsg } = nativeArg
+    const { call, args, transcationId, callId } = nativeArg
     let transcation = this._transcationMap.get(transcationId)
     if (!transcation) {
       console.debug('nativeapi', 'appjs transcation hash been deleted ')
       return;
     }
-    let obj = transcation.get(optionsMsg.callId);
+    let obj = transcation.get(callId);
     if (!obj) {
       console.debug('nativeapi', 'appjs obj hash been deleted ')
       return;

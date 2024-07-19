@@ -166,13 +166,13 @@ var MethodChannelHandler = /*#__PURE__*/function () {
       var call = nativeArg.call,
         args = nativeArg.args,
         transcationId = nativeArg.transcationId,
-        optionsMsg = nativeArg.optionsMsg;
+        callId = nativeArg.callId;
       var transcation = this._transcationMap.get(transcationId);
       if (!transcation) {
         console.debug('nativeapi', 'appjs transcation hash been deleted ');
         return;
       }
-      var obj = transcation.get(optionsMsg.callId);
+      var obj = transcation.get(callId);
       if (!obj) {
         console.debug('nativeapi', 'appjs obj hash been deleted ');
         return;

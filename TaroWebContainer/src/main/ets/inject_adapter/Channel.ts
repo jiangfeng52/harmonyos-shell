@@ -49,13 +49,25 @@ export class Channel {
 // export const ChannelInstance: Channel = new Channel();
 
 
+export abstract class AsyncTask {
+  transcationId: number
+
+  constructor(transcationId: number) {
+    this.transcationId = transcationId
+  }
+}
+
+interface Transcation {
+  asyncTask? : AsyncTask
+  callMap: Map<number, any>
+}
 
 const PROMISE_STATUS_PENDING = 'pending';
 const PROMISE_STATUS_FULFILLED = 'fulfilled';
 const PROMISE_STATUS_REJECTED = 'rejected';
 export class MethodChannel {
   private ChannelType = 'MethodChannel'
-  private listenerMap = new Map()
+  private transcationMap = new Map<number, Transcation>()
   private methodPools = new Map<string, (arg: any)=>any>()
   private channel: Channel
   private promiseStatus = {
@@ -108,20 +120,42 @@ export class MethodChannel {
     if (callId == -1) { // 没有回调函数
       argProxy = properties;
     } else if(type == 'function') { // arg为函数
-      if (this.listenerMap.has(callId)) {
-        argProxy = this.listenerMap.get(callId)
+      if (this.transcationMap.has(transcationId)) {
+        let transcation = this.transcationMap.get(transcationId)
+        if (transcation?.callMap.has(callId)) {
+          argProxy = this.transcationMap.get(callId)
+        } else {
+          argProxy = (...args)=>{//function (...args){
+            const object = {
+              call: '',
+              args: args,
+              callId: callId,
+              transcationId: transcationId,
+            }
+            this.transcationMap.delete(transcationId)
+            this.channel.jsCall(this.ChannelType, object)
+          }
+          transcation?.callMap.set(callId, argProxy)
+        }
       } else {
         argProxy = (...args)=>{//function (...args){
           const object = {
             call: '',
             args: args,
             callId: callId,
+            transcationId: transcationId,
           }
+          this.transcationMap.delete(transcationId)
           this.channel.jsCall(this.ChannelType, object)
         }
-        this.listenerMap.set(callId, argProxy)
+        let callMap = new Map()
+        callMap.set(callId, argProxy)
+        let transcation:Transcation = {
+          callMap: callMap
+        }
+        this.transcationMap.set(transcationId, transcation)
       }
-    } else {
+    } else { // 有回调方法
       let argObject = properties ?? {};
       // 补充方法的声明
       for(const value of funs) {
@@ -129,7 +163,11 @@ export class MethodChannel {
           const object = {
             call: value,
             args: args,
-            callId: callId
+            callId: callId,
+            transcationId: transcationId,
+          }
+          if (value === 'success' || value === 'fail') {
+            this.transcationMap.delete(transcationId)
           }
           this.channel.jsCall(this.ChannelType, object)
         }
