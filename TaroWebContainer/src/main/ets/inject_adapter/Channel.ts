@@ -50,11 +50,7 @@ export class Channel {
 
 
 export abstract class AsyncTask {
-  transcationId: number
 
-  constructor(transcationId: number) {
-    this.transcationId = transcationId
-  }
 }
 
 interface Transcation {
@@ -176,6 +172,14 @@ export class MethodChannel {
       argProxy = argObject;
     }
     const result = fun.call(null, argProxy)
+
+    if (callType === 'async' && (result instanceof AsyncTask)) {
+      let transcation = this.transcationMap.get(transcationId)
+      if (transcation) {
+        transcation.asyncTask = result
+      }
+      return "AsyncTask_Result"
+    }
 
     // 支持Promise返回值
     if(callType == 'sync' && (result instanceof Promise)) {
