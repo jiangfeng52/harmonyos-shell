@@ -1,9 +1,7 @@
 import { BuilderNode } from '@kit.ArkUI'
 import { TaroWebController } from '../components/TaroWeb'
-import { InjectObject } from '../interfaces/InjectObject'
 import { taroLogger } from '../utils/Logger'
 import { TaroHybridCoreBuilder, TaroHybridCoreBuilderData } from './TaroHybridCore'
-import { TaroHybridUtils } from './TaroHybridUtils'
 
 export function getFromParameter(url: string): number {
   const fromMatch = url.match(/[?&]from=(native(?:_\d+)?)(?:&|$)/);
@@ -29,13 +27,12 @@ export class TaroHybridCoreInstance {
   builderData: TaroHybridCoreBuilderData
   nativeNavigateListener: NativeNavigateListener | undefined
 
-  constructor(domain: string, indexHtmlPath: string, taroPath: string, injectObj: InjectObject, forceDarkAccess: boolean) {
+  constructor(domain: string, indexHtmlPath: string, taroPath: string, forceDarkAccess: boolean) {
     this.builderData = {
       domain: domain,
       indexHtmlPath: indexHtmlPath,
       taroPath: taroPath,
       taroWebController: new TaroWebController(),
-      injectObj: injectObj,
       forceDarkAccess: forceDarkAccess
     }
   }

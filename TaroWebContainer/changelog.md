@@ -1,3 +1,12 @@
+## 3.6.29-harmony-hybrid-alpha.40
+- Merge branch 'f-dark-title-kxj' into '58/harmony-hybrid-3.6.29'
+- 导航栏深色模式适配
+- changelog改为小写
+- Merge branch 'f-ly-animation-whitescreen' into '58/harmony-hybrid-3.6.29'
+- fix(混合路由): 从首页进入业务线时，通过调整rebuild时机，解决切换动画会白屏的问题
+- Merge pull request #198 from jiangfeng52/f-dark-title-kxj
+- 导航栏适配深色模式： 1. TaroWebContainer监听environment更新colorMode 2. NavigationBar深色模式下进行颜色反转
+
 ## 3.6.29-harmony-hybrid-alpha.37
 - 把changelog.md由大写改为小写
 
