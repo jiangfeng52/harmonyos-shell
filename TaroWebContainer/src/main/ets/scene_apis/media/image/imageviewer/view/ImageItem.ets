@@ -13,6 +13,7 @@ export struct ImageItem {
   @State imageOffsetInfo: OffsetModel = new OffsetModel(); // 偏移数据
   @State matrix: matrix4.Matrix4Transit = matrix4.identity().copy();
   @State showLoading: boolean = true;
+  swiperAnimation: Function = (val: boolean): void => {};
   imageUrl: string = ""; // 当前图片url
   controller?: SwiperController;
 
@@ -63,6 +64,13 @@ export struct ImageItem {
     .backgroundColor(ImageViewerConstants.IMAGE_VIEWER_BACKGROUND_COLOR)
     .alignContent(Alignment.BottomEnd)
     .expandSafeArea([SafeAreaType.SYSTEM], [SafeAreaEdge.TOP, SafeAreaEdge.BOTTOM])
+    .onTouch((event) => {
+      if (this.imageScaleInfo.scaleValue === this.imageScaleInfo.defaultScaleValue) {
+        this.swiperAnimation(true)
+      } else {
+        this.swiperAnimation(false)
+      }
+    })
     .gesture(
       GestureGroup(
         GestureMode.Exclusive, // 互斥识别手势
