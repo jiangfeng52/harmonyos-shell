@@ -444,12 +444,12 @@ export class NativeApi {
       TaroHybridManager.nativeBack()
     },
 
-    onStorageStatusChange: (options: (type: string, key: string) => void) => {
-      this.storageApi.onStorageStatusChange(options)
+    onStorageStatusChange: (listener: (type: string, key: string) => void) => {
+      this.storageApi.setStorageStatusChangeListener(listener)
     },
 
-    offStorageStatusChange: (listener: (type: string, key: string) => void) => {
-      this.storageApi.offStorageStatusChange(listener)
+    offStorageStatusChange: (_listener: (type: string, key: string) => void) => {
+      this.storageApi.setStorageStatusChangeListener(undefined)
     }
   }
 }

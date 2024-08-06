@@ -13,7 +13,7 @@ const TYPE_STORAGE_UPDATE_EVENT_CLEAR = "TYPE_STORAGE_UPDATE_EVENT_CLEAR"
  */
 export class StorageApi {
   private indexHtmlPath: string
-  private storageChangeListeners: Set<(type: string, key: string) => void> = new Set()
+  private storageChangeListener: ((type: string, key: string) => void) | undefined = undefined
   private instanceId: string = util.generateRandomUUID(false);
   // 用于保存创建成功的订阅者对象，后续使用其完成订阅及退订的动作
   private taroStorageUpdatedSubscriber: commonEventManager.CommonEventSubscriber | null = null;
@@ -71,12 +71,8 @@ export class StorageApi {
     taroStorage.updatePageShowDataKeys(this.indexHtmlPath, options)
   }
 
-  public onStorageStatusChange(listener: (type: string, key: string) => void) {
-    this.storageChangeListeners.add(listener)
-  }
-
-  public offStorageStatusChange(listener: (type: string, key: string) => void) {
-    this.storageChangeListeners.delete(listener)
+  public setStorageStatusChangeListener(listener: ((type: string, key: string) => void) | undefined) {
+    this.storageChangeListener = listener
   }
 
   /**
@@ -142,9 +138,7 @@ export class StorageApi {
   private dispatchStorageUpdateEventToJS(parameters: ESObject) {
     if (parameters.id && parameters.key && parameters.type) {
       if (parameters.id !== this.instanceId) {
-        this.storageChangeListeners.forEach(listener => {
-          listener(parameters.type, parameters.key)
-        })
+        this.storageChangeListener?.(parameters.type, parameters.key)
       }
     }
   }
