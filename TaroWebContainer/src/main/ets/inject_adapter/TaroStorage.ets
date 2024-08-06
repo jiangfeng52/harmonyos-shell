@@ -1,9 +1,8 @@
 import { distributedKVStore } from '@kit.ArkData';
 import { taroLogger } from '../utils/Logger';
 import { BusinessError } from '@ohos.base';
-import { CallbackResult, SuccessCallbackResult } from './TaroApi';
+import { CallbackResult, SuccessCallbackResult } from './native_api/TaroApi';
 import { HashMap } from '@kit.ArkTS';
-import { commonEventManager } from '@kit.BasicServicesKit';
 
 const TARO_STORAGE = "taro_storage"
 const STORE_ID = 'TaroStorage'

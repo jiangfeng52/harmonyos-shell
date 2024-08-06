@@ -1,5 +1,5 @@
-import { taroLogger } from '../utils/Logger';
-import { taroStorage } from './TaroStorage';
+import { taroLogger } from '../../utils/Logger';
+import { taroStorage } from '../TaroStorage';
 import { BusinessError, commonEventManager } from '@kit.BasicServicesKit';
 import { util } from '@kit.ArkTS';
 
@@ -9,9 +9,9 @@ const TYPE_STORAGE_UPDATE_EVENT_REMOVE = "TYPE_STORAGE_UPDATE_EVENT_REMOVE"
 const TYPE_STORAGE_UPDATE_EVENT_CLEAR = "TYPE_STORAGE_UPDATE_EVENT_CLEAR"
 
 /**
- * TaroStorage管理器，非单例模式，主要是为前端提供Storage变化监听
+ * StorageApi，非单例模式，提供Storage相关API，并为前端实现storage状态的监听和回调
  */
-export class TaroStorageManager {
+export class StorageApi {
   private indexHtmlPath: string
   private storageChangeListeners: Set<(type: string, key: string) => void> = new Set()
   private instanceId: string = util.generateRandomUUID(false);

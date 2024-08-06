@@ -20,11 +20,11 @@ import { switchInternalToHapSandBox } from '../utils/InternalPath';
 import { MiniLocalFileDataSource } from '../data/source/local/MiniLocalFileDataSource';
 import { MiniRawFileDataSource } from '../data/source/local/MiniRawFileDataSource';
 import webview from '@ohos.web.webview';
+import webView from '@ohos.web.webview';
 import { taroLogger } from '../utils/Logger';
 import { LocalUpdateManagerInstance } from '../update/LocalUpdateManager';
-import { AlbumBackward } from '../interfaces/Media'
-import webView from '@ohos.web.webview';
-import { NativeApi } from '../inject_adapter/NativeApi';
+import { AlbumBackward } from '../interfaces/Media';
+import { NativeApi } from '../inject_adapter/native_api/NativeApi';
 import { Channel, MethodChannel } from '../inject_adapter/Channel';
 import { sameLayerManager } from '../utils/SameLayerManager';
 import { NativeVideoBuilder } from './SameLayer/NativeComponents/Video/Video';
@@ -33,7 +33,7 @@ import { callMapContextFunction, createMapContext } from '../utils/MapManager';
 import { NativeCacheManager } from '../inject_adapter/NativeCacheManager';
 import { taroTrace, TraceTask } from '../utils/Trace';
 import { registerSceneApis } from '../scene_apis/Index';
-import { TaroStorageManager } from '../inject_adapter/TaroStorageManager';
+import { StorageApi } from '../inject_adapter/native_api/StorageApi';
 
 const TARO_WEB_TAG = 'TaroWeb';
 
@@ -132,7 +132,6 @@ export struct TaroWeb {
   enableWebDebug: boolean = true;
   @Link channel: Channel
   @Link methodChannel: MethodChannel
-  private taroStorageManager: TaroStorageManager | undefined = undefined
   private nativeAPI: NativeApi | undefined = undefined
 
 
@@ -141,8 +140,7 @@ export struct TaroWeb {
     this.taroWebController.hasBindedTaroWeb = true
     this.taroWebController.addRequestHandler(this.handleInternalResource);
     this.taroWebController.addRequestHandler(this.useLocalCacheResource);
-    this.taroStorageManager = new TaroStorageManager(this.indexHtmlPath)
-    this.nativeAPI = new NativeApi(this.indexHtmlPath, this.taroWebController, this.taroStorageManager)
+    this.nativeAPI = new NativeApi(this.indexHtmlPath, this.taroWebController)
     this.methodChannel.registerMethods('NativeApi', this.nativeAPI.nativeObj)
     // 注册场景化API
     registerSceneApis(this.methodChannel)
@@ -154,12 +152,12 @@ export struct TaroWeb {
     if (!sameLayerManager.isAlreadyRegistered('hos-video')) {
       sameLayerManager.registerNativeComponentBuilders('hos-video', NativeVideoBuilder);
     }
-    this.taroStorageManager?.onWebViewAboutToAppear()
+    this.nativeAPI?.onWebViewAboutToAppear()
   }
 
   aboutToDisappear() {
     this.taroWebController.hasBindedTaroWeb = false
-    this.taroStorageManager?.onWebViewAboutToDisappear()
+    this.nativeAPI?.onWebViewAboutToDisappear()
   }
 
   handleInternalResource: InterceptRequestHandler = (request) => {

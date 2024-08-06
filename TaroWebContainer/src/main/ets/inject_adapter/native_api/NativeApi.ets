@@ -15,13 +15,13 @@
 
 
 import buffer from '@ohos.buffer';
-import { taroLogger } from '../utils/Logger';
-import { as } from '../utils/advancedapi.min';
-import { CallInstanceParam, ClassInstanceApi } from '../utils/ClassInstanceUtil';
-import { NativeNavigateListener } from '../tarohybrid/TaroHybridCoreInstance';
-import { TaroHybridManager } from '../tarohybrid/TaroHybridManager';
-import { TaroWebController } from '../components/TaroWeb';
-import { TaroStorageManager } from './TaroStorageManager';
+import { taroLogger } from '../../utils/Logger';
+import { as } from '../../utils/advancedapi.min';
+import { CallInstanceParam, ClassInstanceApi } from '../../utils/ClassInstanceUtil';
+import { NativeNavigateListener } from '../../tarohybrid/TaroHybridCoreInstance';
+import { TaroHybridManager } from '../../tarohybrid/TaroHybridManager';
+import { TaroWebController } from '../../components/TaroWeb';
+import { StorageApi } from './StorageApi';
 import { SuccessCallbackResult } from './TaroApi';
 
 export interface StorageStatus {
@@ -57,13 +57,21 @@ export class NativeApi {
   private indexHtmlPath: string
   private classInstanceApi: ClassInstanceApi
   private taroWebController: TaroWebController
-  private taroStorageManager: TaroStorageManager
+  private storageApi: StorageApi
 
-  constructor(indexHtmlPath: string, taroWebController: TaroWebController, taroStorageManager: TaroStorageManager) {
+  constructor(indexHtmlPath: string, taroWebController: TaroWebController) {
     this.indexHtmlPath = indexHtmlPath
     this.classInstanceApi = new ClassInstanceApi()
     this.taroWebController = taroWebController
-    this.taroStorageManager = taroStorageManager
+    this.storageApi = new StorageApi(indexHtmlPath)
+  }
+
+  public onWebViewAboutToAppear(){
+    this.storageApi?.onWebViewAboutToAppear()
+  }
+
+  public onWebViewAboutToDisappear(){
+    this.storageApi?.onWebViewAboutToDisappear()
   }
 
   nativeObj: ESObject = {
@@ -395,37 +403,37 @@ export class NativeApi {
     // },
 
     setStorage: (options: ESObject) => {
-      this.taroStorageManager.setStorage(options)
+      this.storageApi.setStorage(options)
     },
 
     removeStorage: (options: ESObject) => {
-      this.taroStorageManager.removeStorage(options)
+      this.storageApi.removeStorage(options)
     },
 
     getStorage: (options: ESObject) => {
       taroLogger.debug('taro_storage', 'getStorage({key: %{public}s}) from jsbridge', options?.key)
-      this.taroStorageManager.getStorage(options)
+      this.storageApi.getStorage(options)
     },
 
     getStorageSync: (options: ESObject): Promise<SuccessCallbackResult<string>> => {
       taroLogger.debug('taro_storage', 'getStorageSync({key: %{public}s}) from jsbridge', options?.key);
-      return this.taroStorageManager.getStorageSync(options);
+      return this.storageApi.getStorageSync(options);
     },
 
     getStorageInfo: (options: ESObject) => {
-      this.taroStorageManager.getStorageInfo(options)
+      this.storageApi.getStorageInfo(options)
     },
 
     clearStorage: (options: ESObject) => {
-      this.taroStorageManager.clearStorage(options)
+      this.storageApi.clearStorage(options)
     },
 
     batchGetPageShowDataStorage: (options: ESObject) => {
-      this.taroStorageManager.batchGetPageShowDataStorage(options)
+      this.storageApi.batchGetPageShowDataStorage(options)
     },
 
     updatePageShowDataKeys: (options: ESObject) => {
-      this.taroStorageManager.updatePageShowDataKeys(options)
+      this.storageApi.updatePageShowDataKeys(options)
     },
 
     onNativeNavigate: (options: NativeNavigateListener) => {
@@ -437,11 +445,11 @@ export class NativeApi {
     },
 
     onStorageStatusChange: (options: (type: string, key: string) => void) => {
-      this.taroStorageManager.onStorageStatusChange(options)
+      this.storageApi.onStorageStatusChange(options)
     },
 
     offStorageStatusChange: (listener: (type: string, key: string) => void) => {
-      this.taroStorageManager.offStorageStatusChange(listener)
+      this.storageApi.offStorageStatusChange(listener)
     }
   }
 }
