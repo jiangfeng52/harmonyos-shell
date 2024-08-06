@@ -33,7 +33,7 @@ import { callMapContextFunction, createMapContext } from '../utils/MapManager';
 import { NativeCacheManager } from '../inject_adapter/NativeCacheManager';
 import { taroTrace, TraceTask } from '../utils/Trace';
 import { registerSceneApis } from '../scene_apis/Index';
-import { commonEventManager } from '@kit.BasicServicesKit';
+import { TaroStorageManager } from '../inject_adapter/TaroStorageManager';
 
 const TARO_WEB_TAG = 'TaroWeb';
 
@@ -132,9 +132,8 @@ export struct TaroWeb {
   enableWebDebug: boolean = true;
   @Link channel: Channel
   @Link methodChannel: MethodChannel
+  private taroStorageManager: TaroStorageManager | undefined = undefined
   private nativeAPI: NativeApi | undefined = undefined
-  // 用于保存创建成功的订阅者对象，后续使用其完成订阅及退订的动作
-  private taroStorageUpdatedSubscriber: commonEventManager.CommonEventSubscriber | null = null;
 
 
   aboutToAppear() {
@@ -142,8 +141,8 @@ export struct TaroWeb {
     this.taroWebController.hasBindedTaroWeb = true
     this.taroWebController.addRequestHandler(this.handleInternalResource);
     this.taroWebController.addRequestHandler(this.useLocalCacheResource);
-
-    this.nativeAPI = new NativeApi(this.indexHtmlPath, this.taroWebController)
+    this.taroStorageManager = new TaroStorageManager(this.indexHtmlPath)
+    this.nativeAPI = new NativeApi(this.indexHtmlPath, this.taroWebController, this.taroStorageManager)
     this.methodChannel.registerMethods('NativeApi', this.nativeAPI.nativeObj)
     // 注册场景化API
     registerSceneApis(this.methodChannel)
@@ -155,65 +154,12 @@ export struct TaroWeb {
     if (!sameLayerManager.isAlreadyRegistered('hos-video')) {
       sameLayerManager.registerNativeComponentBuilders('hos-video', NativeVideoBuilder);
     }
-
-    this.subscribeTaroStorageUpdateEvent()
+    this.taroStorageManager?.onWebViewAboutToAppear()
   }
 
   aboutToDisappear() {
     this.taroWebController.hasBindedTaroWeb = false
-    this.unsubscribeTaroStorageUpdateEvent()
-  }
-
-  /**
-   * 订阅TaroStorageUpdated事件
-   */
-  subscribeTaroStorageUpdateEvent() {
-    // 订阅者信息，其中的event字段需要替换为实际的事件名称。
-    let storageUpdateSubscribeInfo: commonEventManager.CommonEventSubscribeInfo = {
-      events: ['TaroStorageUpdated'], // 订阅TaroStorageUpdated事件
-    };
-    // 创建订阅者回调
-    commonEventManager.createSubscriber(storageUpdateSubscribeInfo, (err: BusinessError, data: commonEventManager.CommonEventSubscriber) => {
-      if (err) {
-        return;
-      }
-      this.taroStorageUpdatedSubscriber = data;
-      // 订阅公共事件回调
-      if (this.taroStorageUpdatedSubscriber !== null) {
-        commonEventManager.subscribe(this.taroStorageUpdatedSubscriber, (err: BusinessError, data: commonEventManager.CommonEventData) => {
-          if (err) {
-            taroLogger.error(TARO_WEB_TAG, `subscribeTaroStorageUpdateEvent error: ${JSON.stringify(err)}`)
-            return;
-          }
-          if (data.data) {
-            this.taroWebController.webController.runJavaScript(
-              `document.dispatchEvent(new CustomEvent('TaroStorageUpdated', {
-                 detail: '${data.data}'
-               }))
-               `
-            )
-          }
-        })
-      } else {
-        taroLogger.error(TARO_WEB_TAG, `subscribeTaroStorageUpdateEvent error: this.taroStorageUpdatedSubscriber is null or undefined`)
-      }
-    })
-  }
-
-  /**
-   * 取消订阅TaroStorageUpdated事件
-   */
-  unsubscribeTaroStorageUpdateEvent() {
-    // subscriber为订阅事件时创建的订阅者对象
-    if (this.taroStorageUpdatedSubscriber !== null) {
-      commonEventManager.unsubscribe(this.taroStorageUpdatedSubscriber, (err: BusinessError) => {
-        if (err) {
-          taroLogger.error(TARO_WEB_TAG, `unsubscribeTaroStorageUpdateEvent error: ${JSON.stringify(err)}`)
-        } else {
-          this.taroStorageUpdatedSubscriber = null;
-        }
-      })
-    }
+    this.taroStorageManager?.onWebViewAboutToDisappear()
   }
 
   handleInternalResource: InterceptRequestHandler = (request) => {

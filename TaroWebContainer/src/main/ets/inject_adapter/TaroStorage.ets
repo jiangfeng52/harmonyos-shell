@@ -195,7 +195,6 @@ class TaroStorage {
     taroLogger.debug(TARO_STORAGE, 'set(key=%{public}s)', key)
 
     this.cacheMap.set(key, data)
-
     this.verifyKVStore(options.fail)
 
     try {
@@ -205,7 +204,6 @@ class TaroStorage {
           taroLogger.error(TARO_STORAGE, JSON.stringify(err))
         } else {
           options.success && options.success({errMsg:'ok'})
-          this.publishStoreUpdateEvent(key)
         }
       })
     } catch (err) {
@@ -218,6 +216,7 @@ class TaroStorage {
     const key:string = options.key
     taroLogger.debug(TARO_STORAGE, 'remove(key=%{public}s)', key)
 
+    this.cacheMap.delete(key)
     this.verifyKVStore(options.fail)
 
     try {
@@ -238,6 +237,7 @@ class TaroStorage {
   clear(options: ClearOptions){
     taroLogger.debug(TARO_STORAGE, `clear`)
 
+    this.cacheMap.clear()
     this.verifyKVStore(options.fail)
 
     try {
@@ -367,23 +367,6 @@ class TaroStorage {
     })
   }
 
-  /**
-   * 发布store 更新事件
-   * @param key
-   */
-  publishStoreUpdateEvent(key: string) {
-    let options: commonEventManager.CommonEventPublishData = {
-      data: key,
-    };
-    commonEventManager.publish('TaroStorageUpdated', options, (err: BusinessError) => {
-      if (err) {
-        taroLogger.error(TARO_STORAGE, `publish store update event error, key = ${key} , reason : %{public}s`,
-          JSON.stringify(err))
-      } else {
-        taroLogger.debug(TARO_STORAGE, `publish store update event success, key = ${key} `)
-      }
-    });
-  }
 }
 
 export const taroStorage = new TaroStorage()
