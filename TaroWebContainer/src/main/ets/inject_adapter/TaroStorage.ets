@@ -189,21 +189,6 @@ class TaroStorage {
     }
   }
 
-  setByPromise(options: SetOptions): Promise<SuccessCallbackResult<string>> {
-    return new Promise((resolve: Function, reject: Function)=>{
-      this.set({
-        key: options.key,
-        data: options.data,
-        fail: (res: CallbackResult)=>{
-          reject(res)
-        },
-        success: (res: CallbackResult)=>{
-          resolve(res)
-        }
-      })
-    })
-  }
-
   set(options: SetOptions){
     const key:string = options.key
     const data:string = options.data
