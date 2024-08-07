@@ -24,7 +24,6 @@ import { taroLogger } from '../utils/Logger';
 import { LocalUpdateManagerInstance } from '../update/LocalUpdateManager';
 import { AlbumBackward } from '../interfaces/Media'
 import webView from '@ohos.web.webview';
-import { NativeApi } from '../inject_adapter/NativeApi';
 import { Channel, MethodChannel } from '../inject_adapter/Channel';
 import { sameLayerManager } from '../utils/SameLayerManager';
 import { NativeVideoBuilder } from './SameLayer/NativeComponents/Video/Video';
@@ -35,6 +34,7 @@ import { taroTrace, TraceTask } from '../utils/Trace';
 import { registerSceneApis } from '../scene_apis/Index';
 import { TaroHybridManager } from '../tarohybrid/TaroHybridManager';
 import { StorageApi } from '../inject_adapter/native_api/StorageApi';
+import { NativeApi } from '../inject_adapter/native_api/NativeApi';
 
 const TARO_WEB_TAG = 'TaroWeb';
 
