@@ -1,7 +1,7 @@
 import { distributedKVStore } from '@kit.ArkData';
 import { taroLogger } from '../utils/Logger';
 import { BusinessError } from '@ohos.base';
-import { CallbackResult, SuccessCallbackResult } from './TaroApi';
+import { CallbackResult, SuccessCallbackResult } from './native_api/TaroApi';
 import { HashMap } from '@kit.ArkTS';
 
 const TARO_STORAGE = "taro_storage"
@@ -85,6 +85,8 @@ export interface UpdatePageShowDataKeysOptions {
 
 class TaroStorage {
 
+  private cacheMap = new Map<string, string>()
+
   private kvManager: distributedKVStore.KVManager | undefined;
   private kvStore: distributedKVStore.SingleKVStore | undefined;
   private createKVStorePromise: Promise<void> | undefined
@@ -156,6 +158,11 @@ class TaroStorage {
     const key:string = options.key
     taroLogger.debug(TARO_STORAGE, 'get(key=%{public}s)', key)
 
+    if (this.cacheMap.has(key)) {
+      options.success && options.success({errMsg:'ok', data: this.cacheMap.get(key)!, key: key })
+      return ;
+    }
+
     this.verifyKVStore(options.fail)
 
     try {
@@ -171,6 +178,7 @@ class TaroStorage {
           options.fail && options.fail({errMsg:`getStorage fail: ${JSON.stringify(err)}`})
           return ;
         }
+        this.cacheMap.set(key, data.toString())
         taroLogger.debug(TARO_STORAGE, 'get(key=%{public}s), value=%{public}s', key, data)
         options.success && options.success({errMsg:'ok', data: data.toString(), key: key })
       })
@@ -185,6 +193,7 @@ class TaroStorage {
     const data:string = options.data
     taroLogger.debug(TARO_STORAGE, 'set(key=%{public}s)', key)
 
+    this.cacheMap.set(key, data)
     this.verifyKVStore(options.fail)
 
     try {
@@ -206,6 +215,7 @@ class TaroStorage {
     const key:string = options.key
     taroLogger.debug(TARO_STORAGE, 'remove(key=%{public}s)', key)
 
+    this.cacheMap.delete(key)
     this.verifyKVStore(options.fail)
 
     try {
@@ -226,6 +236,7 @@ class TaroStorage {
   clear(options: ClearOptions){
     taroLogger.debug(TARO_STORAGE, `clear`)
 
+    this.cacheMap.clear()
     this.verifyKVStore(options.fail)
 
     try {
@@ -354,6 +365,7 @@ class TaroStorage {
       success: options.success
     })
   }
+
 }
 
 export const taroStorage = new TaroStorage()

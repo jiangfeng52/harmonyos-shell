@@ -15,29 +15,32 @@
 
 
 import buffer from '@ohos.buffer';
-import { taroLogger } from '../utils/Logger'
-import { as } from '../utils/advancedapi.min';
-import { taroStorage } from './TaroStorage';
-import { ClassInstanceApi, CallInstanceParam } from '../utils/ClassInstanceUtil';
-import { NativeNavigateListener } from '../tarohybrid/TaroHybridCoreInstance';
-import { TaroHybridManager } from '../tarohybrid/TaroHybridManager';
-import { TaroWebController } from '../components/TaroWeb';
+import { taroLogger } from '../../utils/Logger';
+import { as } from '../../utils/advancedapi.min';
+import { CallInstanceParam, ClassInstanceApi } from '../../utils/ClassInstanceUtil';
+import { NativeNavigateListener } from '../../tarohybrid/TaroHybridCoreInstance';
+import { TaroHybridManager } from '../../tarohybrid/TaroHybridManager';
+import { TaroWebController } from '../../components/TaroWeb';
+import { StorageApi } from './StorageApi';
+import { SuccessCallbackResult } from './TaroApi';
 
 export interface StorageStatus {
   done: boolean; // 操作是否完成
-  data: string|number|boolean|Uint8Array;
+  data: string | number | boolean | Uint8Array;
   errorMsg: string;
 }
 
 class NativeApiConfig {
   public fileManager: ESObject
   private static INSTANCE: NativeApiConfig
-  public static getInstance(){
-    if (!NativeApiConfig.INSTANCE){
+
+  public static getInstance() {
+    if (!NativeApiConfig.INSTANCE) {
       NativeApiConfig.INSTANCE = new NativeApiConfig()
     }
     return NativeApiConfig.INSTANCE
   }
+
   // public storageStatusMap: Map<string, StorageStatus>
 
   constructor() {
@@ -54,14 +57,24 @@ export class NativeApi {
   private indexHtmlPath: string
   private classInstanceApi: ClassInstanceApi
   private taroWebController: TaroWebController
+  private storageApi: StorageApi
 
   constructor(indexHtmlPath: string, taroWebController: TaroWebController) {
     this.indexHtmlPath = indexHtmlPath
-    this.classInstanceApi  = new ClassInstanceApi()
+    this.classInstanceApi = new ClassInstanceApi()
     this.taroWebController = taroWebController
+    this.storageApi = new StorageApi(indexHtmlPath)
   }
 
-  nativeObj: ESObject =  {
+  public onWebViewAboutToAppear(){
+    this.storageApi?.onWebViewAboutToAppear()
+  }
+
+  public onWebViewAboutToDisappear(){
+    this.storageApi?.onWebViewAboutToDisappear()
+  }
+
+  nativeObj: ESObject = {
     getWindowInfo: as['getWindowInfo'],
     getSystemInfoSync: as['getSystemInfoSync'],
     getDeviceInfo: as['getDeviceInfo'],
@@ -82,7 +95,7 @@ export class NativeApi {
     downloadFile(options: ESObject): void {
       as.downloadFile(options)
     },
-    
+
     getVideoInfo(options: ESObject): void {
       return as.getVideoInfo(options)
     },
@@ -217,19 +230,19 @@ export class NativeApi {
       return as.vibrateLong(options)
     },
 
-    callInstance: (options: CallInstanceParam) =>  {
+    callInstance: (options: CallInstanceParam) => {
       return this.classInstanceApi.callInstance(options)
     },
 
-    callInstanceAsync: (options: CallInstanceParam) =>  {
+    callInstanceAsync: (options: CallInstanceParam) => {
       this.classInstanceApi.callInstanceAsync(options)
     },
 
-    createInstance: (options: ESObject) =>  {
+    createInstance: (options: ESObject) => {
       return this.classInstanceApi.createInstance(this.taroWebController, options)
     },
 
-    syncAndReleaseInstance: (options: CallInstanceParam) =>  {
+    syncAndReleaseInstance: (options: CallInstanceParam) => {
       this.classInstanceApi.syncAndReleaseInstance(options)
     },
 
@@ -390,45 +403,53 @@ export class NativeApi {
     // },
 
     setStorage: (options: ESObject) => {
-      taroStorage.set(options)
+      this.storageApi.setStorage(options)
     },
 
     removeStorage: (options: ESObject) => {
-      taroStorage.remove(options)
+      this.storageApi.removeStorage(options)
     },
 
     getStorage: (options: ESObject) => {
       taroLogger.debug('taro_storage', 'getStorage({key: %{public}s}) from jsbridge', options?.key)
-      taroStorage.get(options)
+      this.storageApi.getStorage(options)
     },
 
-    getStorageSync: (options: ESObject) => {
-      taroLogger.debug('taro_storage', 'getStorageSync({key: %{public}s}) from jsbridge', options?.key)
-      return taroStorage.getByPromise(options)
+    getStorageSync: (options: ESObject): Promise<SuccessCallbackResult<string>> => {
+      taroLogger.debug('taro_storage', 'getStorageSync({key: %{public}s}) from jsbridge', options?.key);
+      return this.storageApi.getStorageSync(options);
     },
 
     getStorageInfo: (options: ESObject) => {
-      taroStorage.getInfo(options)
+      this.storageApi.getStorageInfo(options)
     },
 
     clearStorage: (options: ESObject) => {
-      taroStorage.clear(options)
+      this.storageApi.clearStorage(options)
     },
 
     batchGetPageShowDataStorage: (options: ESObject) => {
-      taroStorage.batchGetPageShowData(this.indexHtmlPath, options)
+      this.storageApi.batchGetPageShowDataStorage(options)
     },
 
     updatePageShowDataKeys: (options: ESObject) => {
-      taroStorage.updatePageShowDataKeys(this.indexHtmlPath, options)
+      this.storageApi.updatePageShowDataKeys(options)
     },
 
     onNativeNavigate: (options: NativeNavigateListener) => {
       const coreInstance = TaroHybridManager.getCoreInstance(this.indexHtmlPath)
       coreInstance?.setNativeNavigateListener(options)
     },
-    nativeBack: ()=>{
+    nativeBack: () => {
       TaroHybridManager.nativeBack()
+    },
+
+    onStorageStatusChange: (listener: (type: string, key: string) => void) => {
+      this.storageApi.setStorageStatusChangeListener(listener)
+    },
+
+    offStorageStatusChange: (_listener: (type: string, key: string) => void) => {
+      this.storageApi.setStorageStatusChangeListener(undefined)
     }
   }
 }
