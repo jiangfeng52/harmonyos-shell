@@ -39,7 +39,7 @@ struct TaroHybridPage {
   private taroPath: string = (router.getParams() as TaroHybridRouterParams).taroPath
 
   aboutToAppear(): void {
-
+    TaroHybridManager.setCustomUserAgent('')
   }
 
   onPageShow(): void {
