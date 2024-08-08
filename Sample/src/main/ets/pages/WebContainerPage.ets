@@ -51,6 +51,10 @@ struct WebContainerPage {
     }
   }
 
+  getUrl(value: LoadCommittedDetails) {
+    console.log('LoadCommittedDetails:', JSON.stringify(value))
+  }
+
   build() {
     Column() {
       TaroWebContainer({
@@ -65,7 +69,10 @@ struct WebContainerPage {
         injectObj: this.nativeObj, // 注入对象
         navigationInitVisible: true, // 导航栏是否显示
         forceDarkAccess: true,
-        userAgent: ''
+        userAgent: '',
+        getLoadCommittedDetails: (value: LoadCommittedDetails) => {
+          this.getUrl(value)
+        }
       })
         .width('100%')
         .height('100%')

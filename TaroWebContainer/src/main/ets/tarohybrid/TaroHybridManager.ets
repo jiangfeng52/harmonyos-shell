@@ -29,6 +29,7 @@ export class TaroHybridManager {
   // 添加自定义的user-agent
   private static customUserAgent: string = ''
   private static debuggable = false
+  private static loadCommittedDetailsMaps: Map<string, Function> = new Map()
 
   static init(options: TaroHybridManagerOptions){
     TaroHybridManager.options = options
@@ -46,6 +47,32 @@ export class TaroHybridManager {
   }
   static getCustomUserAgent(): string {
     return TaroHybridManager.customUserAgent
+  }
+
+  static initLoadCommittedDetails(indexHtmlPath: string, getDetails: (value: LoadCommittedDetails) => void): void {
+    if (!TaroHybridManager.loadCommittedDetailsMaps.get(indexHtmlPath)) {
+      TaroHybridManager.loadCommittedDetailsMaps.set(indexHtmlPath, getDetails)
+    }
+  }
+
+  static getDetails(indexHtmlPath: string): boolean {
+    if (TaroHybridManager.loadCommittedDetailsMaps.get(indexHtmlPath)) {
+      return true
+    }
+    return false
+  }
+
+  static setLoadCommittedDetails(indexHtmlPath: string, options: LoadCommittedDetails): void {
+    const getDetails = TaroHybridManager.loadCommittedDetailsMaps.get(indexHtmlPath)
+    if (getDetails) {
+      getDetails(options)
+    }
+  }
+
+  static removeLoadCommittedDetails(indexHtmlPath: string): void {
+    if (TaroHybridManager.loadCommittedDetailsMaps.get(indexHtmlPath)) {
+      TaroHybridManager.loadCommittedDetailsMaps.delete(indexHtmlPath)
+    }
   }
 
   static setDebuggable(debuggable: boolean) {
@@ -74,6 +101,7 @@ export class TaroHybridManager {
     const instance = TaroHybridManager.getOrCreateCoreInstance(indexHtmlPath, taroPath)
     instance.getBuilderNode(uiContext)
   }
+  
   static getOrCreateCoreInstance(indexHtmlPath: string, taroPath: string): TaroHybridCoreInstance{
     let builderInstance = TaroHybridManager.builderInstanceMaps.get(indexHtmlPath)
     if (!builderInstance){
@@ -89,10 +117,12 @@ export class TaroHybridManager {
 
     return builderInstance
   }
+
   static appear(indexHtmlPath: string){
     let count = TaroHybridManager.referenceCountMap.get(indexHtmlPath) ?? 0;
     TaroHybridManager.referenceCountMap.set(indexHtmlPath, count + 1)
   }
+
   static disappear(indexHtmlPath: string){
     let count = TaroHybridManager.referenceCountMap.get(indexHtmlPath) ?? 0;
     if(count > 1) {
@@ -108,6 +138,7 @@ export class TaroHybridManager {
   static getCoreInstance(indexHtmlPath: string): TaroHybridCoreInstance | undefined{
     return TaroHybridManager.builderInstanceMaps.get(indexHtmlPath)
   }
+
   static loadUrl(indexHtmlPath: string, taroPath: string): boolean{
     const instance = TaroHybridManager.getCoreInstance(indexHtmlPath)
     instance?.navigateTo(taroPath)

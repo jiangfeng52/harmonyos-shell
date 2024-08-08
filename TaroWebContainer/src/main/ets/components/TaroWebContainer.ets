@@ -75,6 +75,7 @@ export struct TaroWebContainer {
   @State channel: Channel = new Channel()
   @State methodChannel: MethodChannel = new MethodChannel(this.channel)
   @Prop isRoot: boolean = true
+  getLoadCommittedDetails: Function = (value: LoadCommittedDetails): void => {}
 
   // 显示图库
   @State showAlbum: boolean = false;
@@ -166,7 +167,7 @@ export struct TaroWebContainer {
     }
   }
 
-  
+
   chooseAlbumCallback = (options: chooseAlbumOptions, mediaItems: MediaItemData[], previewOneMode?: boolean) => {
     const mediaPromise = new Promise<ChooseAlbumResult>((resolve, reject) => {
       this.mediaResolve = resolve;
@@ -192,7 +193,9 @@ export struct TaroWebContainer {
   }
 
   albumBackward: AlbumBackward = {
-    accessBackward: () => { return this.showAlbum; },
+    accessBackward: () => {
+      return this.showAlbum;
+    },
     backward: () => {
       if (this.isAlbumOnDetail) {
         this.isAlbumOnDetail = false;
@@ -248,7 +251,8 @@ export struct TaroWebContainer {
         channel: this.channel,
         methodChannel: this.methodChannel,
         forceDarkAccess: this.forceDarkAccess,
-        userAgent: this.userAgent
+        userAgent: this.userAgent,
+        getLoadCommittedDetails:(value:LoadCommittedDetails)=>{this.getLoadCommittedDetails(value)}
       })
       NavigationBar({
         navigationBarData: this.navigationBarData,
@@ -257,7 +261,10 @@ export struct TaroWebContainer {
       })
       if(this.showCapsule) {
         Image($r("app.media.capsule"))
-          .margin({ top: (this.isFullScreen ? this.systemBarHeight : 0) + this.capsuleOptions.height - 25, right: this.capsuleOptions.marginRight })
+          .margin({
+            top: (this.isFullScreen ? this.systemBarHeight : 0) + this.capsuleOptions.height - 25,
+            right: this.capsuleOptions.marginRight
+          })
           .fillColor(this.navigationBarData.barFrontColor)
           .width(this.capsuleOptions.width)
           .height(25)

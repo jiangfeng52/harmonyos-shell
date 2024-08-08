@@ -38,8 +38,13 @@ struct TaroHybridPage {
   private indexHtmlPath: string = (router.getParams() as TaroHybridRouterParams).indexHtmlPath
   private taroPath: string = (router.getParams() as TaroHybridRouterParams).taroPath
 
+  getDetails(value: LoadCommittedDetails) {
+    console.log('LoadCommittedDetails:', JSON.stringify(value))
+  }
+
   aboutToAppear(): void {
     TaroHybridManager.setCustomUserAgent('')
+    TaroHybridManager.initLoadCommittedDetails(this.indexHtmlPath,(value: LoadCommittedDetails): void => this.getDetails(value))
   }
 
   onPageShow(): void {
