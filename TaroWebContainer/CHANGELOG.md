@@ -1,3 +1,9 @@
+## 2.0.0-rc.5
+- TaroWebContainer增加getLoadCommittedDetails属性方法，网页跳转时触发回调方法
+- TaroHybridManager增加initLoadCommittedDetails方法，网页跳转时触发回调
+- 修复previewImage方法图片无缩放时滑动不跟手问题
+- 优化Taro Storage缓存，解决跨Web容器修改Storage后缓存不更新
+
 ## 2.0.0-rc.4
 - TaroWebContainer增加userAgent属性，支持设置自定义用户代理
 - 修复advanceAPI的uploadFile接口报错

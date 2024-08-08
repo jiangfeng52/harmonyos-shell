@@ -31,6 +31,7 @@ export struct TaroHybrid {
   }
   aboutToDisappear(): void {
     TaroHybridManager.disappear(this.indexHtmlPath)
+    TaroHybridManager.removeLoadCommittedDetails(this.indexHtmlPath)
   }
 
   build() {

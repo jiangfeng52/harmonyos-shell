@@ -176,7 +176,7 @@ init方法的参数类型为 `TaroHybridManagerOptions`, 各字段说明如下�
 | webUrl            | string            | 资源入口url                                               | 是                     |
 | webUrlPrefix      | string            | 资源入口url的前缀，一般是 `${webUrl.protocol}://${webUrl.host}/` | 是                     |
 | pageState         | HostPageState     | 传递页面状态                                                | 是                     |
-| forceDarkAccess   | boolean           | 是否强制反色适配深色模式                                         | 是         |
+| forceDarkAccess   | boolean           | 是否强制反色适配深色模式                                          | 是         |
 | useCache          | boolean           | 是否优先使用应用缓存的Web资源                                      | 否，默认值： true           |
 | want              | Want              | 传递EntryAbility中`onCreate`和`onNewWant`保存的want信息        | 否，默认值： { }            |
 | isFullScreen      | boolean           | 是否全屏显示应用                                              | 否，默认值： true           |
@@ -184,8 +184,9 @@ init方法的参数类型为 `TaroHybridManagerOptions`, 各字段说明如下�
 | showCapsule       | boolean           | 是否显示胶囊按钮                                              | 否：默认值：true            |
 | capsulePage       | string            | 点击胶囊按钮跳转的页面                                           | 否：默认值：`pages/Capsule` |
 | enableWebDebug    | boolean           | [开启Web调试功能][Web调试devtools配置]                          | 否：默认值：true            |
-| navigationInitVisible | boolean       | 控制导航栏初始显示状态                                          | 否：默认值：true            |
-| userAgent             | string            | 自定义用户代理                                            | 否           |
+| navigationInitVisible | boolean           | 控制导航栏初始显示状态                                           | 否：默认值：true            |
+| userAgent             | string            | 自定义用户代理                                               | 否           |
+| getLoadCommittedDetails | Function        | 网页跳转时触发该回调方法                                       | 否           |
 #### 4. Taro API - 权限配置表
 部分API在使用的时候，需要在应用的src/main/module.json5文件中配置权限，相应的功能才能启用, 如下示例：
 

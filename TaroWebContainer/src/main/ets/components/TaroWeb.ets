@@ -135,6 +135,7 @@ export struct TaroWeb {
   @Link methodChannel: MethodChannel
   private nativeAPI: NativeApi | undefined = undefined
   @Prop userAgent: string | undefined = undefined
+  getLoadCommittedDetails: Function = (value: LoadCommittedDetails): void => {}
 
   aboutToAppear() {
     webView.WebviewController.setWebDebuggingAccess(this.enableWebDebug);
@@ -242,6 +243,16 @@ export struct TaroWeb {
       }, (componentId: string) => componentId)
       Web({ src: this.webUrl, controller: this.taroWebController.webController })
         .enableNativeEmbedMode(true)
+        .onNavigationEntryCommitted((details) => {
+          try {
+            this.getLoadCommittedDetails(details)
+            if (TaroHybridManager.getDetails(this.indexHtmlPath)) {
+              TaroHybridManager.setLoadCommittedDetails(this.indexHtmlPath, details)
+            }
+          } catch (error) {
+            taroLogger.error(TARO_WEB_TAG, `onNavigationEntryCommitted error: ${(error as BusinessError).message}`)
+          }
+        })
         .onNativeEmbedLifecycleChange((embed) => {
           sameLayerManager.handleNativeEmbedLifecycleChange(embed, () => {
             this.componentIdArr.push(embed.info?.id!)
