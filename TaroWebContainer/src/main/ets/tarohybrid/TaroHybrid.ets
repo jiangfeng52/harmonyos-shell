@@ -79,4 +79,8 @@ class TaroWebNodeController extends NodeController {
     }
     return this.rootNode;
   }
+
+  aboutToDisappear(): void {
+    this.rootNode?.clearChildren()
+  }
 }
