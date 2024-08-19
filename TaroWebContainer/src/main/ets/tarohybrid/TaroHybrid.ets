@@ -72,9 +72,15 @@ class TaroWebNodeController extends NodeController {
     const frameNode = this.coreInstance.getBuilderNode(uiContext).getFrameNode()
     // 如果frameNode有父节点，说明已经上树了，需要先下树
     frameNode?.getParent()?.removeChild(frameNode)
-    // 上树
-    this.rootNode?.appendChild(frameNode)
-
+    try {
+      // 上树
+      this.rootNode?.appendChild(frameNode)
+    } catch (_ignore) {
+    }
     return this.rootNode;
+  }
+
+  aboutToDisappear(): void {
+    this.rootNode?.clearChildren()
   }
 }
