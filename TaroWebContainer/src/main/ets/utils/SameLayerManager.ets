@@ -165,8 +165,8 @@ class SameLayerManager {
       const embedWidth = px2vp(embed.info.width);
       const embedHeight = px2vp(embed.info.height);
       // 页面滑动可能会导致embed标签的宽高会出现1px的抖动，此外，embed坐标发生变化也会触发UPDATE，均不需要重新渲染。
-      if (Math.abs(embedWidth - nodeController.getEmbedWidth()!) <= 1
-        && Math.abs(embedHeight - nodeController.getEmbedHeight()!) <= 1 ) {
+      if (nodeController.getEmbedWidth() !== undefined && Math.abs(embedWidth - nodeController.getEmbedWidth()!) <= 1 &&
+        nodeController.getEmbedHeight() !== undefined && Math.abs(embedHeight - nodeController.getEmbedHeight()!) <= 1 ) {
         return
       }
       taroLogger.info(TAG, 'onNativeEmbedLifecycleChange UPDATE: Re-render native component')
