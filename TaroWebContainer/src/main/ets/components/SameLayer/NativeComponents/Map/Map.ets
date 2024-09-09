@@ -118,6 +118,7 @@ struct NativeMap {
       minZoom: this.params.minZoom ?? defaultMinZoom,
       maxZoom: this.params.maxZoom ?? defaultMaxZoom,
       zoomGesturesEnabled: this.params.zoomGesturesEnabled ?? defaultZoomGesturesEnabled,
+      zoomControlsEnabled: this.params.zoomGesturesEnabled ?? defaultZoomGesturesEnabled,
       scrollGesturesEnabled: this.params.scrollGesturesEnabled ?? defaultScrollGesturesEnabled,
       rotateGesturesEnabled: this.params.rotateGesturesEnabled ?? defaultRotateGesturesEnabled,
       compassControlsEnabled: this.params.compassControlsEnabled ?? defaultCompassControlsEnabled,
