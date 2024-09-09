@@ -292,7 +292,7 @@ export async function getChooseMediaRet(mediaList: IMediaData[], useOriginal: bo
   const tempFiles: MediaFile[] = []
   for (const media of mediaList) {
     resTypes.add(media.type)
-    if (useOriginal) {
+    if (useOriginal || media.type === 'video') {
       let thumbPath: string | undefined = '';
       if (media.type === 'video') {
         const asset = await getAssetByUri(media.originPath)
