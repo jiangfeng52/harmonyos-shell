@@ -377,6 +377,7 @@ export struct TaroWeb {
             taroLogger.error(TARO_WEB_TAG, `setCustomUserAgent error: ${(error as BusinessError).message}`);
           }
         })
+        .backgroundColor($r('app.color.start_window_background'))
       // .webLite(true)  // 需要 osChannel sdk
     }
   }
