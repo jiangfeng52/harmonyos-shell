@@ -25,31 +25,31 @@ export default function TaroHybridManagerTest() {
     })
     it('TaroHybridManager.getFromParameter', 0, () => {
       // Defines a test case. This API supports three parameters: test case name, filter parameter, and test case function.
-      const a = getFromParameter('https://harmonymini.58.com/mps/main/index.html#/pages/index/index?aa=b&from=native&cc=aaa')
+      const a = getFromParameter('https://harmonymini.58.com/mps/main/index.html#/pages/index/index?aa=b&tarofrom=native&cc=aaa')
       // Defines a variety of assertion methods, which are used to declare expected boolean conditions.
       expect(a).assertEqual(1)
 
-      const b = getFromParameter('https://harmonymini.58.com/mps/main/index.html#/pages/index/index?aa=b&from=native_1&cc=aaa')
+      const b = getFromParameter('https://harmonymini.58.com/mps/main/index.html#/pages/index/index?aa=b&tarofrom=native_1&cc=aaa')
       // Defines a variety of assertion methods, which are used to declare expected boolean conditions.
       expect(b).assertEqual(1)
 
-      const c = getFromParameter('https://harmonymini.58.com/mps/main/index.html#/pages/index/index?aa=b&from=native_2&cc=aaa')
+      const c = getFromParameter('https://harmonymini.58.com/mps/main/index.html#/pages/index/index?aa=b&tarofrom=native_2&cc=aaa')
       // Defines a variety of assertion methods, which are used to declare expected boolean conditions.
       expect(c).assertEqual(2)
 
-      const d = getFromParameter('https://harmonymini.58.com/mps/main/index.html#/pages/index/index?aa=b&from=native_2')
+      const d = getFromParameter('https://harmonymini.58.com/mps/main/index.html#/pages/index/index?aa=b&tarofrom=native_2')
       // Defines a variety of assertion methods, which are used to declare expected boolean conditions.
       expect(d).assertEqual(2)
 
-      const f = getFromParameter('https://harmonymini.58.com/mps/main/index.html#/pages/index/index?from=native_2')
+      const f = getFromParameter('https://harmonymini.58.com/mps/main/index.html#/pages/index/index?tarofrom=native_2')
       // Defines a variety of assertion methods, which are used to declare expected boolean conditions.
       expect(f).assertEqual(2)
 
-      const e = getFromParameter('https://harmonymini.58.com/mps/main/index.html#/pages/index/index?from=native')
+      const e = getFromParameter('https://harmonymini.58.com/mps/main/index.html#/pages/index/index?tarofrom=native')
       // Defines a variety of assertion methods, which are used to declare expected boolean conditions.
       expect(e).assertEqual(1)
 
-      const g = getFromParameter('https://harmonymini.58.com/mps/main/index.html#/pages/index/index?from=native_ss')
+      const g = getFromParameter('https://harmonymini.58.com/mps/main/index.html#/pages/index/index?tarofrom=native_ss')
       // Defines a variety of assertion methods, which are used to declare expected boolean conditions.
       expect(g).assertEqual(-1)
     })
