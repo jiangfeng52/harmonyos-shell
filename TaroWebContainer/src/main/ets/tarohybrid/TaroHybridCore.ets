@@ -65,7 +65,7 @@ struct TaroHybridCore {
 
   webUrl(){
     let webUrl = `${this.domain}${this.indexHtmlPath}#${this.taroPath}`
-    return TaroHybridUtils.addQueryParamToHash(webUrl, 'from', 'native')
+    return TaroHybridUtils.addQueryParamToHash(webUrl, 'tarofrom', 'native')
   }
 
   private hookInterceptorWithoutCache = (request: WebResourceRequest) =>  {
