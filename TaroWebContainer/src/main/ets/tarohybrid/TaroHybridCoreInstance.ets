@@ -4,7 +4,7 @@ import { taroLogger } from '../utils/Logger'
 import { TaroHybridCoreBuilder, TaroHybridCoreBuilderData } from './TaroHybridCore'
 
 export function getFromParameter(url: string): number {
-  const fromMatch = url.match(/[?&]from=(native(?:_\d+)?)(?:&|$)/);
+  const fromMatch = url.match(/[?&]tarofrom=(native(?:_\d+)?)(?:&|$)/);
   const from = fromMatch ? fromMatch[1] : null;
   let number: number = -1;
 
@@ -41,7 +41,7 @@ export class TaroHybridCoreInstance {
   }
 
   navigateTo(taroPath: string) {
-    let taroPathFromNative = taroPath.includes('?') ? `${taroPath}&from=native` : `${taroPath}?from=native`
+    let taroPathFromNative = taroPath.includes('?') ? `${taroPath}&tarofrom=native` : `${taroPath}?tarofrom=native`
     this.nativeNavigateListener?.nativeNavigateTo(taroPathFromNative)
   }
 
