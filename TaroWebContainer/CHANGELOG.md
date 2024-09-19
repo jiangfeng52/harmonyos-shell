@@ -1,3 +1,11 @@
+## 2.0.0-rc.6
+- 修复getEmbedWidth和getEmbedHeight返回值为undefined的情况是报错
+- 视频文件不再支持压缩 
+- 地图的缩放控件和缩放手势保持统一的显示隐藏状态
+- 修复web组件打开时闪烁白屏的问题
+- url后面拼接的from参数容易引起冲突，修改为tarofrom
+- 修复advancedApi中uploadFile中data中字符串再序列化导致的报错
+
 ## 2.0.0-rc.5
 - TaroWebContainer增加getLoadCommittedDetails属性方法，网页跳转时触发回调方法
 - TaroHybridManager增加initLoadCommittedDetails方法，网页跳转时触发回调

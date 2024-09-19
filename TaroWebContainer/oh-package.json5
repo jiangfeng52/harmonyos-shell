@@ -13,8 +13,8 @@
   "name": "@hybrid/web-container",
   "description": "web-container是一个提供定制化Web容器以及热更新等功能的模块。支持运行Taro生成的harmony-hybrid应用",
   "main": "Index.ets",
-  "version": "2.0.0-rc.5",
-  "repository": "https://gitee.com/openharmony-tpc/hybrid-web-container",
+  "version": "2.0.0-rc.6",
+  "repository": "https://github.com/jiangfeng52/harmonyos-shell",
   "dependencies": {
     "@ohos/videocompressor": "1.0.2"
   }
