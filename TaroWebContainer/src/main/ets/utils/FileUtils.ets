@@ -1,10 +1,12 @@
 import fs from '@ohos.file.fs';
 import { taroLogger } from './Logger';
 import { http } from '@kit.NetworkKit';
+import { zlib } from '@kit.BasicServicesKit';
 
 const FILE_UTIL = 'FileUtil';
 const MINI_NAME_SPE = '@'
 const HTTP_TIMEOUT = 2000;
+
 export class FileUtils {
   static isSandboxPath(path: string) {
     return path && typeof (path) === 'string' && (path.startsWith('/data/storage/') || path.startsWith('internal://'))
@@ -65,17 +67,19 @@ export class FileUtils {
     const tempFile = fs.openSync(path, fs.OpenMode.READ_ONLY);
     return fs.statSync(tempFile.fd);
   }
-  static checkMiniFileNameFormat(fileName:string): string[] |null{
+
+  static checkMiniFileNameFormat(fileName: string): string[] | null {
     let splits = fileName.split(MINI_NAME_SPE)
-    if (splits && splits.length>1) {
+    if (splits && splits.length > 1) {
       return splits
-    }else{
-      taroLogger.error(FILE_UTIL, `Mini rawFile name is not standard : ${fileName}，Please use the format ：业务名称@版本号`);
+    } else {
+      taroLogger.error(FILE_UTIL,
+        `Mini rawFile name is not standard : ${fileName}，Please use the format ：业务名称@版本号`);
     }
     return null
   }
 
-  static buildMiniFileFormatName(name:string, version:string) : string{
+  static buildMiniFileFormatName(name: string, version: number): string {
     return `${name}@${version}`
   }
 
@@ -90,15 +94,31 @@ export class FileUtils {
     }
   }
 
-  static mkFilesDir(filePath:string){
+  static async removeFileOrDir(path: string) {
+    let access = await fs.access(path)
+    if (!access) {
+      return
+    }
+    let stat = await fs.stat(path)
+    if (stat.isDirectory()) {
+      return await fs.rmdir(path)
+    } else {
+      return await fs.unlink(path)
+    }
+  }
+
+  static mkFilesDir(filePath: string) {
     try {
       if (!fs.accessSync(filePath)) {
-        fs.mkdirSync(filePath,true)
+        fs.mkdirSync(filePath, true)
       }
-    }catch (e){
+    } catch (e) {
       taroLogger.error(FILE_UTIL, `mkFilesDir failed:`, e);
     }
   }
 
 
+  static unzip(inFile: string, outFile: string): Promise<void> {
+    return zlib.decompressFile(inFile, outFile)
+  }
 }

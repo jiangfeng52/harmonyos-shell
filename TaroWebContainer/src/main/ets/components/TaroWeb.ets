@@ -17,13 +17,9 @@ import File from '@ohos.file.fs';
 import { BusinessError } from '@ohos.base';
 import { ApiAdapter } from '../inject_adapter/ApiAdapter';
 import { switchInternalToHapSandBox } from '../utils/InternalPath';
-import { MiniLocalFileDataSource } from '../data/source/local/MiniLocalFileDataSource';
-import { MiniRawFileDataSource } from '../data/source/local/MiniRawFileDataSource';
 import webview from '@ohos.web.webview';
 import { taroLogger } from '../utils/Logger';
-import { LocalUpdateManagerInstance } from '../update/LocalUpdateManager';
-import { AlbumBackward } from '../interfaces/Media'
-import webView from '@ohos.web.webview';
+import { AlbumBackward } from '../interfaces/Media';
 import { Channel, MethodChannel } from '../inject_adapter/Channel';
 import { sameLayerManager } from '../utils/SameLayerManager';
 import { NativeVideoBuilder } from './SameLayer/NativeComponents/Video/Video';
@@ -33,8 +29,8 @@ import { NativeCacheManager } from '../inject_adapter/NativeCacheManager';
 import { taroTrace, TraceTask } from '../utils/Trace';
 import { registerSceneApis } from '../scene_apis/Index';
 import { TaroHybridManager } from '../tarohybrid/TaroHybridManager';
-import { StorageApi } from '../inject_adapter/native_api/StorageApi';
 import { NativeApi } from '../inject_adapter/native_api/NativeApi';
+import { WebResourceHandler } from '../data/source/WebResourceHandler';
 
 const TARO_WEB_TAG = 'TaroWeb';
 
@@ -136,9 +132,10 @@ export struct TaroWeb {
   private nativeAPI: NativeApi | undefined = undefined
   @Prop userAgent: string | undefined = undefined
   getLoadCommittedDetails: Function = (value: LoadCommittedDetails): void => {}
+  private webResourceHandler = new WebResourceHandler()
 
   aboutToAppear() {
-    webView.WebviewController.setWebDebuggingAccess(this.enableWebDebug);
+    webview.WebviewController.setWebDebuggingAccess(this.enableWebDebug);
     this.taroWebController.hasBindedTaroWeb = true
     this.taroWebController.addRequestHandler(this.handleInternalResource);
     this.taroWebController.addRequestHandler(this.useLocalCacheResource);
@@ -204,25 +201,11 @@ export struct TaroWeb {
       let path: string = url.replace(this.webUrlPrefix, '');
       path = path.split('#')[0]
       taroLogger.debug('TaroWeb', 'intercepter path=%{public}s', path)
-      let biz = MiniRawFileDataSource.getBizByPath(path) //获取业务标识
-      const lastVerInfo = LocalUpdateManagerInstance.getLastVersionInfo(biz)
-      // 优先走本地缓存，本地缓存不存在，走rawfile
-      if (lastVerInfo?.diskCachePath
-        && path
-        && MiniLocalFileDataSource.fileExist(lastVerInfo?.diskCachePath, path)) {
-        taroLogger.debug('TaroWeb', 'useLocalCacheResource path=%{public}s', path)
-        return MiniLocalFileDataSource.getFileOnResponseWeb(lastVerInfo?.localVersion, lastVerInfo?.diskCachePath, path)
-      }
-      // 兜底走rawfile
-      if (lastVerInfo?.rawCachePath) { // 走App内置的Raw缓存
-        let rawPath = MiniRawFileDataSource.rawfileExist(lastVerInfo.rawCachePath, path)
-        if (!path || rawPath.trim() === '') {
-          return null;
-        }
-        taroLogger.debug('TaroWeb', 'useRawCacheResource path=%{public}s', rawPath)
-        return MiniRawFileDataSource.getRawfileOnResponseWeb(lastVerInfo?.localVersion, rawPath)
-      }
 
+      let resp = this.webResourceHandler.getFileOnResponseWeb(path)
+      if (resp) {
+        return resp
+      }
       // 没有则返回空数据，不能让其走网络，因为webUrlPrefix域名为假域名，与微信小程序的机制一样，需要走真实不一样的全路径
       const emptyResponse = new WebResourceResponse();
       emptyResponse.setResponseMimeType("application/octet-stream")
