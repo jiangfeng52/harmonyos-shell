@@ -60,7 +60,7 @@ import { NavigationBarData } from '../components/NavigationBar';
 import { setSystemBarProperties } from '../utils/WindowUtil';
 import { taroLogger } from '../utils/Logger';
 import { switchInternalToHapSandBox } from '../utils/InternalPath';
-import { LocalUpdateManagerInstance } from '../update/LocalUpdateManager';
+import { DiskCacheUpdateManagerInstance } from '../update/DiskCacheUpdateManager';
 import util from '@ohos.util';
 import { selectMediaAssets } from '../utils/MediaUtil';
 import { selectMediumAssets } from '../utils/MediumUtil';
@@ -310,19 +310,19 @@ export class NativeInject {
       },
       applyUpdate: () => {
         taroLogger.debug('JsBridgeNative', `NativeApi$getUpdateManager`)
-        return LocalUpdateManagerInstance.applyUpdate();
+        return DiskCacheUpdateManagerInstance.applyUpdate();
       },
       onCheckForUpdate: (option: ESObject) => {
         taroLogger.debug('JsBridgeNative', `NativeApi$getUpdateManager`)
-        return LocalUpdateManagerInstance.onCheckForUpdate(option);
+        return DiskCacheUpdateManagerInstance.onCheckForUpdate(option);
       },
       onUpdateFailed: (option: ESObject) => {
         taroLogger.debug('JsBridgeNative', `NativeApi$getUpdateManager`)
-        return LocalUpdateManagerInstance.onUpdateFailed(option);
+        return DiskCacheUpdateManagerInstance.onUpdateFailed(option);
       },
       onUpdateReady: (option: ESObject) => {
         taroLogger.debug('JsBridgeNative', `NativeApi$getUpdateManager`)
-        return LocalUpdateManagerInstance.onUpdateReady(option);
+        return DiskCacheUpdateManagerInstance.onUpdateReady(option);
       },
       requestSubscribeMessage: async (options: RequestSubscribeMessageOptions) => {
         taroLogger.debug('JsBridgeNative', `NativeApi$requestSubscribeMessage`)

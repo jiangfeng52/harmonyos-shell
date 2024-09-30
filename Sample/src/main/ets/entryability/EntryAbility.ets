@@ -1,7 +1,7 @@
 import UIAbility from '@ohos.app.ability.UIAbility';
 import window from '@ohos.window';
 import Want from '@ohos.app.ability.Want';
-import { GlobalThis, LocalUpdateManagerInstance, TaroHybridManager } from '@hybrid/web-container';
+import { TaroHybridManager } from '@hybrid/web-container';
 import common from '@ohos.app.ability.common';
 import { TaroHybridNativeMethods } from '../pages/TaroHybridNativeMethods';
 import router from '@ohos.router';
@@ -18,8 +18,6 @@ export default class EntryAbility extends UIAbility {
     TaroHybridManager.setCustomUserAgent('WUBA (Phone; OpenHarmony)')
     logger.info(ABILITY_TAG, '%{public}s', 'Ability onCreate');
     storage.setOrCreate('want', want);
-    GlobalThis.getInstance().setRawFile('spa')
-    LocalUpdateManagerInstance.updateMiniOnLaunch(this.context)
   }
 
   onDestroy() {
@@ -63,6 +61,8 @@ export default class EntryAbility extends UIAbility {
         },
         forceDarkAccess: true,
         windowClass,
+        rawFileName: 'spa',
+        diskCacheEnable: true
       })
       TaroHybridManager.preLoader(
         windowStage.getMainWindowSync().getUIContext(),

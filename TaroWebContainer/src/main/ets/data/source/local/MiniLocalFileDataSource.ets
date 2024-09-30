@@ -1,21 +1,20 @@
-import zlib from '@ohos.zlib'
-import { BusinessError } from '@ohos.base'
 import { taroLogger } from '../../../utils/Logger'
 import fs from '@ohos.file.fs'
-import { LocalVersionInfo } from '../bean/LocalVersionInfo'
-import { UpdateConfig } from '../bean/UpdateConfig'
+import { VersionInfo } from '../bean/LocalMiniInfo'
 import { FileUtils } from '../../../utils/FileUtils'
-import common from '@ohos.app.ability.common';
-import { ArrayList } from '@kit.ArkTS'
+import common from '@ohos.app.ability.common'
 
-const DISK_PATH = 'update'
+const DISK_PATH = 'taro_resources'
 export class MiniLocalFileDataSource {
   constructor() {
   }
 
-  readDiskLastMiniBizInfo(context: Context, biz:string): LocalVersionInfo {
-    let miniPath = this.getLocalPath(context)
-    let localVersionInfo = new LocalVersionInfo(UpdateConfig.getInstance().getInitialVersion(),biz)
+  readDiskLastMiniBizInfo(context: common.ApplicationContext, biz:string): VersionInfo {
+    let miniPath = MiniLocalFileDataSource.getDiskCachePath(context)
+    let diskVersionInfo: VersionInfo = {
+      version: 0,
+      filePath: ''
+    }
     let files = fs.listFileSync(miniPath, { recursion: false, listNum: 0 })
     if (files && files?.length != 0) {
       let filenames = new Array<string>()
@@ -30,16 +29,17 @@ export class MiniLocalFileDataSource {
       if (filesLength==1) {
         let splits = FileUtils.checkMiniFileNameFormat(filenames[0])
         if (splits) {
-          localVersionInfo.localVersion = splits[1]
-          localVersionInfo.diskCachePath = `${miniPath}/${filenames[0]}`
+          diskVersionInfo.version = parseInt(splits[1]) || 0
+          diskVersionInfo.filePath = `${miniPath}/${filenames[0]}`
         }
-        return localVersionInfo
+        return diskVersionInfo
       }else if (filenames.length > 1) {
-        const versionCompareFunc = UpdateConfig.getInstance().getCompareVersionFunc()
         filenames.sort((a, b) => {
-          if (versionCompareFunc(a, b)) {
-            //正序排列
-            return 1
+          try {
+            let version1 = parseInt(a.split('@')[1])
+            let version2 = parseInt(b.split('@')[1])
+            return version1 < version2 ? -1 : 1
+          } catch (e) {
           }
           return -1
         })
@@ -49,64 +49,29 @@ export class MiniLocalFileDataSource {
         }
         let splits = filenames[filenames.length-1].split('@');
         if (splits&&splits?.length>1) {
-          localVersionInfo.localVersion = splits[1]
+          diskVersionInfo.version = parseInt(splits[1]) || 0
         }else{
-          localVersionInfo.localVersion = '0'
+          diskVersionInfo.version = 0
         }
-        localVersionInfo.diskCachePath = `${miniPath}/${filenames[filenames.length-1]}`
-        return localVersionInfo
+        diskVersionInfo.filePath = `${miniPath}/${filenames[filenames.length-1]}`
+        return diskVersionInfo
       }
     }
-    return localVersionInfo
+    return diskVersionInfo
   }
 
 
-  getLocalPath(context: Context):string{
-    let miniPath = `${context.filesDir}/${DISK_PATH}`
-    if (!fs.accessSync(miniPath)) {
-      fs.mkdirSync(miniPath)
-    }
-    return miniPath
-  }
-
-  saveAndUnzip(context: Context, version: number, filePath: string): Promise<string> {
-    return new Promise<string>((resolve: Function, reject: Function) => {
-      try {
-        let options: zlib.Options = {
-          level: zlib.CompressLevel.COMPRESS_LEVEL_DEFAULT_COMPRESSION,
-          memLevel: zlib.MemLevel.MEM_LEVEL_DEFAULT,
-          strategy: zlib.CompressStrategy.COMPRESS_STRATEGY_DEFAULT_STRATEGY
-        }
-        //TODO-JasonZhang 设置解压路径
-        let savePath = ""
-        // let savePath = this.getLocalPath(context, version)
-
-        zlib.decompressFile(filePath, savePath, options, (errData) => {
-          if (errData !== null) {
-            taroLogger.debug("UpdateManager", '%{public}s decompressFile failed. code is %{public}d, message is %{public}s', filePath, errData.code, errData.message)
-          } else {
-            taroLogger.debug("UpdateManager", '%{public}s decompressFile success. decompressPath is %{public}s', filePath, savePath)
-          }
-          FileUtils.removeFileOrDirSync(filePath)
-          resolve(errData == null ? savePath : '')
-        })
-      } catch (errData) {
-        let code = (errData as BusinessError).code;
-        let message = (errData as BusinessError).message;
-        taroLogger.debug("UpdateManager", '%{public}s decompressFile failed. code is %{public}d, message is %{public}s', filePath, code, message)
-        FileUtils.removeFileOrDirSync(filePath)
-        resolve('')
-      }
-    })
-  }
   /**
    * 获取缓存空间目录
    * @param context
    * @returns
    */
-  static getDiskPath(context: common.Context): string {
-    let path = `${context.filesDir}/update`
-    return path;
+  static getDiskCachePath(context: common.ApplicationContext):string{
+    let miniPath = `${context.filesDir}/${DISK_PATH}`
+    if (!fs.accessSync(miniPath)) {
+      fs.mkdirSync(miniPath)
+    }
+    return miniPath
   }
 
   static fileExist(dir: string, fileRelatePath: string): boolean {
@@ -119,7 +84,7 @@ export class MiniLocalFileDataSource {
     return fs.accessSync(filePath)
   }
 
-  static getFileOnResponseWeb(lastVersion: string, dir: string, fileRelatePath: string): WebResourceResponse {
+  static getFileOnResponseWeb(lastVersion: number, dir: string, fileRelatePath: string): WebResourceResponse {
     let filePath = `${dir}/${fileRelatePath}`
 
     const file = fs.openSync(filePath, fs.OpenMode.READ_ONLY);
@@ -127,7 +92,7 @@ export class MiniLocalFileDataSource {
 
     const responseWeb = new WebResourceResponse();
     const headers: Array<Header> = [
-      {headerKey: "ResponseDataID", headerValue: lastVersion}
+      {headerKey: "ResponseDataID", headerValue: lastVersion.toString()}
     ]
     let mimeType: string;
     if (filePath.endsWith('.js')) {

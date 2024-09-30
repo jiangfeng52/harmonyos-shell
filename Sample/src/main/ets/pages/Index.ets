@@ -17,8 +17,8 @@ struct Index {
             .height(40)
             .onClick(() => {
               RouterToTaroHybrid({
-                indexHtmlPath: "index.html",
-                taroPath: ""
+                indexHtmlPath: "/spa/main/index.html",
+                taroPath: "/pages/index/index"
               })
             })
 

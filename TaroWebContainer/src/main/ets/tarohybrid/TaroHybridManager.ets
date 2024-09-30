@@ -9,6 +9,10 @@ import { bundleManager } from '@kit.AbilityKit';
 import { TaroHybridCoreInstance } from './TaroHybridCoreInstance';
 import AdvancedAPI from '../utils/advancedapi.min';
 import { window } from '@kit.ArkUI';
+import { DiskCacheUpdateManagerInstance } from '../update/DiskCacheUpdateManager';
+import { MiniRepository } from '../data/source/MiniRepository';
+import { LocalMiniInfo } from '../data/source/bean/LocalMiniInfo';
+import { NetworkMiniInfo } from '../data/source/bean/NetworkMiniInfo';
 
 export interface TaroHybridManagerOptions {
   uiAbilityContext: common.UIAbilityContext,
@@ -18,7 +22,8 @@ export interface TaroHybridManagerOptions {
   rootIndexHtmlPath?: string,
   nativeBack?: () => void,
   forceDarkAccess?: boolean,
-
+  rawFileName: string,
+  diskCacheEnable?: boolean
 }
 
 export class TaroHybridManager {
@@ -31,20 +36,38 @@ export class TaroHybridManager {
   private static debuggable = false
   private static loadCommittedDetailsMaps: Map<string, Function> = new Map()
 
-  static init(options: TaroHybridManagerOptions){
+  static init(options: TaroHybridManagerOptions) {
     TaroHybridManager.options = options
+    options.rawFileName && GlobalThis.getInstance().setRawFile(options.rawFileName)
+    if (options.diskCacheEnable != undefined) {
+      GlobalThis.getInstance().setDiskUpdateEnable(options.diskCacheEnable)
+    }
     GlobalThis.getInstance().setContext('context', options.uiAbilityContext)
+    MiniRepository.getInstance().initMiniInfo(options.uiAbilityContext)
+    DiskCacheUpdateManagerInstance.updateDiskCache(options.uiAbilityContext)
     AdvancedAPI.init(options.uiAbilityContext, options.windowClass)
-    taroStorage.init(options.uiAbilityContext, bundleManager.getBundleInfoForSelfSync(bundleManager.BundleFlag.GET_BUNDLE_INFO_DEFAULT).name)
+    taroStorage.init(options.uiAbilityContext,
+      bundleManager.getBundleInfoForSelfSync(bundleManager.BundleFlag.GET_BUNDLE_INFO_DEFAULT).name)
   }
 
   static getOptions(): TaroHybridManagerOptions | null {
     return TaroHybridManager.options
   }
 
-  static setCustomUserAgent(customUserAgent: string){
+  /**
+   * 开始从网络更新小程序缓存，独立方法可在隐私弹窗之后调用
+   * @param context
+   * @param getNeedUpdateNetworkInfos 业务自定义获取小程序缓存方法
+   */
+  static startUpdateDiskCacheFromNetwork(context: common.ApplicationContext,
+    getNeedUpdateNetworkInfos: (localVersions: Array<LocalMiniInfo>) => Promise<Array<NetworkMiniInfo> | undefined>) {
+    DiskCacheUpdateManagerInstance.updateDiskCacheFromNetwork(context, getNeedUpdateNetworkInfos)
+  }
+
+  static setCustomUserAgent(customUserAgent: string) {
     TaroHybridManager.customUserAgent = customUserAgent;
   }
+
   static getCustomUserAgent(): string {
     return TaroHybridManager.customUserAgent
   }
@@ -80,7 +103,7 @@ export class TaroHybridManager {
     taroLogger.setLoggable(debuggable)
   }
 
-  static openTrace(){
+  static openTrace() {
     taroTrace.setOpen(true)
   }
 
@@ -88,28 +111,28 @@ export class TaroHybridManager {
     return TaroHybridManager.debuggable
   }
 
-  static isRootContainer(indexHtmlPath: string){
+  static isRootContainer(indexHtmlPath: string) {
     const rootIndexHtmlPath = TaroHybridManager.options?.rootIndexHtmlPath
-    if(!rootIndexHtmlPath) {
+    if (!rootIndexHtmlPath) {
       // 默认情况，如果没有设置rootIndexHtmlPath，默认都是true
       return true
     }
     return indexHtmlPath === rootIndexHtmlPath
   }
 
-  static preLoader(uiContext: UIContext, indexHtmlPath: string, taroPath: string){
+  static preLoader(uiContext: UIContext, indexHtmlPath: string, taroPath: string) {
     const instance = TaroHybridManager.getOrCreateCoreInstance(indexHtmlPath, taroPath)
     instance.getBuilderNode(uiContext)
   }
-  
-  static getOrCreateCoreInstance(indexHtmlPath: string, taroPath: string): TaroHybridCoreInstance{
+
+  static getOrCreateCoreInstance(indexHtmlPath: string, taroPath: string): TaroHybridCoreInstance {
     let builderInstance = TaroHybridManager.builderInstanceMaps.get(indexHtmlPath)
-    if (!builderInstance){
+    if (!builderInstance) {
       builderInstance = new TaroHybridCoreInstance(
-        TaroHybridManager?.options?.domain??'',
+        TaroHybridManager?.options?.domain ?? '',
         indexHtmlPath,
         taroPath,
-        TaroHybridManager?.options?.forceDarkAccess?? false
+        TaroHybridManager?.options?.forceDarkAccess ?? false
       )
       // 一定要先保存到Map里，再build
       TaroHybridManager.builderInstanceMaps.set(indexHtmlPath, builderInstance)
@@ -118,14 +141,14 @@ export class TaroHybridManager {
     return builderInstance
   }
 
-  static appear(indexHtmlPath: string){
+  static appear(indexHtmlPath: string) {
     let count = TaroHybridManager.referenceCountMap.get(indexHtmlPath) ?? 0;
     TaroHybridManager.referenceCountMap.set(indexHtmlPath, count + 1)
   }
 
-  static disappear(indexHtmlPath: string){
+  static disappear(indexHtmlPath: string) {
     let count = TaroHybridManager.referenceCountMap.get(indexHtmlPath) ?? 0;
-    if(count > 1) {
+    if (count > 1) {
       TaroHybridManager.referenceCountMap.set(indexHtmlPath, count - 1)
     } else {
       // 回收
@@ -135,18 +158,18 @@ export class TaroHybridManager {
     }
   }
 
-  static getCoreInstance(indexHtmlPath: string): TaroHybridCoreInstance | undefined{
+  static getCoreInstance(indexHtmlPath: string): TaroHybridCoreInstance | undefined {
     return TaroHybridManager.builderInstanceMaps.get(indexHtmlPath)
   }
 
-  static loadUrl(indexHtmlPath: string, taroPath: string): boolean{
+  static loadUrl(indexHtmlPath: string, taroPath: string): boolean {
     const instance = TaroHybridManager.getCoreInstance(indexHtmlPath)
     instance?.navigateTo(taroPath)
     // instance存在，说明容器复用，loadUrl成功
     return instance !== undefined
   }
 
-  static nativeBack(){
+  static nativeBack() {
     TaroHybridManager.options?.nativeBack?.()
   }
 
@@ -154,5 +177,4 @@ export class TaroHybridManager {
     const instance = TaroHybridManager.getCoreInstance(indexHtmlPath)
     return instance?.navigateBack(rootTaroPage) ?? false;
   }
-
 }
