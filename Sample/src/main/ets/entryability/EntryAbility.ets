@@ -52,9 +52,7 @@ export default class EntryAbility extends UIAbility {
       TaroHybridManager.init({
         uiAbilityContext: this.context,
         domain: 'http://domain',
-        injectNativeMethod: (indexHtmlPath: string, uiAbilityContext: common.UIAbilityContext) => {
-          return new TaroHybridNativeMethods(uiAbilityContext).nativeObj
-        },
+        injectObjectController: () => new TaroHybridNativeMethods(),
         rootIndexHtmlPath: "/spa/main/index.html",
         nativeBack: ()=>{
           router.back()

@@ -1,7 +1,7 @@
 export { TaroWebContainer } from './src/main/ets/components/TaroWebContainer'
 export { BaseCapsule } from './src/main/ets/components/BaseCapsule'
 export { NavigationBar, NavigationBarData } from './src/main/ets/components/NavigationBar'
-export { InjectObject, NativeDataChangeListener } from './src/main/ets/interfaces/InjectObject'
+export { InjectObject, NativeDataChangeListener, InjectObjectController } from './src/main/ets/interfaces/InjectObject'
 export { HostPageState } from './src/main/ets/interfaces/HostPageState'
 export { TaroWebController, InterceptRequestHandler } from './src/main/ets/components/TaroWeb'
 export { NotificationRequest, SendMessageOptions, NotificationContent, NotificationPictureContent, NotificationBasicContent,

@@ -158,15 +158,15 @@ ohpm install @hybrid/web-container
 #### 2. TaroHybridManager.init 参数说明
 init方法的参数类型为 `TaroHybridManagerOptions`, 各字段说明如下： 
 
-| 字段名称               | 类型                                         | 描述                            | 必填 |
-|--------------------|--------------------------------------------|-------------------------------|----|
-| uiAbilityContext   | UIAbilityContext                           | UIAbility的上下文对象               | 是  |
-| windowClass        | Window                                     | 主窗口                           | 是  |
-| injectNativeMethod | (string, UIAbilityContext) => InjectObject | 注入对象生成函数                      | 否  |
-| nativeBack         | () => void                                 | 多容器场景回退自定义函数，只作用于TaroHybrid组件 | 否  |
-| rootIndexHtmlPath  | string                                     | 主资源路径，只作用于TaroHybrid组件        | 否  |
-| forceDarkAccess    | boolean                                    | 是否强制反色适配深色模式，只作用于TaroHybrid组件 | 否  |
-| domain             | string                                     | 小程序域名，只作用于TaroHybrid组件        | 否  |
+| 字段名称                   | 类型                           | 描述                            | 必填 |
+|------------------------|------------------------------|-------------------------------|----|
+| uiAbilityContext       | UIAbilityContext             | UIAbility的上下文对象               | 是  |
+| windowClass            | Window                       | 主窗口                           | 是  |
+| injectObjectController | () => InjectObjectController | 注入对象控制器                       | 否  |
+| nativeBack             | () => void                   | 多容器场景回退自定义函数，只作用于TaroHybrid组件 | 否  |
+| rootIndexHtmlPath      | string                       | 主资源路径，只作用于TaroHybrid组件        | 否  |
+| forceDarkAccess        | boolean                      | 是否强制反色适配深色模式，只作用于TaroHybrid组件 | 否  |
+| domain                 | string                       | 小程序域名，只作用于TaroHybrid组件        | 否  |
 
 #### 3. TaroWebContainer组件参数说明
 
