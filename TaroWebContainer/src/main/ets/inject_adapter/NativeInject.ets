@@ -37,6 +37,7 @@ import {
   ChooseMediumOptions,
   NativeDataChangeListener,
   CapsuleState,
+  getVideoInfoOptions
 } from '../interfaces/InjectObject';
 import {
   getBundleUsedPermission,
@@ -66,7 +67,7 @@ import { selectMediaAssets } from '../utils/MediaUtil';
 import { selectMediumAssets } from '../utils/MediumUtil';
 import { MediaItemData, ChooseAlbumResult, chooseAlbumOptions } from '../interfaces/Media';
 import { NativeCacheManager } from './NativeCacheManager';
-
+import { getVideoInfo } from '../scene_apis/media/video/video'
 
 const NATIVE_TAG = 'NativeInject';
 
@@ -405,6 +406,10 @@ export class NativeInject {
           options && options.fail()
         }
         options && options.complete()
+      },
+      getVideoInfo:(options: getVideoInfoOptions) => {
+        taroLogger.debug('JsBridgeNative', `NativeApi$getVideoInfo`)
+        getVideoInfo(options)
       }
     };
   }
