@@ -96,9 +96,9 @@ export class NativeApi {
       as.downloadFile(options)
     },
 
-    getVideoInfo(options: ESObject): void {
-      return as.getVideoInfo(options)
-    },
+    // getVideoInfo(options: ESObject): void {
+    //   return as.getVideoInfo(options)
+    // },
 
     openAppAuthorizeSetting(options: ESObject): void {
       as.openAppAuthorizeSetting(options)

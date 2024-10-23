@@ -207,6 +207,13 @@ export interface NativeDataChangeListener {
 
 }
 
+export interface getVideoInfoOptions {
+  src: string,
+  success: Function,
+  fail: Function,
+  complete: Function
+}
+
 export interface InnerInjectObj {
   registerNativeListener: (listener: NativeDataChangeListener | null) => void
   setNavigationBarColor: (options: NavigationBarOptions) => void;
@@ -228,6 +235,7 @@ export interface InnerInjectObj {
   chooseMediaAssets: (options: ChooseMediaOptions) => void;
   chooseMediumAssets: (options: ChooseMediumOptions) => void;
   exitMiniProgram: (options: ExitMiniProgramOptions) => void;
+  getVideoInfo: (options: getVideoInfoOptions) => void;
 }
 
 export interface InjectObject {
