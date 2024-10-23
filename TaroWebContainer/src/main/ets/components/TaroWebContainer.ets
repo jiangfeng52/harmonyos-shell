@@ -333,7 +333,7 @@ export struct TaroWebContainer {
 
     this.injectObjectController = TaroHybridManager.getOptions()?.injectObjectController?.()
 
-    const nativeMethod = this.injectObjectController?.onCreate(this.indexHtmlPath, context)
+    const nativeMethod = this.injectObjectController ? this.injectObjectController?.onCreate(this.indexHtmlPath, context) : TaroHybridManager.getOptions()?.injectNativeMethod?.(this.indexHtmlPath, context)
     if (nativeMethod) {
       this.methodChannel.registerMethods('NativeApi', nativeMethod)
     }

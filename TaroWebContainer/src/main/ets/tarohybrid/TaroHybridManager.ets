@@ -19,6 +19,7 @@ export interface TaroHybridManagerOptions {
   windowClass: window.Window,
   domain?: string,
   injectObjectController? : () => InjectObjectController,
+  injectNativeMethod?: (indexHtmlPath: string, uiAbilityContext: common.UIAbilityContext) => InjectObject,
   rootIndexHtmlPath?: string,
   nativeBack?: () => void,
   forceDarkAccess?: boolean,
