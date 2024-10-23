@@ -66,6 +66,8 @@ import { selectMediaAssets } from '../utils/MediaUtil';
 import { selectMediumAssets } from '../utils/MediumUtil';
 import { MediaItemData, ChooseAlbumResult, chooseAlbumOptions } from '../interfaces/Media';
 import { NativeCacheManager } from './NativeCacheManager';
+import { ConfigurationConstant } from '@kit.AbilityKit';
+import { invertColor } from '../utils/ColorUtils';
 
 
 const NATIVE_TAG = 'NativeInject';
@@ -183,7 +185,12 @@ export class NativeInject {
         this.navigationBarData.barFrontColor = navigationStyle.textStyle === 'white' ? '#ffffff' : '#000000';
         this.navigationBarData.barColor = navigationStyle.backgroundColor;
         this.navigationBarData.animationDuration = 0;
-        this.setStatusBarFrontColor(this.navigationBarData.barFrontColor);
+        let statusBarFrontColor = this.navigationBarData.barFrontColor
+        const context = getContext(this) as common.UIAbilityContext;
+        if (context.config.colorMode === ConfigurationConstant.ColorMode.COLOR_MODE_DARK) {
+          statusBarFrontColor = invertColor(statusBarFrontColor)
+        }
+        this.setStatusBarFrontColor(statusBarFrontColor);
       },
       openSetting: async (options: SettingOptions) => {
         taroLogger.debug('JsBridgeNative', `NativeApi$openSetting`)
