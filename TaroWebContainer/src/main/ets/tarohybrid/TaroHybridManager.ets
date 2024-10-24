@@ -1,7 +1,7 @@
 import common from '@ohos.app.ability.common';
 import HashMap from '@ohos.util.HashMap';
 import { GlobalThis } from '../utils/GlobalThis';
-import { InjectObject } from '../interfaces/InjectObject';
+import { InjectObject, InjectObjectController } from '../interfaces/InjectObject';
 import { taroLogger } from '../utils/Logger';
 import { taroTrace } from '../utils/Trace';
 import { taroStorage } from '../inject_adapter/TaroStorage';
@@ -18,6 +18,7 @@ export interface TaroHybridManagerOptions {
   uiAbilityContext: common.UIAbilityContext,
   windowClass: window.Window,
   domain?: string,
+  injectObjectController? : () => InjectObjectController,
   injectNativeMethod?: (indexHtmlPath: string, uiAbilityContext: common.UIAbilityContext) => InjectObject,
   rootIndexHtmlPath?: string,
   nativeBack?: () => void,

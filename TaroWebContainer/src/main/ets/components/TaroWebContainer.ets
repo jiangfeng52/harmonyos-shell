@@ -23,7 +23,7 @@ import { Album } from './Album/Album';
 import { ApiAdapter } from '../inject_adapter/ApiAdapter';
 import { NativeInject } from '../inject_adapter/NativeInject';
 import { LaunchOptions } from '../interfaces/LaunchOptions';
-import { CapsuleController, InjectObject, MenuButtonOptions } from '../interfaces/InjectObject';
+import { CapsuleController, InjectObject, InjectObjectController, MenuButtonOptions } from '../interfaces/InjectObject';
 import { getSystemBarHeight, getWindowWidth, setFullScreen, setSystemBarProperties } from '../utils/WindowUtil';
 import { GlobalThis } from '../utils/GlobalThis';
 import { getBundleInfoPermissions } from '../utils/PermissionMapScopeUtil';
@@ -118,6 +118,8 @@ export struct TaroWebContainer {
   enableWebDebug: boolean = true;
 
   capsuleOptions: MenuButtonOptions = { width: 50, height: this.navigationBarData.titleHeight, marginRight: 16 };
+
+  private injectObjectController?: InjectObjectController = undefined
 
   onTitleReceive = (title: string)=>{
     this.navigationBarData.title = title
@@ -329,7 +331,9 @@ export struct TaroWebContainer {
       this.methodChannel.registerMethods('NativeApi', this.injectObj)
     }
 
-    const nativeMethod = TaroHybridManager.getOptions()?.injectNativeMethod?.(this.indexHtmlPath, context)
+    this.injectObjectController = TaroHybridManager.getOptions()?.injectObjectController?.()
+
+    const nativeMethod = this.injectObjectController ? this.injectObjectController?.onCreate(this.indexHtmlPath, context) : TaroHybridManager.getOptions()?.injectNativeMethod?.(this.indexHtmlPath, context)
     if (nativeMethod) {
       this.methodChannel.registerMethods('NativeApi', nativeMethod)
     }
@@ -359,6 +363,8 @@ export struct TaroWebContainer {
   aboutToDisappear(): void {
     this.environmentCallbackId && GlobalThis.getInstance().getContext('context')?.getApplicationContext().off('environment', this.environmentCallbackId)
     this.taroWebController.getNativeCacheManager().dispose()
+    let context = GlobalThis.getInstance().getContext('context') as common.UIAbilityContext;
+    context && this.injectObjectController?.onDestroy(context)
   }
 
   onPageStateUpdated(): void {

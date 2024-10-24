@@ -12,6 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { common } from '@kit.AbilityKit';
 
 /**
  * Native注入类成员方法关联的数据接口
@@ -228,6 +229,11 @@ export interface InnerInjectObj {
   chooseMediaAssets: (options: ChooseMediaOptions) => void;
   chooseMediumAssets: (options: ChooseMediumOptions) => void;
   exitMiniProgram: (options: ExitMiniProgramOptions) => void;
+}
+
+export interface InjectObjectController {
+  onCreate: (indexHtmlPath: string, uiAbilityContext: common.UIAbilityContext) => InjectObject
+  onDestroy: (uiAbilityContext: common.UIAbilityContext) => void
 }
 
 export interface InjectObject {
