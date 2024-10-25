@@ -1,3 +1,6 @@
+## 2.0.0-rc.7
+- 小程序资源的热更新功能完成，优化部分api和代码
+
 ## 2.0.0-rc.6
 - 修复getEmbedWidth和getEmbedHeight返回值为undefined的情况是报错
 - 视频文件不再支持压缩 
