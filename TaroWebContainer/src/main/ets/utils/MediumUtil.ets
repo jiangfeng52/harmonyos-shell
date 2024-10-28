@@ -139,7 +139,8 @@ async function chooseMedium(options: ChooseMediumOptions, apiName: string, isFai
       ],
       predicates: predicates
     };
-    let fetchResult: photoAccessHelper.FetchResult<photoAccessHelper.PhotoAsset> = await phAccessHelper.getAssets(fetchOption);
+    let fetchResult: photoAccessHelper.FetchResult<photoAccessHelper.PhotoAsset> =
+      await phAccessHelper.getAssets(fetchOption);
     let assertCount: number = await fetchResult.getCount();
     if (assertCount > 0) {
       let asset: photoAccessHelper.PhotoAsset = await fetchResult.getFirstObject();
@@ -160,7 +161,10 @@ async function chooseMedium(options: ChooseMediumOptions, apiName: string, isFai
   }
 
   try {
-    let useOriginal = PhotoSelectResult.isOriginalPhoto;
+    // let useOriginal = PhotoSelectResult.isOriginalPhoto;
+    options.sizeType ||= ['original', 'compressed'];
+    options.sizeType = Array.from(new Set(options.sizeType));
+    let useOriginal = (options.sizeType.length === 2) || (options.sizeType[0] === 'original');
     const ret = await getChooseMediaRet(mediaItemList, useOriginal)
     options.success({
       tempFilePaths: ret.tempFilePaths,

@@ -16,6 +16,6 @@
   "version": "2.0.0-rc.7",
   "repository": "https://github.com/jiangfeng52/harmonyos-shell",
   "dependencies": {
-    "@ohos/videocompressor": "1.0.2"
+    "@ohos/videocompressor": "1.0.4"
   }
 }
