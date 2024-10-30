@@ -1,6 +1,12 @@
 import Want from '@ohos.app.ability.Want';
 import Url from '@ohos.url';
-import { TaroWebContainer, InjectObject, HostPageState, TaroWebController } from '@hybrid/web-container';
+import {
+  TaroWebContainer,
+  InjectObject,
+  HostPageState,
+  TaroWebController,
+  TaroHybridManager
+} from '@hybrid/web-container';
 import { logger } from '../utils/Logger';
 
 const WEB_CONTAINER_PAGE_TAG = 'WebContainerPage';
@@ -13,7 +19,6 @@ struct WebContainerPage {
   @LocalStorageProp('want') want: Want = {};
   @State pageState: HostPageState = HostPageState.PageInit;
   @State taroWebController: TaroWebController = new TaroWebController();
-
   // 用户可以自定义对象注入到Web环境中，使用native.sayHello格式进行调用
   nativeObj: InjectObject = {
     sayHello: () => logger.info(TAG, 'sayHello %{public}s', 'Hello World'),
@@ -29,6 +34,15 @@ struct WebContainerPage {
 
   onPageShow() {
     this.pageState = HostPageState.PageOnShow;
+    TaroHybridManager.getWebController('index.html', (webviewController: WebviewController) => {
+      webviewController.runJavaScript('test()', (Error, result) => {
+        if (result) {
+          console.debug(`runJavaScript test result is ${result}`)
+        } else {
+          console.error(`runJavaScript test error:${Error}`)
+        }
+      })
+    })
   }
 
   onPageHide() {

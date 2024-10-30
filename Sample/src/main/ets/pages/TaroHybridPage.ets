@@ -45,6 +45,16 @@ struct TaroHybridPage {
   aboutToAppear(): void {
     TaroHybridManager.setCustomUserAgent('')
     TaroHybridManager.initLoadCommittedDetails(this.indexHtmlPath,(value: LoadCommittedDetails): void => this.getDetails(value))
+
+    TaroHybridManager.getWebController(this.indexHtmlPath, (webviewController: WebviewController) => {
+      webviewController.runJavaScript('test()', (Error, result) => {
+        if (result) {
+          console.debug(`runJavaScript test result is ${result}`)
+        } else {
+          console.error(`runJavaScript test error:${Error}`)
+        }
+      })
+    })
   }
 
   onPageShow(): void {

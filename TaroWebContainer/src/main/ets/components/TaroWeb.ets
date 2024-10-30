@@ -301,7 +301,8 @@ export struct TaroWeb {
           taroTrace.finishTrace(TraceTask.onInterceptRequest)
           return response
         })
-        .onPageEnd(()=>{
+        .onPageEnd(() => {
+          TaroHybridManager.setWebController(this.indexHtmlPath, this.taroWebController.webController)
           // 端上预渲染的缓存逻辑，暂未完全调通
           // const url = this.taroWebController.webController.getUrl()
           // taroLogger.debug('liuyang111', `onPageEnd url is ${url}`)
@@ -335,10 +336,10 @@ export struct TaroWeb {
           //   })
         })
         // .onSslErrorEventReceive((event) => { // 通知用户加载资源时发生SSL错误
-        //   taroLogger.info(TARO_WEB_TAG, `onSslErrorEventReceive:${event.error}`)
-        //   event.handler.handleConfirm() // 通知Web组件继续使用SSL证书
-        //   return true
-        // })
+          //   taroLogger.info(TARO_WEB_TAG, `onSslErrorEventReceive:${event.error}`)
+          //   event.handler.handleConfirm() // 通知Web组件继续使用SSL证书
+          //   return true
+          // })
         .onTitleReceive((event) => {
           this.onTitleReceive && this.onTitleReceive(event?.title ?? '')
         })
