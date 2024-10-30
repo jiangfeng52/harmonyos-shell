@@ -36,6 +36,7 @@ export class TaroHybridManager {
   private static customUserAgent: string = ''
   private static debuggable = false
   private static loadCommittedDetailsMaps: Map<string, Function> = new Map()
+  private static WebControllerCallback: Map<string, Function> = new Map()
 
   static init(options: TaroHybridManagerOptions) {
     TaroHybridManager.options = options
@@ -71,6 +72,20 @@ export class TaroHybridManager {
 
   static getCustomUserAgent(): string {
     return TaroHybridManager.customUserAgent
+  }
+
+  static getWebController(index: string, callback: (value: WebviewController) => void): void {
+    if (!TaroHybridManager.WebControllerCallback.get(index)) {
+      TaroHybridManager.WebControllerCallback.set(index, callback)
+    }
+  }
+
+  static setWebController(indexHtmlPath: string, webviewController: WebviewController) {
+    if (TaroHybridManager.WebControllerCallback.get(indexHtmlPath)) {
+      let callback: Function = TaroHybridManager.WebControllerCallback.get(indexHtmlPath) as Function
+      callback(webviewController)
+      TaroHybridManager.WebControllerCallback.delete(indexHtmlPath)
+    }
   }
 
   static initLoadCommittedDetails(indexHtmlPath: string, getDetails: (value: LoadCommittedDetails) => void): void {
