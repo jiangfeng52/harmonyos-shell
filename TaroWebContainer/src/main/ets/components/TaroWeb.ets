@@ -35,12 +35,14 @@ import { WebResourceHandler } from '../data/source/WebResourceHandler';
 const TARO_WEB_TAG = 'TaroWeb';
 
 export type InterceptRequestHandler = (request: WebResourceRequest) => WebResourceResponse | null;
+export type LoadInterceptHandler = (request: WebResourceRequest) => boolean;
 
 @Observed
 export class TaroWebController {
   public webController: webview.WebviewController;
   public hasBindedTaroWeb: boolean;
   public callbacks: InterceptRequestHandler[];
+  public loadInterceptHandler: LoadInterceptHandler | null = null
   public albumBackward?: AlbumBackward;
   public nativeCacheManager: NativeCacheManager
 
@@ -105,6 +107,10 @@ export class TaroWebController {
       }
     }
     return null;
+  }
+
+  setLoadInterceptHandler(handler: LoadInterceptHandler) {
+    this.loadInterceptHandler = handler
   }
 }
 
@@ -290,6 +296,9 @@ export struct TaroWeb {
           } catch (error) {
             taroLogger.error(TARO_WEB_TAG, `runJavaScript error: ${(error as BusinessError).message}`);
           }
+        })
+        .onLoadIntercept((event) => { // 当Web组件加载url之前触发该回调，用于判断是否阻止此次访问。默认允许加载。
+          return this.taroWebController.loadInterceptHandler?.(event.data) ?? false
         })
         .onInterceptRequest((event) => { // 当web组件加载url之前触发该回调，用于拦截url并返回响应数据。
           const request = event?.request;
