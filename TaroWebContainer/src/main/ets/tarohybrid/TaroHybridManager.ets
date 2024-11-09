@@ -23,7 +23,7 @@ export interface TaroHybridManagerOptions {
   rootIndexHtmlPath?: string,
   nativeBack?: () => void,
   forceDarkAccess?: boolean,
-  rawFileName: string,
+  rawFileName?: string,
   diskCacheEnable?: boolean
 }
 
@@ -45,7 +45,7 @@ export class TaroHybridManager {
       GlobalThis.getInstance().setDiskUpdateEnable(options.diskCacheEnable)
     }
     GlobalThis.getInstance().setContext('context', options.uiAbilityContext)
-    MiniRepository.getInstance().initMiniInfo(options.uiAbilityContext)
+    options.rawFileName && MiniRepository.getInstance().initMiniInfo(options.uiAbilityContext)
     DiskCacheUpdateManagerInstance.updateDiskCache(options.uiAbilityContext)
     AdvancedAPI.init(options.uiAbilityContext, options.windowClass)
     taroStorage.init(options.uiAbilityContext,

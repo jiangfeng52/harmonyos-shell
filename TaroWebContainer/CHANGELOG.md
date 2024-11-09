@@ -1,3 +1,15 @@
+## 2.0.0-rc.9
+- 优化热更新，rawFileName为非必输，解决initMiniInfo()报错
+- 增加LoadIntercept回调，控制web是否允许加载url
+
+
+## 2.0.0-rc.8
+- 初始化injectNativeMethod 修改为injectObjectController，支持创建和销毁生命周期
+- 替换mediaLibrary断代接口
+- 页面加载设置导航栏样式时状态栏颜色适配深色模式
+- 升级videocompressor依赖版本，支持H265格式的的视频压缩
+- 增加TaroHybridManager.getWebController()接口，获取组件绑定webController
+
 ## 2.0.0-rc.7
 - 小程序资源的热更新功能完成，优化部分api和代码
 
